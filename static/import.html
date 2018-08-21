@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>import</title>
+    <link rel="stylesheet" href="/bulma/bulma.min.css">
+    <link rel="stylesheet" href="/fontawesome/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="columns" id="app" style="padding: 20px;">
+    <div class="column">
+        <div class="field">
+            <label class="label">题目文本</label>
+            <div class="control">
+                <textarea rows="25" class="textarea" placeholder="题目粘贴处" v-model="text"></textarea>
+            </div>
+        </div>
+        <div class="field is-grouped is-pulled-right">
+            <div class="control">
+                <button class="button is-link" @click="split()">分析</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="column" v-if="showResult">
+        <div class="field">
+            <label class="label">英文题目</label>
+            <div class="control">
+                <textarea rows="7" class="textarea" placeholder="English Trunk" v-model="enTrunk"></textarea>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">中文题目</label>
+            <div class="control">
+                <textarea rows="5" class="textarea" placeholder="Chinese Trunk" v-model="cnTrunk"></textarea>
+            </div>
+        </div>
+        <div class="field" v-for="(opt, index) in options">
+            <div class="field-body" @dblclick="changeAnswer(index)">
+                <div class="field">
+                    <p class="control is-expanded has-icons-right is-success">
+                        <input class="input" type="text" placeholder="English Option" v-model="opt.enOption"
+                               :class="[opt.answer ? 'is-success' : 'is-danger']">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-check" v-if="opt.answer"></i>
+                            <i class="fas fa-times" v-if="!opt.answer"></i>
+                        </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded has-icons-right">
+                        <input class="input" type="text" placeholder="Chinese Option" v-model="opt.cnOption"
+                               :class="[opt.answer ? 'is-success' : 'is-danger']">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-check" v-if="opt.answer"></i>
+                            <i class="fas fa-times" v-if="!opt.answer"></i>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-link is-success" @click="save()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/vue/vue.min.js"></script>
+<script src="/vue/resource/vue-resource.min.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            text: '',
+            showResult: false,
+            enTrunk: '',
+            cnTrunk: '',
+            options: [],
+        },
+        methods: {
+            split: function () {
+                Vue.http.post(
+                    '/api/import/split',
+                    this.text
+                ).then(
+                    function (response) {
+                        var t = response.body;
+                        app.enTrunk = t.enTrunk;
+                        app.cnTrunk = t.cnTrunk;
+                        app.options = t.options;
+                        app.showResult = true;
+                    },
+                    function (response) {
+
+                    }
+                );
+            },
+            save: function () {
+
+            },
+            changeAnswer: function (index) {
+                app.options[index].answer = !app.options[index].answer;
+            },
+        },
+    });
+</script>
+</body>
+</html>
