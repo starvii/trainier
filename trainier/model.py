@@ -12,6 +12,12 @@ class Trunk(Base):
     enTrunk = Column(String)
     cnTrunk = Column(String)
     comment = Column(String)
+    level = Column(Integer)
+    analysis = Column(String)
+    source = Column(String)
+    # difficult level
+    # analysis
+    # source
 
 
 class Option(Base):
