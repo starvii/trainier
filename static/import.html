@@ -32,6 +32,11 @@
                 </div>
                 <div class="field">
                     <p class="control is-expanded">
+                        <input class="input" type="text" placeholder="source" v-model="source">
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded">
                         <input class="input" type="text" placeholder="number of option" v-model="number"
                                v-on:keyup.13="changeOptionNumber()">
                     </p>
@@ -71,20 +76,20 @@
                 <div class="field">
                     <p class="control is-expanded has-icons-right">
                         <input class="input" type="text" placeholder="English Option" v-model="opt.enOption"
-                               :class="[opt.answer ? 'is-success' : 'is-danger']">
+                               :class="[opt.isTrue ? 'is-success' : 'is-danger']">
                         <span class="icon is-small is-right">
-                            <i class="fas fa-check" v-if="opt.answer"></i>
-                            <i class="fas fa-times" v-if="!opt.answer"></i>
+                            <i class="fas fa-check" v-if="opt.isTrue"></i>
+                            <i class="fas fa-times" v-if="!opt.isTrue"></i>
                         </span>
                     </p>
                 </div>
                 <div class="field">
                     <p class="control is-expanded has-icons-right">
                         <input class="input" type="text" placeholder="Chinese Option" v-model="opt.cnOption"
-                               :class="[opt.answer ? 'is-success' : 'is-danger']">
+                               :class="[opt.isTrue ? 'is-success' : 'is-danger']">
                         <span class="icon is-small is-right">
-                            <i class="fas fa-check" v-if="opt.answer"></i>
-                            <i class="fas fa-times" v-if="!opt.answer"></i>
+                            <i class="fas fa-check" v-if="opt.isTrue"></i>
+                            <i class="fas fa-times" v-if="!opt.isTrue"></i>
                         </span>
                     </p>
                 </div>
@@ -110,9 +115,10 @@
             enTrunk: '',
             cnTrunk: '',
             options: [],
-            comment: 'WEB题库中没有',
+            comment: '',
             number: 4,
             analysis: '',
+            source: '',
         },
         methods: {
             split: function () {
@@ -125,7 +131,10 @@
                             var t = response.body;
                             app.enTrunk = t.enTrunk;
                             app.cnTrunk = t.cnTrunk;
+                            app.comment = t.comment;
+                            app.analysis = t.analysis;
                             app.options = t.options;
+                            app.source = t.source;
                             app.showResult = true;
                         } else {
                             alert('请求服务失败，请检查日志');
@@ -144,6 +153,7 @@
                         entityId: app.trunkId,
                         comment: app.comment,
                         analysis: app.analysis,
+                        source: app.source,
                         enTrunk: app.enTrunk,
                         cnTrunk: app.cnTrunk,
                         options: app.options,
@@ -163,7 +173,7 @@
                 );
             },
             changeAnswer: function (index) {
-                app.options[index].answer = !app.options[index].answer;
+                app.options[index].isTrue = !app.options[index].isTrue;
             },
             changeOptionNumber: function() {
                 var num = parseInt(app.number);
@@ -172,7 +182,7 @@
                     app.options.push({
                         enOption: '',
                         cnOption: '',
-                        answer: false,
+                        isTrue: false,
                     });
                 }
             },

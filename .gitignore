@@ -1,5 +1,6 @@
 #mine
 /database
+!/database/init-db.sqlite
 /script
 /.idea
 
