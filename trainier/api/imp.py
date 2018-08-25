@@ -37,7 +37,7 @@ def save() -> Response:
         data: bytes = request.data
         j = json.loads(data)
         trunk = Trunk(entityId=j['entityId'].strip(), enTrunk=j['enTrunk'].strip(), cnTrunk=j['cnTrunk'].strip(),
-                      comment=j['comment'].strip())
+                      comment=j['comment'].strip(), analysis=j['analysis'])
         list: List[Option] = []
         for o in j['options']:
             list.append(Option(enOption=o['enOption'].strip(), cnOption=o['cnOption'].strip(), isTrue=o['answer']))

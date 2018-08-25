@@ -32,27 +32,38 @@
                 </div>
                 <div class="field">
                     <p class="control is-expanded">
-                        <input class="input" type="text" placeholder="comment" v-model="comment">
-                    </p>
-                </div>
-                <div class="field">
-                    <p class="control is-expanded">
                         <input class="input" type="text" placeholder="number of option" v-model="number"
                                v-on:keyup.13="changeOptionNumber()">
                     </p>
                 </div>
             </div>
         </div>
+
+        <div class="field">
+            <div class="field-body">
+                <div class="field">
+                    <p class="control is-expanded">
+                        <textarea rows="3" class="textarea" placeholder="analysis" v-model="analysis"></textarea>
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded">
+                        <textarea rows="3" class="textarea" placeholder="comment" v-model="comment"></textarea>
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="field">
             <label class="label">英文题目</label>
             <div class="control">
-                <textarea rows="7" class="textarea" placeholder="English Trunk" v-model="enTrunk"></textarea>
+                <textarea rows="5" class="textarea" placeholder="English Trunk" v-model="enTrunk"></textarea>
             </div>
         </div>
         <div class="field">
             <label class="label">中文题目</label>
             <div class="control">
-                <textarea rows="5" class="textarea" placeholder="Chinese Trunk" v-model="cnTrunk"></textarea>
+                <textarea rows="3" class="textarea" placeholder="Chinese Trunk" v-model="cnTrunk"></textarea>
             </div>
         </div>
         <div class="field" v-for="(opt, index) in options">
@@ -101,6 +112,7 @@
             options: [],
             comment: 'WEB题库中没有',
             number: 4,
+            analysis: '',
         },
         methods: {
             split: function () {
@@ -131,6 +143,7 @@
                     {
                         entityId: app.trunkId,
                         comment: app.comment,
+                        analysis: app.analysis,
                         enTrunk: app.enTrunk,
                         cnTrunk: app.cnTrunk,
                         options: app.options,
