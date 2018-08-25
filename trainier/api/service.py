@@ -64,12 +64,15 @@ class ImportService:
         for optTitle, optText in zip(optTitles, optTexts):
             opt:Dict = dict(
                 enOption=optText,
+                cnOption='',
                 isTrue=optTitle in answers
             )
             options.append(opt)
 
         return dict(
             enTrunk=enTrunk,
+            cnTrunk='',
+            comment='',
             source=source,
             analysis=analysis,
             level=0,
