@@ -7,7 +7,7 @@ from uuid import uuid4 as guid
 from trainier.orm import Session
 from trainier.model import Trunk, Option
 
-OPTION_TITLE_PATTERN = re.compile(r'[A-Z]{1}\.\s*')
+OPTION_TITLE_PATTERN = re.compile(r'^[A-Z]{1}\.|(?<=\n)[A-Z]{1}\.')
 TITLE_PREFIX = 'Comptia Security Plus Mock Test'.replace(' ', '').lower()
 
 class ImportService:
@@ -21,7 +21,8 @@ class ImportService:
             session.add(trunk)
             for option in options:
                 option.trunkId = trunk.entityId
-                option.entityId = str(guid()).replace('-', '')
+                if option.entityId is None or len(option.entityId.strip()) == 0:
+                    option.entityId = str(guid()).replace('-', '')
                 session.add(option)
             session.commit()
             # session.execute('COMMIT;')
@@ -33,10 +34,39 @@ class ImportService:
             session.close()
 
     @staticmethod
+    def saveDict(result:Dict) -> bool:
+        trunk: Trunk = Trunk(
+            entityId=result['entityId'],
+            enTrunk=result['enTrunk'],
+            cnTrunk=result['cnTrunk'],
+            level=result['level'],
+            comment=result['comment'],
+            source=result['source'],
+            analysis=result['analysis']
+        )
+        l: List[Option] = list()
+        for j, o in enumerate(result['options']):
+            opt = Option(
+                entityId=o['entityId'],
+                trunkId=o['trunkId'],
+                enOption=o['enOption'],
+                cnOption=o['cnOption'],
+                isTrue=o['isTrue'],
+                comment=o['comment']
+            )
+            l.append(opt)
+        return ImportService.save(trunk, l)
+
+    @staticmethod
     def split(text: str) -> Dict[str, str]:
         _t: str = text.strip()
+        # Chrome复制时会出现的无关文字，先删除
+        _t = _t.replace('Show Answer', '')
+        _t = _t.replace('Hide Answer', '')
+        _t = _t.replace('.hidden-div{ display:none }', '')
         # 如果第一行为标题，则作为source
         p: int = _t.find('\n')
+        assert p > 0
         line1: str = _t[:p]
         source: str = ''
         _:str = line1.replace(' ', '').lower()
@@ -44,21 +74,30 @@ class ImportService:
             source = line1.strip()
             _t = _t[p:].strip()
         # 获取题干
-        p = next(re.finditer(r'A\.\s*', _t)).span()[0]
+        _ = next(re.finditer(r'A\.\s*', _t)).span()
+        assert len(_) == 2
+        p = _[0]
         enTrunk: str = _t[:p].strip()
         # 获取题目解析
         _t = _t[p:].strip()
-        p0, p1 = next(re.finditer(r'Correct Answer:\s*.+(?=\n)', _t)).span()
-        analysis = _t[p1:].strip()
+        _ = next(re.finditer(r'Correct Answer:\s*', _t)).span()
+        assert len(_) == 2
+        p0, p1 = _
+        _ = _t[p1:]
+        p = _.find('\n')
+        if p > 0:
+            analysis = _[p:].strip()
+            answers: str = _[:p]
+        else:
+            analysis = ''
+            answers: str = _
         # 获取正确答案
-        answers: str = _t[p0:p1]
-        answers = answers.split(':')[1].strip()
         answers:List = answers.split(',')
         answers:Set = set([x.strip() for x in answers if len(x.strip()) > 0])
         # 获取选项
         _t = _t[:p0].strip()
         optTitles: List = [x.strip()[0] for x in OPTION_TITLE_PATTERN.findall(_t)]
-        optTexts: List = [x.strip() for x in re.split(r'[A-Z]{1}\.\s*', _t) if len(x.strip()) > 0]
+        optTexts: List = [x.strip() for x in OPTION_TITLE_PATTERN.split(_t) if len(x.strip()) > 0]
         assert len(optTitles) == len(optTexts)
         options = list()
         for optTitle, optText in zip(optTitles, optTexts):

@@ -43,7 +43,8 @@ def save() -> Response:
             cnTrunk=NoNone(j['cnTrunk']),
             comment=NoNone(j['comment']),
             analysis=NoNone(j['analysis']),
-            source=NoNone(j['source'])
+            source=NoNone(j['source']),
+            level=j['level']
         )
         list: List[Option] = []
         for o in j['options']:
