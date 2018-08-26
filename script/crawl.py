@@ -61,8 +61,8 @@ def main():
         'Referer': 'http://comptiaexamtest.com/Security+SY0-401/',
         'Cookie': '_ga=GA1.2.254375900.1535258932; _gid=GA1.2.1262056639.1535258932; _gat=1',
     }
-    for i in range(32, N):
-        time.sleep(5)
+    for i in range(1128, 1129):
+        # time.sleep(5)
         url: str = 'http://comptiaexamtest.com/Security+SY0-401/comptia-security-plus-mock-test-Q{}/'.format(i)
         r: requests.Response = requests.get(url, headers=headers)
         html = r.text
@@ -85,6 +85,7 @@ def main():
             o['entityId'] = '{i}-{a}'.format(i=i, a=string.ascii_uppercase[j])
             o['cnOption'] = ''
             o['comment'] = ''
+            o['orderNum'] = 0
         ImportService.saveDict(result)
 
 

@@ -7,7 +7,7 @@ from uuid import uuid4 as guid
 from trainier.orm import Session
 from trainier.model import Trunk, Option
 
-OPTION_TITLE_PATTERN = re.compile(r'^[A-Z]{1}\.|(?<=\n)[A-Z]{1}\.')
+OPTION_TITLE_PATTERN = re.compile(r'^[A-J]{1}\.|(?<=\n)[A-J]{1}\.')
 TITLE_PREFIX = 'Comptia Security Plus Mock Test'.replace(' ', '').lower()
 
 class ImportService:
@@ -52,7 +52,8 @@ class ImportService:
                 enOption=o['enOption'],
                 cnOption=o['cnOption'],
                 isTrue=o['isTrue'],
-                comment=o['comment']
+                comment=o['comment'],
+                orderNum=o['orderNum']
             )
             l.append(opt)
         return ImportService.save(trunk, l)
