@@ -17,6 +17,17 @@ class Trunk(Base):
     level = Column(Integer)
     comment = Column(String)
 
+    def __repr__(self) -> str:
+        super().__repr__()
+        return '{{entityId={}, enTrunk={}, cnTrunk={}, analysis={}, source={}, level={}, comment={}}}'.format(
+            self.entityId,
+            self.enTrunk,
+            self.cnTrunk,
+            self.analysis,
+            self.source,
+            self.level,
+            self.comment
+        )
 
 
 class Option(Base):
@@ -30,6 +41,18 @@ class Option(Base):
     isTrue = Column(Integer)
     orderNum = Column(Integer)
     comment = Column(String)
+
+    def __repr__(self) -> str:
+        super().__repr__()
+        return '{{entityId={}, trunkId={}, enOption={}, cnOption={}, isTrue={}, orderNum={}, comment={}}}'.format(
+            self.entityId,
+            self.trunkId,
+            self.enOption,
+            self.cnOption,
+            self.isTrue,
+            self.orderNum,
+            self.comment
+        )
 
 
 class Pic(Base):
