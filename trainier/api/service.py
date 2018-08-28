@@ -5,10 +5,11 @@ import re
 from typing import List, Dict, Set
 from uuid import uuid4 as guid
 from trainier.orm import Session
-from trainier.model import Trunk, Option
+from trainier.model import Trunk, Option, Pic
 
 OPTION_TITLE_PATTERN = re.compile(r'^[A-J]{1}\.|(?<=\n)[A-J]{1}\.')
 TITLE_PREFIX = 'Comptia Security Plus Mock Test'.replace(' ', '').lower()
+
 
 class ImportService:
     @staticmethod
@@ -34,7 +35,7 @@ class ImportService:
             session.close()
 
     @staticmethod
-    def saveDict(result:Dict) -> bool:
+    def saveDict(result: Dict) -> bool:
         trunk: Trunk = Trunk(
             entityId=result['entityId'],
             enTrunk=result['enTrunk'],
@@ -70,7 +71,7 @@ class ImportService:
         assert p > 0
         line1: str = _t[:p]
         source: str = ''
-        _:str = line1.replace(' ', '').lower()
+        _: str = line1.replace(' ', '').lower()
         if _.startswith(TITLE_PREFIX):
             source = line1.strip()
             _t = _t[p:].strip()
@@ -93,8 +94,8 @@ class ImportService:
             analysis = ''
             answers: str = _
         # 获取正确答案
-        answers:List = answers.split(',')
-        answers:Set = set([x.strip() for x in answers if len(x.strip()) > 0])
+        answers: List = answers.split(',')
+        answers: Set = set([x.strip() for x in answers if len(x.strip()) > 0])
         # 获取选项
         _t = _t[:p0].strip()
         optTitles: List = [x.strip()[0] for x in OPTION_TITLE_PATTERN.findall(_t)]
@@ -102,7 +103,7 @@ class ImportService:
         assert len(optTitles) == len(optTexts)
         options = list()
         for optTitle, optText in zip(optTitles, optTexts):
-            opt:Dict = dict(
+            opt: Dict = dict(
                 enOption=optText,
                 cnOption='',
                 isTrue=optTitle in answers
@@ -118,6 +119,33 @@ class ImportService:
             level=0,
             options=options,
         )
+
+
+class QuestionService:
+    @staticmethod
+    def selectTrunkById(entityId: str) -> Trunk or None:
+        pass
+
+    @staticmethod
+    def selectOptionsByTrunkId(trunkId: str) -> List[Option]:
+        pass
+
+    @staticmethod
+    def selectPicsByTrunkId(trunkId: str) -> List[Pic]:
+        pass
+
+    @staticmethod
+    def selectTrunks(keyword: str, page: int, pagesize: int) -> List[Trunk]:
+        pass
+
+    @staticmethod
+    def save(trunk: Trunk, options: List[Option], pics: List[Pic]) -> bool:
+        pass
+
+class QuizService:
+    @staticmethod
+    def quiz():
+        pass
 
 
 def test():

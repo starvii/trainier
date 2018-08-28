@@ -30,8 +30,8 @@ class RegexConverter(BaseConverter):
 
 def bindViews() -> None:
     app = getFlaskApp()
-    import trainier.api.imp
-    app.register_blueprint(trainier.api.imp.blueprint)
+    import trainier.api.importController
+    app.register_blueprint(trainier.api.importController.blueprint)
 
 
 def main() -> None:
