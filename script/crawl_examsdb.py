@@ -7,12 +7,10 @@ sys.path.append('../trainier')
 import re
 import time
 from typing import List, Set
-from html.parser import unescape
 from bs4 import BeautifulSoup, Tag, PageElement
 import requests
 
 from trainier.model import Trunk, Option
-from trainier.util.object_id import object_id
 from trainier.api.service import ImportService
 
 OPT_TITLE_PATTERN = re.compile(r'^[A-J]{1}\.')
@@ -25,7 +23,7 @@ def req(prev_url: str, url: str) -> str:
         "Accept-Language": "en-US,en;q=0.9",
         "Cache-Control": "max-age=0",
         "Connection": "keep-alive",
-        "Cookie": "_ga=GA1.2.763264521.1535459804; _gid=GA1.2.1479568416.1535459804; disallowPrepawayBanner=1; _gat_UA-107060707-1=1",
+        "Cookie": "ga=GA1.2.763264521.1535459804; _gid=GA1.2.1479568416.1535459804; disallowPrepawayBanner=1; _gat_UA-107060707-1=1",
         "DNT": "1",
         "Host": "www.briefmenow.org",
         "Referer": prev_url,
@@ -51,77 +49,39 @@ def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
         l = entry_node.find_all('p', recursive=True)
         assert len(l) > 4  # 至少有一个问题加四个答案
 
-        n0: int = 0  # 选项开始位置
-        n1: int = len(l)  # 解释开始位置
-        last: Tag = l[0]
-        for i, e in enumerate(l[1:]):
+        n: int = 0
+        for i, e in enumerate(l):
             t: Tag = e
-            if OPT_TITLE_PATTERN.match(t.text.strip()) and (not OPT_TITLE_PATTERN.match(last.text.strip())):
-                n0 = i + 1
-            if (not OPT_TITLE_PATTERN.match(t.text.strip())) and OPT_TITLE_PATTERN.match(last.text.strip()):
-                n1 = i + 1
-                break
-            last = t
-
+            if not OPT_TITLE_PATTERN.match(t.text.strip()):
+                n = i + 1
         buf: List[str] = list()
-        for e in l[:n0]:
-            t: Tag = e
+        for i in range(n):
+            t: Tag = l[i]
             buf.append(t.text.strip())
 
-        enTrunk = '\n'.join(buf)
-
-        # 提取解释
-        buf: List[str] = list()
-        for e in l[n1:]:
-            t: Tag = e
-            # x = ''.join([str(_) for _ in t.contents])
-            # print(repr(x))
-            # print(repr(unescape(x)))
-            text = t.getText(separator='\n', strip=True)
-            t = ''.join(buf)
-            if text not in t:
-                buf.append(text)
-        analysis = '\n'.join(buf)
-
-        trunkId = object_id()
-        trunk: Trunk = Trunk(
-            entityId=trunkId,
-            source=url,
-            enTrunk=enTrunk,
-            level=0,
-            comment='',
-            analysis=analysis,
-            cnTrunk=''
-        )
+        trunk: Trunk = Trunk(source=url, level=0, comment='', analysis='', cnTrunk='')
+        trunk.enTrunk = '\n'.join(buf)
 
         # 提取正确答案
         corrects: Set[str] = set([_.text.strip()[0] for _ in entry_node.select('p[class="rightAnswer"]')])
 
         opts: List[str] = list()
         # 提取选项
-        for e in l[n0:n1]:
+        for e in l[n:]:
             t = e
             o: str = t.text.replace('Show Answer', '').strip()
             buf: List[str] = [_.strip() for _ in o.split('\n') if len(_.strip()) > 0]
-            opts.append(buf[0])
+            opts.extend(buf)
         options: List[Option] = list()
         for i, opt in enumerate(opts):
             assert OPT_TITLE_PATTERN.match(opt)
             o: str = opt[2:].strip()
             t: str = opt[0]
-            option = Option(
-                entityId=object_id(),
-                trunkId=trunkId,
-                enOption=o,
-                isTrue=t in corrects,
-                cnOption='',
-                orderNum=i,
-                comment=''
-            )
+            option = Option(enOption=o, isTrue=t in corrects, cnOption='', orderNum=i, comment='')
             options.append(option)
         return next_url, trunk, options
-    except Exception as error:
-        out = url + ' //////////// ' + repr(error) + '\n'
+    except Exception as e:
+        out = url + ' //////////// ' + str(e) + '\n'
         sys.stderr.write(out)
         sys.stdout.write(out)
         open('not.log', 'a').write(out)
@@ -131,8 +91,9 @@ def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
 def main():
     start_url: str = 'http://www.briefmenow.org/comptia/which-of-the-following-should-sara-configure-11/'
     url: str = start_url
-    prev_url: str = 'http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/'
+    prev_url: str = 'http://www.briefmenow.org/comptia/which-of-the-following-is-the-quickest-way-to-prevent-the-staff-group-from-gaining-access-to-the-payroll-folder-5/'
     while True:
+        time.sleep(5)
         html: str = req(prev_url, url)
         _url, trunk, options = parse_html(url, html)
         if trunk is not None:
@@ -143,7 +104,7 @@ def main():
         else:
             print('maybe the last record.')
             break
-        time.sleep(5)
+
 
 
 def test():
