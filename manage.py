@@ -28,10 +28,10 @@ class RegexConverter(BaseConverter):
         self.regex = args[0]
 
 
-def bindViews() -> None:
+def bind_views() -> None:
     app = getFlaskApp()
-    import trainier.api.importController
-    app.register_blueprint(trainier.api.importController.blueprint)
+    import trainier.api.import_controller
+    app.register_blueprint(trainier.api.import_controller.blueprint)
 
 
 def main() -> None:
@@ -40,7 +40,7 @@ def main() -> None:
                 root_path=c.APP_PATH)
     setFlaskApp(app)
     app.url_map.converters['regex'] = RegexConverter
-    bindViews()
+    bind_views()
     app.run(host=c.HOST, port=c.PORT, debug=c.DEBUG)
 
 

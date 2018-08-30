@@ -7,7 +7,6 @@ sys.path.append('../trainier')
 import re
 import time
 from typing import List, Set
-from html.parser import unescape
 from bs4 import BeautifulSoup, Tag, PageElement
 import requests
 

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>questions</title>
+    <link rel="stylesheet" href="/bulma/bulma.min.css">
+    <link rel="stylesheet" href="/fontawesome/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container" id="app">
+    <div class="columns"></div>
+    <div class="column">
+        <div class="field">
+            <label class="label">题目文本</label>
+            <div class="control">
+                <textarea rows="25" class="textarea" placeholder="题目粘贴处" v-model="text"></textarea>
+            </div>
+        </div>
+        <div class="field is-grouped is-pulled-right">
+            <div class="control">
+                <button class="button is-link" @click="split()">分析</button>
+            </div>
+        </div>
+    </div>
+    <div class="column" v-if="showResult">
+        <div class="field">
+            <div class="field-body">
+                <div class="field">
+                    <p class="control is-expanded">
+                        <input class="input" type="text" placeholder="ID/留空则系统自动生成" v-model="trunkId">
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded">
+                        <input class="input" type="text" placeholder="source" v-model="source">
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded">
+                        <input class="input" type="text" placeholder="number of option" v-model="number"
+                               v-on:keyup.13="changeOptionNumber()">
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="field-body">
+                <div class="field">
+                    <p class="control is-expanded">
+                        <textarea rows="3" class="textarea" placeholder="analysis" v-model="analysis"></textarea>
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded">
+                        <textarea rows="3" class="textarea" placeholder="comment" v-model="comment"></textarea>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">英文题目</label>
+            <div class="control">
+                <textarea rows="5" class="textarea" placeholder="English Trunk" v-model="enTrunk"></textarea>
+            </div>
+        </div>
+        <div class="field">
+            <label class="label">中文题目</label>
+            <div class="control">
+                <textarea rows="3" class="textarea" placeholder="Chinese Trunk" v-model="cnTrunk"></textarea>
+            </div>
+        </div>
+        <div class="field" v-for="(opt, index) in options">
+            <div class="field-body" @dblclick="changeAnswer(index)">
+                <div class="field">
+                    <p class="control is-expanded has-icons-right">
+                        <input class="input" type="text" placeholder="English Option" v-model="opt.enOption"
+                               :class="[opt.isTrue ? 'is-success' : 'is-danger']">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-check" v-if="opt.isTrue"></i>
+                            <i class="fas fa-times" v-if="!opt.isTrue"></i>
+                        </span>
+                    </p>
+                </div>
+                <div class="field">
+                    <p class="control is-expanded has-icons-right">
+                        <input class="input" type="text" placeholder="Chinese Option" v-model="opt.cnOption"
+                               :class="[opt.isTrue ? 'is-success' : 'is-danger']">
+                        <span class="icon is-small is-right">
+                            <i class="fas fa-check" v-if="opt.isTrue"></i>
+                            <i class="fas fa-times" v-if="!opt.isTrue"></i>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-link is-success" @click="save()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/vue/vue.min.js"></script>
+<script src="/vue/resource/vue-resource.min.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            text: '',
+            showResult: true,
+            trunkId: '',
+            enTrunk: '',
+            cnTrunk: '',
+            options: [],
+            comment: '',
+            number: 4,
+            analysis: '',
+            source: '',
+        },
+        methods: {
+            split: function () {
+                Vue.http.post(
+                    '/api/import/split',
+                    app.text
+                ).then(
+                    function (response) {
+                        if (response.ok) {
+                            var t = response.body;
+                            app.enTrunk = t.enTrunk;
+                            app.cnTrunk = t.cnTrunk;
+                            app.comment = t.comment;
+                            app.analysis = t.analysis;
+                            app.options = t.options;
+                            app.source = t.source;
+                            app.showResult = true;
+                        } else {
+                            alert('请求服务失败，请检查日志');
+                        }
+
+                    },
+                    function (response) {
+                        alert('请求服务失败，请检查日志');
+                    }
+                );
+            },
+            save: function () {
+                Vue.http.post(
+                    '/api/import/save',
+                    {
+                        entityId: app.trunkId,
+                        comment: app.comment,
+                        analysis: app.analysis,
+                        source: app.source,
+                        enTrunk: app.enTrunk,
+                        cnTrunk: app.cnTrunk,
+                        level: 0,
+                        options: app.options,
+                    }
+                ).then(
+                    function (response) {
+                        if (response.ok) {
+                            alert('保存成功');
+                        } else {
+                            alert('保存失败，请检查日志');
+                        }
+
+                    },
+                    function (response) {
+                        alert('保存失败，请检查日志');
+                    }
+                );
+            },
+            changeAnswer: function (index) {
+                app.options[index].isTrue = !app.options[index].isTrue;
+            },
+            changeOptionNumber: function () {
+                var num = parseInt(app.number);
+                app.options = [];
+                for (var i = 0; i < num; i++) {
+                    app.options.push({
+                        enOption: '',
+                        cnOption: '',
+                        isTrue: false,
+                    });
+                }
+            },
+        },
+    });
+</script>
+</body>
+</html>

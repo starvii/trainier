@@ -12,7 +12,7 @@ from trainier.api.service import ImportService
 from trainier.model import Trunk, Option
 from trainier.util.value import NoNone
 
-blueprint: Blueprint = Blueprint('api-imp', __file__, url_prefix='/api/import')
+blueprint: Blueprint = Blueprint('api-imp', __name__, url_prefix='/api/import')
 instance: Flask = getFlaskApp()
 log: Logger = instance.logger
 
