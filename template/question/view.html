@@ -12,6 +12,19 @@
     <div class="columns"></div>
     <div class="column">
         <div class="field">
+            <label class="label">题目文本</label>
+            <div class="control">
+                <textarea rows="25" class="textarea" placeholder="题目粘贴处" v-model="text"></textarea>
+            </div>
+        </div>
+        <div class="field is-grouped is-pulled-right">
+            <div class="control">
+                <button class="button is-link" @click="split()">分析</button>
+            </div>
+        </div>
+    </div>
+    <div class="column" v-if="showResult">
+        <div class="field">
             <div class="field-body">
                 <div class="field">
                     <p class="control is-expanded">

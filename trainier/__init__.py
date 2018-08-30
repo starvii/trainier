@@ -46,7 +46,7 @@ class Config:
 _this = sys.modules[__name__]
 
 
-def getFlaskApp() -> Flask:
+def get_flask_app() -> Flask:
     app: Flask = _this._flaskApp
     if app is not None and type(app) == Flask:
         return app
@@ -54,5 +54,5 @@ def getFlaskApp() -> Flask:
         raise RuntimeError('cannot get flask current app.')
 
 
-def setFlaskApp(app: Flask):
+def set_flask_app(app: Flask):
     _this._flaskApp = app

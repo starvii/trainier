@@ -3,11 +3,13 @@
 
 import re
 from typing import List, Dict, Set
-from uuid import uuid4 as guid
+from sqlalchemy.sql import or_
 from trainier.orm import Session
+from util.object_id import object_id
 from trainier.model import Trunk, Option, Pic
+from trainier.logger import logger
 
-OPTION_TITLE_PATTERN = re.compile(r'^[A-J]{1}\.|(?<=\n)[A-J]{1}\.')
+OPTION_TITLE_PATTERN = re.compile(r'^[A-J]\.|(?<=\n)[A-J]\.')
 TITLE_PREFIX = 'Comptia Security Plus Mock Test'.replace(' ', '').lower()
 
 
@@ -17,13 +19,13 @@ class ImportService:
         session = Session()
         try:
             if trunk.entityId is None or len(trunk.entityId.strip()) == 0:
-                trunk.entityId = str(guid()).replace('-', '')
+                trunk.entityId = object_id()
             # session.execute('BEGIN;')
             session.add(trunk)
             for option in options:
                 option.trunkId = trunk.entityId
                 if option.entityId is None or len(option.entityId.strip()) == 0:
-                    option.entityId = str(guid()).replace('-', '')
+                    option.entityId = object_id()
                 session.add(option)
             session.commit()
             # session.execute('COMMIT;')
@@ -35,7 +37,7 @@ class ImportService:
             session.close()
 
     @staticmethod
-    def saveDict(result: Dict) -> bool:
+    def save_dict(result: Dict) -> bool:
         trunk: Trunk = Trunk(
             entityId=result['entityId'],
             enTrunk=result['enTrunk'],
@@ -98,11 +100,11 @@ class ImportService:
         answers: Set = set([x.strip() for x in answers if len(x.strip()) > 0])
         # 获取选项
         _t = _t[:p0].strip()
-        optTitles: List = [x.strip()[0] for x in OPTION_TITLE_PATTERN.findall(_t)]
-        optTexts: List = [x.strip() for x in OPTION_TITLE_PATTERN.split(_t) if len(x.strip()) > 0]
-        assert len(optTitles) == len(optTexts)
+        opt_titles: List = [x.strip()[0] for x in OPTION_TITLE_PATTERN.findall(_t)]
+        opt_texts: List = [x.strip() for x in OPTION_TITLE_PATTERN.split(_t) if len(x.strip()) > 0]
+        assert len(opt_titles) == len(opt_texts)
         options = list()
-        for optTitle, optText in zip(optTitles, optTexts):
+        for optTitle, optText in zip(opt_titles, opt_texts):
             opt: Dict = dict(
                 enOption=optText,
                 cnOption='',
@@ -119,57 +121,3 @@ class ImportService:
             level=0,
             options=options,
         )
-
-
-class QuestionService:
-    @staticmethod
-    def selectTrunkById(entityId: str) -> Trunk or None:
-        pass
-
-    @staticmethod
-    def selectOptionsByTrunkId(trunkId: str) -> List[Option]:
-        pass
-
-    @staticmethod
-    def selectPicsByTrunkId(trunkId: str) -> List[Pic]:
-        pass
-
-    @staticmethod
-    def selectTrunks(keyword: str, page: int, pagesize: int) -> List[Trunk]:
-        pass
-
-    @staticmethod
-    def save(trunk: Trunk, options: List[Option], pics: List[Pic]) -> bool:
-        pass
-
-class QuizService:
-    @staticmethod
-    def quiz():
-        pass
-
-
-def test():
-    text: str = '''
-
-    
-    CompTIA Security Plus Mock Test Q1717
-    
-    After a merger between two companies a security analyst has been asked to ensure that the organization’s systems are secured against infiltration by any former employees that were terminated during the transition. Which of the following actions are MOST appropriate to harden applications against infiltration by former employees? (Select TWO)
-    
-    A. Monitor VPN client access
-    B. Reduce failed login out settings
-    C. Develop and implement updated access control policies
-    D. Review and address invalid login attempts
-    E. Increase password complexity requirements
-    F. Assess and eliminate inactive accounts
-    
-    
-    Correct Answer: E,F
-    Section: Mixed Questions
-    '''
-    d = ImportService.split(text)
-    print(repr(d))
-
-
-if __name__ == '__main__':
-    test()

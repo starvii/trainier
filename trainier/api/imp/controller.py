@@ -5,15 +5,14 @@ import json
 from logging import Logger
 
 from typing import Dict, List
-from pathlib import Path
 from flask import Flask, Blueprint, Response, request, make_response, abort
-from trainier import getFlaskApp
-from trainier.api.service import ImportService
+from trainier import get_flask_app
+from trainier.api.imp.service import ImportService
 from trainier.model import Trunk, Option
-from trainier.util.value import NoNone
+from trainier.util.value import not_none
 
 blueprint: Blueprint = Blueprint('api-imp', __name__, url_prefix='/api/import')
-instance: Flask = getFlaskApp()
+instance: Flask = get_flask_app()
 log: Logger = instance.logger
 
 
@@ -38,19 +37,19 @@ def save() -> Response:
         data: bytes = request.data
         j = json.loads(data)
         trunk = Trunk(
-            entityId=NoNone(j['entityId']),
-            enTrunk=NoNone(j['enTrunk']),
-            cnTrunk=NoNone(j['cnTrunk']),
-            comment=NoNone(j['comment']),
-            analysis=NoNone(j['analysis']),
-            source=NoNone(j['source']),
+            entityId=not_none(j['entityId']),
+            enTrunk=not_none(j['enTrunk']),
+            cnTrunk=not_none(j['cnTrunk']),
+            comment=not_none(j['comment']),
+            analysis=not_none(j['analysis']),
+            source=not_none(j['source']),
             level=j['level']
         )
         list: List[Option] = []
         for o in j['options']:
             list.append(Option(
-                enOption=NoNone(o['enOption']),
-                cnOption=NoNone(o['cnOption']),
+                enOption=not_none(o['enOption']),
+                cnOption=not_none(o['cnOption']),
                 isTrue=o['isTrue']
             ))
         r: bool = ImportService.save(trunk, list)

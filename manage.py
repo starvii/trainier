@@ -16,7 +16,7 @@ if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_in
 
 from flask import Flask
 from werkzeug.routing import BaseConverter
-from trainier import Config, setFlaskApp, getFlaskApp
+from trainier import Config, set_flask_app, get_flask_app
 
 
 class RegexConverter(BaseConverter):
@@ -29,16 +29,18 @@ class RegexConverter(BaseConverter):
 
 
 def bind_views() -> None:
-    app = getFlaskApp()
-    import trainier.api.import_controller
-    app.register_blueprint(trainier.api.import_controller.blueprint)
+    app = get_flask_app()
+    import trainier.api.imp.controller
+    app.register_blueprint(trainier.api.imp.controller.blueprint)
+    import trainier.api.question.controller
+    app.register_blueprint(trainier.api.question.controller.blueprint)
 
 
 def main() -> None:
     c = Config.default
     app = Flask(c.APP_NAME, static_url_path='', template_folder=c.VIEW_PATH, static_folder=c.STATIC_PATH,
                 root_path=c.APP_PATH)
-    setFlaskApp(app)
+    set_flask_app(app)
     app.url_map.converters['regex'] = RegexConverter
     bind_views()
     app.run(host=c.HOST, port=c.PORT, debug=c.DEBUG)

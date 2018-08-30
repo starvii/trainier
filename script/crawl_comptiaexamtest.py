@@ -86,7 +86,7 @@ def main():
             o['cnOption'] = ''
             o['comment'] = ''
             o['orderNum'] = 0
-        ImportService.saveDict(result)
+        ImportService.save_dict(result)
 
 
 
