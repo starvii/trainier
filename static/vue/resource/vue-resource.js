@@ -275,7 +275,7 @@
     var inBrowser = typeof window !== 'undefined';
 
     function Util (ref) {
-        var config = ref.config;
+        var config = ref.conf;
         var nextTick = ref.nextTick;
 
         ntick = nextTick;

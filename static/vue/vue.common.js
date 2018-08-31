@@ -1729,7 +1729,7 @@ function globalHandleError (err, vm, info) {
     try {
       return config.errorHandler.call(null, err, vm, info)
     } catch (e) {
-      logError(e, null, 'config.errorHandler');
+      logError(e, null, 'conf.errorHandler');
     }
   }
   logError(err, vm, info);
@@ -1917,7 +1917,7 @@ if (process.env.NODE_ENV !== 'production') {
     config.keyCodes = new Proxy(config.keyCodes, {
       set: function set (target, key, value) {
         if (isBuiltInModifier(key)) {
-          warn(("Avoid overwriting built-in modifier in config.keyCodes: ." + key));
+          warn(("Avoid overwriting built-in modifier in conf.keyCodes: ." + key));
           return false
         } else {
           target[key] = value;
@@ -3816,7 +3816,7 @@ function isKeyNotMatch (expect, actual) {
 }
 
 /**
- * Runtime helper for checking keyCodes from config.
+ * Runtime helper for checking keyCodes from conf.
  * exposed as Vue.prototype._k
  * passing in eventKeyName as last argument separately for backwards compat
  */
@@ -5052,13 +5052,13 @@ var builtInComponents = {
 /*  */
 
 function initGlobalAPI (Vue) {
-  // config
+  // conf
   var configDef = {};
   configDef.get = function () { return config; };
   if (process.env.NODE_ENV !== 'production') {
     configDef.set = function () {
       warn(
-        'Do not replace the Vue.config object, set individual fields instead.'
+        'Do not replace the Vue.conf object, set individual fields instead.'
       );
     };
   }
@@ -8550,11 +8550,11 @@ var platformComponents = {
 /*  */
 
 // install platform specific utils
-Vue.config.mustUseProp = mustUseProp;
-Vue.config.isReservedTag = isReservedTag;
-Vue.config.isReservedAttr = isReservedAttr;
-Vue.config.getTagNamespace = getTagNamespace;
-Vue.config.isUnknownElement = isUnknownElement;
+Vue.conf.mustUseProp = mustUseProp;
+Vue.conf.isReservedTag = isReservedTag;
+Vue.conf.isReservedAttr = isReservedAttr;
+Vue.conf.getTagNamespace = getTagNamespace;
+Vue.conf.isUnknownElement = isUnknownElement;
 
 // install platform runtime directives & components
 extend(Vue.options.directives, platformDirectives);

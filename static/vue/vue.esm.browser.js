@@ -1716,7 +1716,7 @@ function globalHandleError (err, vm, info) {
     try {
       return config.errorHandler.call(null, err, vm, info)
     } catch (e) {
-      logError(e, null, 'config.errorHandler');
+      logError(e, null, 'conf.errorHandler');
     }
   }
   logError(err, vm, info);
@@ -3750,7 +3750,7 @@ function resolveFilter (id) {
 /*  */
 
 /**
- * Runtime helper for checking keyCodes from config.
+ * Runtime helper for checking keyCodes from conf.
  * exposed as Vue.prototype._k
  * passing in eventKeyName as last argument separately for backwards compat
  */
@@ -4926,13 +4926,13 @@ var builtInComponents = {
 /*  */
 
 function initGlobalAPI (Vue) {
-  // config
+  // conf
   const configDef = {};
   configDef.get = () => config;
   {
     configDef.set = () => {
       warn(
-        'Do not replace the Vue.config object, set individual fields instead.'
+        'Do not replace the Vue.conf object, set individual fields instead.'
       );
     };
   }
@@ -8308,11 +8308,11 @@ var platformComponents = {
 /*  */
 
 // install platform specific utils
-Vue$3.config.mustUseProp = mustUseProp;
-Vue$3.config.isReservedTag = isReservedTag;
-Vue$3.config.isReservedAttr = isReservedAttr;
-Vue$3.config.getTagNamespace = getTagNamespace;
-Vue$3.config.isUnknownElement = isUnknownElement;
+Vue$3.conf.mustUseProp = mustUseProp;
+Vue$3.conf.isReservedTag = isReservedTag;
+Vue$3.conf.isReservedAttr = isReservedAttr;
+Vue$3.conf.getTagNamespace = getTagNamespace;
+Vue$3.conf.isUnknownElement = isUnknownElement;
 
 // install platform runtime directives & components
 extend(Vue$3.options.directives, platformDirectives);

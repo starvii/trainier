@@ -1,52 +1,70 @@
 const PageComponent = Vue
     .extend({
         template: ''
-            + '<nav class="pagination is-centered" role="navigation" aria-label="pagination">'
-            + '<ul class="pagination" v-show="pageConf.totalItems > 0">'
-            + '<li :class="{disabled: pageConf.currentPage == 1}" @click="prevPage()"><span>&laquo;</span></li>'
-            + '<li v-for="item in pageList" track-by="$index" :class="{active: item == pageConf.currentPage, separate: item == \'...\'}" '
+            + '<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">'
+            + '<ul class="pagination-list" v-show="conf.totalItems > 0">'
+            + '<li class="pagination-link" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><span><i class="fas fa-angle-left"></i></span></li>'
+            + '<li v-for="item in pageList" track-by="$index" :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}"'
             + '@click="changeCurrentPage(item)">'
             + '<span v-text="item"></span></li>'
-            + '<li :class="{disabled: pageConf.currentPage == pageConf.numberOfPages}" @click="nextPage()"><span>&raquo;</span></li>'
+            + '<li class="pagination-link" :class="{\'is-disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><span><i class="fas fa-angle-right"></i></span></li>'
             + '</ul>'
-            + '<div class="page-total" v-show="pageConf.totalItems > 0">'
-            + '第<input type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>页 '
-            + '每页<select v-model="pageConf.itemsPerPage"><option v-for="option in pageConf.perPageOptions">{{option}}</option></select>'
-            + '/共<strong v-text="pageConf.totalItems"></strong>条'
+            + '<div class="page-total" v-show="conf.totalItems > 0">'
+            + '<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>'
+            + '<input class="input is-small" style="width: 40px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>'
+            + '<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>'
+            + '<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>'
+            + '<select class="select is-small" v-model="conf.itemsPerPage"><option v-for="option in conf.perPageOptions">{{option}}</option></select>'
+            + '<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">'
             + '</div>'
-            + '<div class="no-items" v-show="pageConf.totalItems <= 0">暂无数据</div>'
+            + '<div v-show="conf.totalItems <= 0">暂无数据</div>'
             + '</nav>',
         replace: true,
         props: {
-            pageConf: {
+            conf: {
                 type: Object,
                 require: true,
             },
+            // jumpPageNum: {
+            //     type: String,
+            //     require: false,
+            // },
+            // pageList: {
+            //     type: Array,
+            //     require: false,
+            // },
         },
-        data: {
-            jumpPageNum: '',
-            pageList: [],
+        data: function () {
+            return {
+                jumpPageNum: '',
+                pageList: [],
+            };
+        },
+        computed: {
+            totalItems: function () {
+                return '/共' + this.conf.totalItems + '条';
+            }
         },
         // props: [{
-        //     name: 'pageConf',
+        //     name: 'conf',
         //     require: true
         // }, 'jumpPageNum', 'pageList'],
         // props: [
-        //     'pageConf',
+        //     'conf',
         //     'jumpPageNum',
         //     'pageList',
         // ],
-        ready: function () {
-            this.pageConf.pagesLength = parseInt(this.pageConf.pagesLength) ? parseInt(this.pageConf.pagesLength)
+        mounted: function () {
+            this.conf.pagesLength = parseInt(this.conf.pagesLength) ? parseInt(this.conf.pagesLength)
                 : 9;
-            if (this.pageConf.pagesLength % 2 === 0) {
+            if (this.conf.pagesLength % 2 === 0) {
                 // 如果不是奇数的时候处理一下
-                this.pageConf.pagesLength = this.pageConf.pagesLength - 1;
+                this.conf.pagesLength = this.conf.pagesLength - 1;
             }
 
-            // pageConf.perPageOptions
-            if (this.pageConf.perPageOptions) {
-                this.pageConf.perPageOptions = [10, 15, 30, 50, 100];
+            // conf.perPageOptions
+            if (this.conf.perPageOptions) {
+                this.conf.perPageOptions = [10, 15, 30, 50, 100];
             }
 
             this.$watch(this.getWatchState, this.getPagination);
@@ -57,110 +75,110 @@ const PageComponent = Vue
                 if (item === '...') {
                     // return;
                 } else {
-                    this.pageConf.currentPage = item;
+                    this.conf.currentPage = item;
                 }
             },
 
             // pageList数组
             getPagination: function (newValue, oldValue) {
 
-                // pageConf.currentPage
-                this.pageConf.currentPage = parseInt(this.pageConf.currentPage) ? parseInt(this.pageConf.currentPage)
+                // conf.currentPage
+                this.conf.currentPage = parseInt(this.conf.currentPage) ? parseInt(this.conf.currentPage)
                     : 1;
 
-                // pageConf.totalItems
-                this.pageConf.totalItems = parseInt(this.pageConf.totalItems) ? parseInt(this.pageConf.totalItems)
+                // conf.totalItems
+                this.conf.totalItems = parseInt(this.conf.totalItems) ? parseInt(this.conf.totalItems)
                     : 0;
 
-                // pageConf.itemsPerPage (default:15)
-                this.pageConf.itemsPerPage = parseInt(this.pageConf.itemsPerPage) ? parseInt(this.pageConf.itemsPerPage)
+                // conf.itemsPerPage (default:15)
+                this.conf.itemsPerPage = parseInt(this.conf.itemsPerPage) ? parseInt(this.conf.itemsPerPage)
                     : 15;
 
                 // numberOfPages
-                this.pageConf.numberOfPages = Math.ceil(this.pageConf.totalItems
-                    / this.pageConf.itemsPerPage);
+                this.conf.numberOfPages = Math.ceil(this.conf.totalItems
+                    / this.conf.itemsPerPage);
 
                 // judge currentPage > numberOfPages
-                if (this.pageConf.currentPage < 1) {
-                    this.pageConf.currentPage = 1;
+                if (this.conf.currentPage < 1) {
+                    this.conf.currentPage = 1;
                 }
 
                 // 如果分页总数>0，并且当前页大于分页总数
-                if (this.pageConf.numberOfPages > 0
-                    && this.pageConf.currentPage > this.pageConf.numberOfPages) {
-                    this.pageConf.currentPage = this.pageConf.numberOfPages;
+                if (this.conf.numberOfPages > 0
+                    && this.conf.currentPage > this.conf.numberOfPages) {
+                    this.conf.currentPage = this.conf.numberOfPages;
                 }
 
                 // jumpPageNum
-                this.jumpPageNum = this.pageConf.currentPage;
+                this.jumpPageNum = this.conf.currentPage;
 
                 // 如果itemsPerPage在不在perPageOptions数组中，就把itemsPerPage加入这个数组中
-                let perPageOptionsLength = this.pageConf.perPageOptions.length;
+                let perPageOptionsLength = this.conf.perPageOptions.length;
                 // 定义状态
                 let perPageOptionsStatus;
                 for (var i = 0; i < perPageOptionsLength; i++) {
-                    if (this.pageConf.perPageOptions[i] === this.pageConf.itemsPerPage) {
+                    if (this.conf.perPageOptions[i] === this.conf.itemsPerPage) {
                         perPageOptionsStatus = true;
                     }
                 }
                 // 如果itemsPerPage在不在perPageOptions数组中，就把itemsPerPage加入这个数组中
                 if (!perPageOptionsStatus) {
-                    this.pageConf.perPageOptions.push(this.pageConf.itemsPerPage);
+                    this.conf.perPageOptions.push(this.conf.itemsPerPage);
                 }
 
                 // 对选项进行sort
-                this.pageConf.perPageOptions.sort(function (a, b) {
+                this.conf.perPageOptions.sort(function (a, b) {
                     return a - b
                 });
 
                 this.pageList = [];
-                if (this.pageConf.numberOfPages <= this.pageConf.pagesLength) {
+                if (this.conf.numberOfPages <= this.conf.pagesLength) {
                     // 判断总页数如果小于等于分页的长度，若小于则直接显示
-                    for (i = 1; i <= this.pageConf.numberOfPages; i++) {
+                    for (i = 1; i <= this.conf.numberOfPages; i++) {
                         this.pageList.push(i.toString());
                     }
                 } else {
                     // 总页数大于分页长度（此时分为三种情况：1.左边没有···2.右边没有···3.左右都有···）
                     // 计算中心偏移量
-                    let offset = (this.pageConf.pagesLength - 1) / 2;
-                    if (this.pageConf.currentPage <= offset) {
+                    let offset = (this.conf.pagesLength - 1) / 2;
+                    if (this.conf.currentPage <= offset) {
                         // 左边没有···
                         for (i = 1; i <= offset + 1; i++) {
                             this.pageList.push(i);
                         }
                         this.pageList.push('...');
-                        this.pageList.push(this.pageConf.numberOfPages);
-                    } else if (this.pageConf.currentPage > this.pageConf.numberOfPages
+                        this.pageList.push(this.conf.numberOfPages);
+                    } else if (this.conf.currentPage > this.conf.numberOfPages
                         - offset) {
                         this.pageList.push(1);
                         this.pageList.push('...');
                         for (i = offset + 1; i >= 1; i--) {
-                            this.pageList.push(this.pageConf.numberOfPages - i);
+                            this.pageList.push(this.conf.numberOfPages - i);
                         }
-                        this.pageList.push(this.pageConf.numberOfPages);
+                        this.pageList.push(this.conf.numberOfPages);
                     } else {
                         // 最后一种情况，两边都有...
                         this.pageList.push(1);
                         this.pageList.push('...');
 
                         for (i = Math.ceil(offset / 2); i >= 1; i--) {
-                            this.pageList.push(this.pageConf.currentPage - i);
+                            this.pageList.push(this.conf.currentPage - i);
                         }
-                        this.pageList.push(this.pageConf.currentPage);
+                        this.pageList.push(this.conf.currentPage);
                         for (i = 1; i <= offset / 2; i++) {
-                            this.pageList.push(this.pageConf.currentPage + i);
+                            this.pageList.push(this.conf.currentPage + i);
                         }
 
                         this.pageList.push('...');
-                        this.pageList.push(this.pageConf.numberOfPages);
+                        this.pageList.push(this.conf.numberOfPages);
                     }
                 }
 
                 // 防止初始化两次请求问题
                 let functionOnChange;
-                if (this.pageConf.onChange) {
-                    if (this.$parent.$options.methods[this.pageConf.onChange]) {
-                        functionOnChange = this.$parent.$options.methods[this.pageConf.onChange];
+                if (this.conf.onChange) {
+                    if (this.$parent.$options.methods[this.conf.onChange]) {
+                        functionOnChange = this.$parent.$options.methods[this.conf.onChange];
                     }
                 }
                 if (functionOnChange) {
@@ -171,14 +189,14 @@ const PageComponent = Vue
             },
 
             prevPage: function () {
-                if (this.pageConf.currentPage > 1) {
-                    this.pageConf.currentPage -= 1;
+                if (this.conf.currentPage > 1) {
+                    this.conf.currentPage -= 1;
                 }
             },
 
             nextPage: function () {
-                if (this.pageConf.currentPage < this.pageConf.numberOfPages) {
-                    this.pageConf.currentPage += 1;
+                if (this.conf.currentPage < this.conf.numberOfPages) {
+                    this.conf.currentPage += 1;
                 }
             },
 
@@ -186,17 +204,17 @@ const PageComponent = Vue
                 let pn = this.jumpPageNum.toString().replace(/[^0-9]/g, '');
                 if (pn !== '') {
                     this.jumpPageNum = parseInt(pn);
-                    this.pageConf.currentPage = parseInt(pn);
+                    this.conf.currentPage = parseInt(pn);
                 }
             },
 
             getWatchState: function () {
-                if (!this.pageConf.totalItems) {
-                    this.pageConf.totalItems = 0;
+                if (!this.conf.totalItems) {
+                    this.conf.totalItems = 0;
                 }
-                let watchState = this.pageConf.totalItems + ' '
-                    + this.pageConf.currentPage + ' '
-                    + this.pageConf.itemsPerPage;
+                let watchState = this.conf.totalItems + ' '
+                    + this.conf.currentPage + ' '
+                    + this.conf.itemsPerPage;
                 return watchState;
             },
         },
