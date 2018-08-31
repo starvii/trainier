@@ -8,122 +8,68 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+{% raw %}
 <div class="container" id="app">
     <div class="columns"></div>
     <div class="column">
-        <div class="field">
-            <div class="field-body">
-                <div class="field">
-                    <p class="control is-expanded">
-                        <input class="input" type="text" placeholder="ID/留空则系统自动生成" v-model="trunkId">
-                    </p>
-                </div>
-                <div class="field">
-                    <p class="control is-expanded">
-                        <input class="input" type="text" placeholder="source" v-model="source">
-                    </p>
-                </div>
-                <div class="field">
-                    <p class="control is-expanded">
-                        <input class="input" type="text" placeholder="number of option" v-model="number"
-                               v-on:keyup.13="changeOptionNumber()">
-                    </p>
-                </div>
-            </div>
-        </div>
+        <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+            <thead>
+            <tr>
+                <th>编号</th>
+                <th>题目（英文）</th>
+                <th>题目（中文）</th>
+                <th><a class="button is-small">
+                    <span class="icon is-small">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                </a></th>
+            </tr>
+            </thead>
+            <tbody>
 
-        <div class="field">
-            <div class="field-body">
-                <div class="field">
-                    <p class="control is-expanded">
-                        <textarea rows="3" class="textarea" placeholder="analysis" v-model="analysis"></textarea>
-                    </p>
-                </div>
-                <div class="field">
-                    <p class="control is-expanded">
-                        <textarea rows="3" class="textarea" placeholder="comment" v-model="comment"></textarea>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">英文题目</label>
-            <div class="control">
-                <textarea rows="5" class="textarea" placeholder="English Trunk" v-model="enTrunk"></textarea>
-            </div>
-        </div>
-        <div class="field">
-            <label class="label">中文题目</label>
-            <div class="control">
-                <textarea rows="3" class="textarea" placeholder="Chinese Trunk" v-model="cnTrunk"></textarea>
-            </div>
-        </div>
-        <div class="field" v-for="(opt, index) in options">
-            <div class="field-body" @dblclick="changeAnswer(index)">
-                <div class="field">
-                    <p class="control is-expanded has-icons-right">
-                        <input class="input" type="text" placeholder="English Option" v-model="opt.enOption"
-                               :class="[opt.isTrue ? 'is-success' : 'is-danger']">
-                        <span class="icon is-small is-right">
-                            <i class="fas fa-check" v-if="opt.isTrue"></i>
-                            <i class="fas fa-times" v-if="!opt.isTrue"></i>
-                        </span>
-                    </p>
-                </div>
-                <div class="field">
-                    <p class="control is-expanded has-icons-right">
-                        <input class="input" type="text" placeholder="Chinese Option" v-model="opt.cnOption"
-                               :class="[opt.isTrue ? 'is-success' : 'is-danger']">
-                        <span class="icon is-small is-right">
-                            <i class="fas fa-check" v-if="opt.isTrue"></i>
-                            <i class="fas fa-times" v-if="!opt.isTrue"></i>
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="field is-grouped">
-            <div class="control">
-                <button class="button is-link is-success" @click="save()">保存</button>
-            </div>
-        </div>
+            </tbody>
+            <tfoot>
+                <page-component v-bind:conf="pageConf"></page-component>
+            </tfoot>
+        </table>
     </div>
 </div>
-<script src="/vue/vue.min.js"></script>
-<script src="/vue/resource/vue-resource.min.js"></script>
+<script src="/vue/vue.js"></script>
+<script src="/vue/resource/vue-resource.js"></script>
+<script src="/js/page.js"></script>
 <script>
-    var app = new Vue({
+    const app = new Vue({
         el: '#app',
         data: {
-            text: '',
-            showResult: true,
-            trunkId: '',
-            enTrunk: '',
-            cnTrunk: '',
-            options: [],
-            comment: '',
-            number: 4,
-            analysis: '',
-            source: '',
+            data: [],
+            pageConf: {
+                currentPage: 1,
+                totalItems: 1000,
+                itemsPerPage: 10,
+                pagesLength: 9,
+                perPageOptions: [10, 15, 30, 50, 100],
+                onChange: 'list',
+            },
+            keyword: '',
+            kw: '',
         },
         methods: {
-            split: function () {
+            list: function () {
                 Vue.http.post(
-                    '/api/import/split',
-                    app.text
+                    '/api/q/',
+                    {
+                        page: this.pageConf.currentPage,
+                        size: this.pageConf.itemsPerPage,
+                        keyword: this.keyword,
+                    },
                 ).then(
                     function (response) {
                         if (response.ok) {
-                            var t = response.body;
-                            app.enTrunk = t.enTrunk;
-                            app.cnTrunk = t.cnTrunk;
-                            app.comment = t.comment;
-                            app.analysis = t.analysis;
-                            app.options = t.options;
-                            app.source = t.source;
-                            app.showResult = true;
+                            let t = response.body;
+                            app.pageConf.currentPage = t.page;
+                            app.pageConf.totalItems = t.total;
+                            app.pageConf.itemsPerPage = t.size;
+                            app.data = t.data;
                         } else {
                             alert('请求服务失败，请检查日志');
                         }
@@ -178,5 +124,7 @@
         },
     });
 </script>
+
+{% endraw %}
 </body>
 </html>

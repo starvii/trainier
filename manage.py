@@ -17,6 +17,7 @@ if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_in
 from flask import Flask
 from werkzeug.routing import BaseConverter
 from trainier import Config, set_flask_app, get_flask_app
+from trainier.logger import  logger
 
 
 class RegexConverter(BaseConverter):
@@ -30,10 +31,14 @@ class RegexConverter(BaseConverter):
 
 def bind_views() -> None:
     app = get_flask_app()
+    import trainier.page
+    logger.info('%s loaded.', trainier.page)
     import trainier.api.imp.controller
     app.register_blueprint(trainier.api.imp.controller.blueprint)
+    logger.info('%s loaded.', trainier.api.imp.controller)
     import trainier.api.question.controller
     app.register_blueprint(trainier.api.question.controller.blueprint)
+    logger.info('%s loaded.', trainier.api.question.controller)
 
 
 def main() -> None:
