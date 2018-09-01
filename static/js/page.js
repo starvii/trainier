@@ -1,7 +1,7 @@
 const PageComponent = Vue
     .extend({
         template: ''
-            + '<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">'
+            + '<div class="pagination is-centered is-small">'
             + '<ul class="pagination-list" v-show="conf.totalItems > 0">'
             + '<li class="pagination-link" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><span><i class="fas fa-angle-left"></i></span></li>'
             + '<li v-for="item in pageList" track-by="$index" :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}"'
@@ -18,7 +18,7 @@ const PageComponent = Vue
             + '<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">'
             + '</div>'
             + '<div v-show="conf.totalItems <= 0">暂无数据</div>'
-            + '</nav>',
+            + '</div>',
         replace: true,
         props: {
             conf: {

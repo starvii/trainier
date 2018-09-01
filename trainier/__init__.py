@@ -3,7 +3,6 @@
 
 import sys
 from pathlib import Path
-from logging import Logger
 from flask import Flask
 
 

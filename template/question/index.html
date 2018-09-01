@@ -6,6 +6,16 @@
             <table class="table is-striped is-narrow is-fullwidth is-hoverable">
                 <thead>
                 <tr>
+                    <td colspan="4">
+                        <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                    </td>
+                    <td><a class="button is-small" title="查找" @click="search()">
+                        <span class="icon is-small">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </a></td>
+                </tr>
+                <tr>
                     <th>编号</th>
                     <th>题目（英文）</th>
                     <th>题目（中文）</th>
@@ -16,12 +26,17 @@
                             <i class="fas fa-plus"></i>
                         </span>
                         </a>
-                        <input class="input is-small" type="text" style="width: 100px;" v-model="kw">
+
                     </th>
                 </tr>
                 </thead>
                 <tfoot>
-                <page-component v-bind:conf.sync="pageConf"></page-component>
+
+                <tr>
+                    <page-component v-bind:conf.sync="pageConf"></page-component>
+                </tr>
+
+
                 </tfoot>
                 <tbody>
                 <tr v-for="(item, idx) in data">
@@ -62,8 +77,6 @@
 {% endblock %}
 {% block script %}
     {% raw %}
-    <script src="/vue/vue.js" type="text/javascript"></script>
-    <script src="/vue/resource/vue-resource.js" type="text/javascript"></script>
     <script src="/js/page.js"></script>
     <script>
         const app = new window.Vue({
@@ -83,46 +96,53 @@
             },
             methods: {
                 list: function () {
-                    window.Vue.http.post(
-                        '/api/q/',
-                        {
+                    axios({
+                        method: 'POST',
+                        url: '/api/question/',
+                        headers: {
+                            'X-HTTP-Method-Override': 'GET',
+                        },
+                        data: {
                             page: this.pageConf.currentPage,
                             size: this.pageConf.itemsPerPage,
                             keyword: this.keyword,
                         },
-                    ).then(
+                    }).then(
                         function (response) {
-                            if (response.ok) {
-                                let t = response.body;
-                                app.pageConf.currentPage = t.page;
-                                app.pageConf.totalItems = t.total;
-                                app.pageConf.itemsPerPage = t.size;
-                                app.data = t.data;
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                let t = response.data;
+                                this.pageConf.currentPage = t.page;
+                                this.pageConf.totalItems = t.total;
+                                this.pageConf.itemsPerPage = t.size;
+                                this.data = t.data;
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }
 
-                        },
-                        function (response) {
+                        }.bind(this)).catch(
+                        function (error) {
                             alert('请求服务失败，请检查日志');
                         }
                     );
                 },
                 add: function () {
-
+                    window.location.href = '/question/edit';
                 },
                 view: function (entityId) {
-                    window.location.href = '/question/' + entityId;
+                    window.location.href = '/question/view?id=' + entityId;
                 },
                 edit: function (entityId) {
-                    window.location.href = ''
+                    window.location.href = '/question/edit?id=' + entityId;
                 },
                 remove: function (entityId) {
                     alert('现在还不能删除哟');
                 },
+                search: function () {
+                    this.keyword = this.kw;
+                    this.list();
+                },
             },
         });
     </script>
-
     {% endraw %}
 {% endblock %}

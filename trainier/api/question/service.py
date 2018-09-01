@@ -11,32 +11,20 @@ from trainier.logger import logger
 
 class QuestionService:
     @staticmethod
-    def select_trunk_by_id(entity_id: str) -> Trunk or None:
+    def select_trunk_options_pics_by_id(entity_id: str) -> (Trunk, List[Option], List[Pic]) or None:
         session: Session = Session()
         try:
             trunk: Trunk = session.query(Trunk).filter(Trunk.entityId == entity_id).one_or_none()
-            return trunk
+            if trunk is None:
+                return None
+            options: List[Option] = session.query(Option).filter(Option.trunkId == entity_id).all()
+            pics: List[Pic] = session.query(Pic).filter(Pic.trunkId == entity_id).all()
+            return trunk, options, pics
         except Exception as e:
             logger.error(e)
             return None
         finally:
             session.close()
-
-    @staticmethod
-    def select_options_by_trunk_id(trunk_id: str) -> List[Option] or None:
-        session: Session = Session()
-        try:
-            options: List[Option] = session.query(Trunk).filter(Option.trunkId == trunk_id).all()
-            return options
-        except Exception as e:
-            logger.error(e)
-            return None
-        finally:
-            session.close()
-
-    @staticmethod
-    def select_pics_by_trunk_id(trunk_id: str) -> List[Pic]:
-        pass
 
     @staticmethod
     def select_trunks(keyword: str = '', page: int = 1, pagesize: int = 20) -> (List[Trunk], int) or None:

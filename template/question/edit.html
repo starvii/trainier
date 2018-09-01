@@ -5,36 +5,36 @@
     </div>
     {% raw %}
     <div class="columns" id="app">
-        <div class="column" v-if="showResult">
+        <div class="column">
             <form>
                 <div class="field">
                     <label class="label">英文题目</label>
                     <div class="control">
-                        <textarea rows="5" class="textarea is-small" placeholder="English Trunk" v-model="enTrunk"></textarea>
+                        <textarea rows="5" class="textarea is-small" placeholder="English Trunk" v-model="trunk.enTrunk"></textarea>
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">中文题目</label>
                     <div class="control">
-                        <textarea rows="3" class="textarea is-small" placeholder="Chinese Trunk" v-model="cnTrunk"></textarea>
+                        <textarea rows="3" class="textarea is-small" placeholder="Chinese Trunk" v-model="trunk.cnTrunk"></textarea>
                     </div>
                 </div>
                 <div class="field">
                     <label class="label">详解</label>
                     <div class="control">
-                        <textarea rows="5" class="textarea is-small" placeholder="Explanation" v-model="analysis"></textarea>
+                        <textarea rows="5" class="textarea is-small" placeholder="Explanation" v-model="trunk.analysis"></textarea>
                     </div>
                 </div>
                 <div class="field">
                     <div class="field-body">
                         <div class="field">
                             <p class="control is-expanded">
-                                <textarea rows="3" class="textarea is-small" placeholder="source" v-model="analysis"></textarea>
+                                <textarea rows="3" class="textarea is-small" placeholder="source" v-model="trunk.source"></textarea>
                             </p>
                         </div>
                         <div class="field">
                             <p class="control is-expanded">
-                                <textarea rows="3" class="textarea is-small" placeholder="comment" v-model="comment"></textarea>
+                                <textarea rows="3" class="textarea is-small" placeholder="comment" v-model="trunk.comment"></textarea>
                             </p>
                         </div>
                     </div>
@@ -43,9 +43,9 @@
                     <div class="field-body" @dblclick="changeAnswer(index)">
                         <div class="field">
                             <p class="control is-small">
-                                <a class="button is-small is-pulled-left"><span><i class="fas fa-plus"></i></span></a>
-                                <a class="button is-small is-pulled-left"><span><i class="fas fa-minus"></i></span></a>
-                                <span class="is-pulled-right">A.</span>
+                                <a class="button is-small is-pulled-left" @click="insertOption(index)"><span><i class="fas fa-plus"></i></span></a>
+                                <a class="button is-small is-pulled-left" @click="removeOption(index)"><span><i class="fas fa-minus"></i></span></a>
+                                <span class="is-pulled-right" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
                             </p>
                         </div>
                         <div class="field">
@@ -83,35 +83,80 @@
     <script src="/vue/resource/vue-resource.js" type="text/javascript"></script>
     -->
     <script type="text/javascript">
-        window.Vue = Vue;
-        const app = new Vue({
+        const app = new window.Vue({
             el: '#app',
             data: {
+
                 encodedTrunkId: '',
-                enTrunk: '',
-                cnTrunk: '',
-                options: [],
-                comment: '',
-                analysis: '',
-                source: '',
+                trunk: {
+                    entityId: '',
+                    enTrunk: '',
+                    cnTrunk: '',
+                    level: 0,
+                    comment: '',
+                    analysis: '',
+                    source: '',
+                },
+                options: [
+                    {
+                        entityId: '',
+                        trunkId: '',
+                        enOption: '',
+                        cnOption: '',
+                        isTrue: false,
+                        orderNum: 0,
+                        comment: '',
+                    },
+                ],
+                pics: [],
             },
             mounted: function() {
-                app.encodedTrunkId = window.document.getElementById('entityId');
-                //console.log(app.encodedTrunkId);
+                this.encodedTrunkId = window.document.getElementById('entityId').value;
+                if (this.encodedTrunkId.trim().length === 16) {
+                    this.load();
+                }
             },
             methods: {
+                load: function () {
+                    axios.get(
+                        '/api/question/' + this.encodedTrunkId
+                    ).then(
+                        function (response) {
+                            if (response.ok) {
+                                this.trunk = response.data.trunk;
+                                this.options = response.data.options;
+                                this.pics = response.data.pics;
+                            } else {
+                                alert('请求失败，请检查日志');
+                            }
+                        }.bind(this)
+                    ).catch(
+                        function (error) {
+                            alert('请求失败，请检查日志。' + error);
+                        }
+                    );
+                },
+                insertOption: function(idx) {
+                    this.options.splice(idx + 1, 0, {
+                        entityId: '',
+                        trunkId: '',
+                        enOption: '',
+                        cnOption: '',
+                        isTrue: false,
+                    });
+                },
+                removeOption: function(idx) {
+                    if (this.options.length > 1) {
+                        this.options.splice(idx, 1);
+                    }
+                },
                 save: function () {
                     Vue.http.post(
-                        '/api/import/save',
+                        '/api/question/' + this.encodedTrunkId,
                         {
-                            entityId: app.trunkId,
-                            comment: app.comment,
-                            analysis: app.analysis,
-                            source: app.source,
-                            enTrunk: app.enTrunk,
-                            cnTrunk: app.cnTrunk,
-                            level: 0,
+                            trunk: app.trunk,
                             options: app.options,
+                            pics: app.pics,
                         }
                     ).then(
                         function (response) {
