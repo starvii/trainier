@@ -44,6 +44,12 @@ def index() -> Response:
             Trunk.level
         }
         l: List[Dict] = labelify(trunks, fields)
+        # 数据简化
+        for item in l:
+            if len(item['enTrunk']) > 50:
+                item['enTrunk'] = item['enTrunk'][:47] + '...'
+            if len(item['cnTrunk']) > 50:
+                item['cnTrunk'] = item['cnTrunk'][:47] + '...'
         r: Dict = dict(
             page=page,
             size=size,
@@ -52,7 +58,7 @@ def index() -> Response:
             data=l,
         )
         res: Response = make_response()
-        res.content_type = 'application/json'
+        res.content_type = 'application/json; charset=utf-8'
         res.data = json.dumps(r).encode()
         return res
     except Exception as e:
@@ -60,6 +66,8 @@ def index() -> Response:
         abort(500)
 
 
-@blueprint.route('/<entity_id>', methods=('GET', 'POST'))
+@blueprint.route('/<entity_id>', methods=('POST',))
 def operation(entity_id: str) -> Response:
-    pass
+    res: Response = make_response()
+    res.content_type = 'application/json; charset=utf-8'
+    return res

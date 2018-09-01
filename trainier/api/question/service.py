@@ -12,11 +12,27 @@ from trainier.logger import logger
 class QuestionService:
     @staticmethod
     def select_trunk_by_id(entity_id: str) -> Trunk or None:
-        pass
+        session: Session = Session()
+        try:
+            trunk: Trunk = session.query(Trunk).filter(Trunk.entityId == entity_id).one_or_none()
+            return trunk
+        except Exception as e:
+            logger.error(e)
+            return None
+        finally:
+            session.close()
 
     @staticmethod
-    def select_options_by_trunk_id(trunk_id: str) -> List[Option]:
-        pass
+    def select_options_by_trunk_id(trunk_id: str) -> List[Option] or None:
+        session: Session = Session()
+        try:
+            options: List[Option] = session.query(Trunk).filter(Option.trunkId == trunk_id).all()
+            return options
+        except Exception as e:
+            logger.error(e)
+            return None
+        finally:
+            session.close()
 
     @staticmethod
     def select_pics_by_trunk_id(trunk_id: str) -> List[Pic]:
@@ -56,10 +72,4 @@ class QuestionService:
 
     @staticmethod
     def save(trunk: Trunk, options: List[Option], pics: List[Pic]) -> bool:
-        pass
-
-
-class QuizService:
-    @staticmethod
-    def quiz():
         pass
