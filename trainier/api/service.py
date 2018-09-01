@@ -60,5 +60,43 @@ def __list_to_dict(lst: List[object], fields: Set[str or InstrumentedAttribute] 
     return r
 
 
-def dict_to_entity(_dict, entity=None) -> object:
-    return entity
+def dict_to_entity(_dict: Dict, target: object, fields: Set[str or InstrumentedAttribute]=None) -> object or None:
+    if target is None:
+        return None
+    if target._sa_class_manager is None:
+        return None
+    if target._sa_class_manager._all_key_set is None:
+        return None
+
+    if fields is not None and len(fields) > 0:
+        fs: Set[str] = __deal_fields(fields)
+    else:
+        fs: Set[str] = target._sa_class_manager._all_key_set
+    for k, v in _dict.items():
+        if k in fs and k in target._sa_class_manager._all_key_set:
+            target.__dict__[k] = v
+    return target
+
+
+def list_to_entities(_list: List[Dict], sample: object, fields: Set[str or InstrumentedAttribute]=None) -> List[object] or None:
+    if _list is None or len(_list) == 0:
+        return None
+    if sample is None:
+        return None
+    if sample._sa_class_manager is None:
+        return None
+    if sample._sa_class_manager._all_key_set is None:
+        return None
+
+    if fields is not None and len(fields) > 0:
+        fs: Set[str] = __deal_fields(fields)
+    else:
+        fs: Set[str] = sample._sa_class_manager._all_key_set
+    l: List = list()
+    for d in _list:
+        o = sample.__class__()
+        for k, v in d.items():
+            if k in fs and k in sample._sa_class_manager._all_key_set:
+                o.__dict__[k] = v
+        l.append(o)
+    return l

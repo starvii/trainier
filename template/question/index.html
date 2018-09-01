@@ -21,7 +21,7 @@
                     <th>题目（中文）</th>
                     <th>难度</th>
                     <th>
-                        <a class="button is-small" href="javascript:void(0);" title="添加">
+                        <a class="button is-small" href="edit" title="添加">
                         <span class="icon is-small">
                             <i class="fas fa-plus"></i>
                         </span>
@@ -31,36 +31,31 @@
                 </tr>
                 </thead>
                 <tfoot>
-
                 <tr>
-                    <page-component v-bind:conf.sync="pageConf"></page-component>
+                    <page-component :conf.sync="pageConf"></page-component>
                 </tr>
-
-
                 </tfoot>
                 <tbody>
                 <tr v-for="(item, idx) in data">
                     <td>
-                        <a href="javascript:void(0);"
-                           v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
-                           @click="view(item.entityId)"></a>
+                        <a :href="`view?id=` + item.entityId" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                     </td>
                     <td>
-                        <a href="javascript:void(0);" v-text="item.enTrunk" @click="view(item.entityId)"></a>
+                        <a :href="`view?id=` + item.entityId" v-text="item.enTrunk"></a>
                     </td>
                     <td>
-                        <a href="javascript:void(0);" v-text="item.cnTrunk" @click="view(item.entityId)"></a>
+                        <a :href="`view?id=` + item.entityId" v-text="item.cnTrunk"></a>
                     </td>
                     <td>
-                        <a href="javascript:void(0);" v-text="item.level" @click="view(item.entityId)"></a>
+                        <a :href="`view?id=` + item.entityId" v-text="item.level"></a>
                     </td>
                     <td>
-                        <a class="button is-small" href="javascript:void(0);" title="编辑" @click="edit(item.entityId)">
+                        <a class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">
                         <span class="icon is-small">
                             <i class="fas fa-edit"></i>
                         </span>
                         </a>
-                        <a class="button is-small" href="javascript:void(0);" title="删除" @click="remove(item.entityId)">
+                        <a class="button is-small" title="删除" @click="remove(item.entityId)">
                         <span class="icon is-small">
                             <i class="fas fa-minus"></i>
                         </span>
@@ -125,21 +120,14 @@
                         }
                     );
                 },
-                add: function () {
-                    window.location.href = '/question/edit';
-                },
-                view: function (entityId) {
-                    window.location.href = '/question/view?id=' + entityId;
-                },
-                edit: function (entityId) {
-                    window.location.href = '/question/edit?id=' + entityId;
-                },
                 remove: function (entityId) {
                     alert('现在还不能删除哟');
                 },
                 search: function () {
-                    this.keyword = this.kw;
-                    this.list();
+                    if (this.keyword !== this.kw.trim()) {
+                        this.keyword = this.kw.trim();
+                        this.list();
+                    }
                 },
             },
         });

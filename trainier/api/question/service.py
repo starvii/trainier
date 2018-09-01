@@ -60,4 +60,43 @@ class QuestionService:
 
     @staticmethod
     def save(trunk: Trunk, options: List[Option], pics: List[Pic]) -> bool:
-        pass
+        session: Session = Session()
+        try:
+            if trunk.entityId is None or len(trunk.entityId.strip()) == 0:
+                trunk_id = object_id()
+                session.add(trunk)
+                for option in options:
+                    option.entityId = object_id()
+                    option.trunkId = trunk_id
+                session.add_all(options)
+                for pic in pics:
+                    pic.entityId = object_id()
+                    pic.trunkId = trunk_id
+                session.add_all(options)
+            else:
+                trunk_id = trunk.entityId
+                session.merge(trunk)
+                assert len(options) >= 4
+                for option in options:
+                    option.trunkId = trunk_id
+                    if option.entityId is None or len(option.entityId.strip()) == 0:
+                        option.entityId = object_id()
+                        session.add(option)
+                    else:
+                        session.merge(option)
+                if pics is not None and len(pics) > 0:
+                    for pic in pics:
+                        pic.trunkId = trunk_id
+                        if pic.entityId is None or len(pic.entityId.strip()) == 0:
+                            pic.entityId = object_id()
+                            session.add(pic)
+                        else:
+                            session.merge(pic)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(e)
+            return False
+        finally:
+            session.close()
+
