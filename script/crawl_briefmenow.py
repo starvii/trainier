@@ -3,7 +3,7 @@
 
 import sys
 
-sys.path.append('../trainier')
+sys.path.append('../')
 import re
 import time
 from typing import List, Set, Dict
@@ -199,7 +199,7 @@ def read_list(fn: str = 'list.txt') -> Dict:
 
 def main():
     r: Dict = read_list()
-    for i in range(1, 1775 + 1):
+    for i in range(270, 1775 + 1):
         try:
             url = r[i]
             html = req('http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/', url)
