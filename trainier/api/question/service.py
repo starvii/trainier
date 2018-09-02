@@ -59,7 +59,7 @@ class QuestionService:
             session.close()
 
     @staticmethod
-    def save(trunk: Trunk, options: List[Option], pics: List[Pic]) -> bool:
+    def save(trunk: Trunk, options: List[Option], pics: List[Pic] = None) -> bool:
         session: Session = Session()
         try:
             if trunk.entityId is None or len(trunk.entityId.strip()) == 0:
@@ -76,7 +76,7 @@ class QuestionService:
             else:
                 trunk_id = trunk.entityId
                 session.merge(trunk)
-                assert len(options) >= 4
+                # assert len(options) >= 4
                 for option in options:
                     option.trunkId = trunk_id
                     if option.entityId is None or len(option.entityId.strip()) == 0:
@@ -99,4 +99,3 @@ class QuestionService:
             return False
         finally:
             session.close()
-

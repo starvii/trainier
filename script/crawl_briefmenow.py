@@ -12,9 +12,11 @@ import requests
 
 from trainier.model import Trunk, Option
 from trainier.util.object_id import object_id
-from trainier.api.service import ImportService
+from trainier.api.question.service import QuestionService
 
-OPT_TITLE_PATTERN = re.compile(r'^[A-J]{1}\.')
+OPT_PATTERN = re.compile(r'[A-J]\.\n')
+OPT_EXP_PATTERN = re.compile(r'\n[A-J]\.\n|\nExplanation:\n')
+ID_PREFIX = 'B5-'
 
 
 def req(prev_url: str, url: str) -> str:
@@ -35,96 +37,185 @@ def req(prev_url: str, url: str) -> str:
     return res.text
 
 
-def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
-    next_url: str = None
-    soup: BeautifulSoup = BeautifulSoup(html, features='html.parser')
-    try:
-        # 提取下一题的链接
-        e: PageElement = soup.select_one('div[class="nav-next"] > a')
-        if type(e) == Tag:
-            t: Tag = e
-            if 'href' in t.attrs:
-                next_url = t.attrs['href']
-        # 提取题干
-        entry_node: Tag = soup.select_one('div[class="entry-content"]')
-        l = entry_node.find_all('p', recursive=True)
-        assert len(l) > 4  # 至少有一个问题加四个答案
+class QuestionParser:
 
-        n0: int = 0  # 选项开始位置
-        n1: int = len(l)  # 解释开始位置
-        last: Tag = l[0]
-        for i, e in enumerate(l[1:]):
-            t: Tag = e
-            if OPT_TITLE_PATTERN.match(t.text.strip()) and (not OPT_TITLE_PATTERN.match(last.text.strip())):
-                n0 = i + 1
-            if (not OPT_TITLE_PATTERN.match(t.text.strip())) and OPT_TITLE_PATTERN.match(last.text.strip()):
-                n1 = i + 1
-                break
-            last = t
-
-        buf: List[str] = list()
-        for e in l[:n0]:
-            t: Tag = e
-            buf.append(t.text.strip())
-
-        enTrunk = '\n'.join(buf)
-
-        # 提取解释
-        buf: List[str] = list()
-        for e in l[n1:]:
-            t: Tag = e
-            # x = ''.join([str(_) for _ in t.contents])
-            # print(repr(x))
-            # print(repr(unescape(x)))
-            text = t.getText(separator='\n', strip=True)
-            t = ''.join(buf)
-            if text not in t:
-                buf.append(text)
-        analysis = '\n'.join(buf)
-
-        trunkId = object_id()
-        trunk: Trunk = Trunk(
-            entityId=trunkId,
+    def __init__(self, url: str, html: str) -> None:
+        self.html: str = html
+        self.soup: BeautifulSoup = BeautifulSoup(html, features='html.parser')
+        self.num: int = 0
+        self.next_url: str = None
+        self.entry_node = None
+        self.p_list = None
+        self.has_img: bool = False
+        self.option_start: int = -1
+        self.analysis_start: int = -1
+        self.trunk = Trunk(
             source=url,
-            enTrunk=enTrunk,
+            enTrunk='',
+            cnTrunk='',
+            analysis='',
             level=0,
-            comment='',
-            analysis=analysis,
-            cnTrunk=''
+            comment=''
         )
+        self.options = None
 
-        # 提取正确答案
-        corrects: Set[str] = set([_.text.strip()[0] for _ in entry_node.select('p[class="rightAnswer"]')])
+    def extract_next_url(self) -> str:
+        try:
+            e: PageElement = self.soup.select_one('div[class="nav-next"] > a')
+            if type(e) == Tag:
+                t: Tag = e
+                if 'href' in t.attrs:
+                    self.next_url = t.attrs['href']
+                    return self.next_url
+        except Exception as e:
+            print(e)
+            raise e
 
-        opts: List[str] = list()
-        # 提取选项
-        for e in l[n0:n1]:
-            t = e
-            o: str = t.text.replace('Show Answer', '').strip()
-            buf: List[str] = [_.strip() for _ in o.split('\n') if len(_.strip()) > 0]
-            opts.append(buf[0])
-        options: List[Option] = list()
-        for i, opt in enumerate(opts):
-            assert OPT_TITLE_PATTERN.match(opt)
-            o: str = opt[2:].strip()
-            t: str = opt[0]
-            option = Option(
-                entityId=object_id(),
-                trunkId=trunkId,
-                enOption=o,
-                isTrue=t in corrects,
-                cnOption='',
-                orderNum=i,
-                comment=''
+    def extract_question_num(self) -> str:
+        try:
+            e: PageElement = self.soup.select_one('li[class="cur_chapter"] > a')
+            t: Tag = e
+            title: str = t.get_text()
+            num: str = next(re.finditer('\d+', title)).group()
+            try:
+                self.num = int(num)
+                self.trunk.entityId = ID_PREFIX + num
+                return num
+            except ValueError as e:
+                print(e)
+                self.trunk.entityId = object_id()
+        except Exception as e:
+            print(e)
+            raise e
+
+    def extract_split_point(self) -> (int, int) or None:
+        try:
+            self.entry_node: Tag = self.soup.select_one('div[class="entry-content"]')
+            self.p_list = self.entry_node.find_all('p', recursive=True)
+            # assert len(self.p_list) > 4  # 至少有一个问题加四个答案
+            # 但是11题只录入了3个选项，导致无法采集成功
+            n0: int = 0  # 选项开始位置
+            n1: int = len(self.p_list)  # 解释开始位置
+            last: Tag = self.p_list[0]
+            for i, e in enumerate(self.p_list[1:]):
+                t: Tag = e
+                if len(t.select('a > img')) > 0:
+                    self.has_img: bool = True
+                txt_now: str = t.get_text(separator='\n', strip=True)
+                txt_lst: str = last.get_text(separator='\n', strip=True)
+                if OPT_PATTERN.match(txt_now) and (not OPT_PATTERN.match(txt_lst)):
+                    n0 = i + 1
+                if (not OPT_PATTERN.match(txt_now)) and OPT_PATTERN.match(txt_lst):
+                    n1 = i + 1
+                    break
+                last = t
+            self.option_start = n0
+            self.analysis_start = n1
+            return n0, n1
+        except Exception as e:
+            print(e)
+            raise e
+
+    def extract_trunk(self) -> Trunk or None:
+        try:
+            buf: List[str] = list()
+            for e in self.p_list[:self.option_start]:
+                t: Tag = e
+                buf.append(t.get_text(separator='\n', strip=True))
+
+            en_trunk = '\n'.join(buf).strip()
+            self.trunk.enTrunk = en_trunk
+            return self.trunk
+        except Exception as e:
+            print(e)
+            raise e
+
+    def extract_options(self) -> List[Option]:
+        try:
+            corrects: Set[str] = set(
+                [_.get_text(separator='\n', strip=True)[0] for _ in self.entry_node.select('p[class="rightAnswer"]')])
+            opts: List[(str, str)] = list()
+            cache: Set[str] = set()
+            l = self.p_list[self.option_start:self.analysis_start]
+            for e in l:
+                tag: Tag = e
+                text: str = tag.get_text(separator='\n', strip=True).replace('Show Answer', '').strip()
+                text = '\n' + text
+                option_chars: List[str] = [_.strip() for _ in OPT_EXP_PATTERN.findall(text) if len(_.strip()) > 0]
+                option_texts: List[str] = [_.strip() for _ in OPT_EXP_PATTERN.split(text) if len(_.strip()) > 0]
+                assert len(option_chars) == len(option_texts)
+                if option_chars[-1].startswith('Ex'):
+                    if len(option_chars) == 1:
+                        break
+                    option_chars = option_chars[:-1]
+                    option_texts = option_texts[:-1]
+
+                opt = option_texts[0]
+
+                assert opt not in cache
+                cache.add(opt)
+                opts.append((option_chars[0][0], opt))
+            self.options: List[Option] = list()
+            for i, (opt, text) in enumerate(opts):
+                option_id = object_id() if len(self.trunk.entityId) == 24 else self.trunk.entityId + '-' + opt
+                self.options.append(Option(
+                    entityId=option_id,
+                    trunkId=self.trunk.entityId,
+                    enOption=text,
+                    isTrue=opt in corrects,
+                    cnOption='',
+                    orderNum=i,
+                    comment=''
+                ))
+            return self.options
+        except Exception as e:
+            print(e)
+            raise e
+
+    def extract_analysis(self) -> Trunk:
+        try:
+            buf: List[str] = list()
+            for e in self.p_list[self.analysis_start:]:
+                t: Tag = e
+                text = t.get_text(separator='\n', strip=True)
+                t = ''.join(buf)
+                if text not in t:
+                    buf.append(text)
+            analysis = '\n'.join(buf)
+            self.trunk.analysis = analysis
+            return self.trunk
+        except Exception as e:
+            print(e)
+            raise e
+
+
+def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
+    num: int = 0
+    q: QuestionParser = QuestionParser(url, html)
+    try:
+        q.extract_question_num()
+        num = q.num
+        q.extract_next_url()
+        q.extract_split_point()
+        q.extract_trunk()
+        q.extract_analysis()
+        q.extract_options()
+        if q.has_img:
+            out: str = '\n\n{num} - img - {url}\n\n'.format(
+                num=num,
+                url=url
             )
-            options.append(option)
-        return next_url, trunk, options
-    except Exception as error:
-        out = url + ' //////////// ' + repr(error) + '\n'
-        sys.stderr.write(out)
-        sys.stdout.write(out)
+            open('not.log', 'a').write(out)
+        return q.next_url, q.trunk, q.options
+    except Exception as e:
+        out: str = '\n\n{num} - {err_type}:{err} - {url}\n\n'.format(
+            num=num,
+            err_type=type(e),
+            err=str(e),
+            url=url
+        )
         open('not.log', 'a').write(out)
-        return next_url, None, None
+        return q.next_url, None, None
 
 
 def main():
@@ -133,9 +224,10 @@ def main():
     prev_url: str = 'http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/'
     while True:
         html: str = req(prev_url, url)
+        # _ = parse_html(url, html)
         _url, trunk, options = parse_html(url, html)
-        if trunk is not None:
-            ImportService.save(trunk, options)
+        if trunk is not None and options is not None:
+            QuestionService.save(trunk, options, None)
         if _url is not None:
             prev_url = url
             url = _url
@@ -147,8 +239,17 @@ def main():
 
 def test():
     # from bs4 import BeautifulSoup
-    html = open('d:/tmp/r.txt', 'r').read()
-    print(repr(parse_html('aaa', html)))
+    # 11
+    # sample_url: str = 'http://www.briefmenow.org/comptia/which-of-the-following-would-be-best-suited-for-this-task-11/'
+    # 32
+    sample_url: str = 'http://www.briefmenow.org/comptia/simulation-configure-the-firewall-fill-out-the-table-to-allow-these-four-rules/'
+    prev_url: str = 'http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/'
+    # html = open('d:/tmp/r.txt', 'r').read()
+    html = req(prev_url, sample_url)
+    next_url, trunk, options = parse_html(sample_url, html)
+    print(repr(trunk))
+    print("=======================================================")
+    print(repr(options))
 
 
 if __name__ == '__main__':
