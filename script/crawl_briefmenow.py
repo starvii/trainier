@@ -6,7 +6,7 @@ import sys
 sys.path.append('../trainier')
 import re
 import time
-from typing import List, Set
+from typing import List, Set, Dict
 from bs4 import BeautifulSoup, Tag, PageElement
 import requests
 
@@ -39,17 +39,17 @@ def req(prev_url: str, url: str) -> str:
 
 class QuestionParser:
 
-    def __init__(self, url: str, html: str) -> None:
+    def __init__(self, num: int, url: str, html: str) -> None:
         self.html: str = html
         self.soup: BeautifulSoup = BeautifulSoup(html, features='html.parser')
-        self.num: int = 0
-        self.next_url: str = None
+        self.num: int = num
         self.entry_node = None
         self.p_list = None
         self.has_img: bool = False
         self.option_start: int = -1
         self.analysis_start: int = -1
         self.trunk = Trunk(
+            entityId=ID_PREFIX + str(num),
             source=url,
             enTrunk='',
             cnTrunk='',
@@ -58,35 +58,6 @@ class QuestionParser:
             comment=''
         )
         self.options = None
-
-    def extract_next_url(self) -> str:
-        try:
-            e: PageElement = self.soup.select_one('div[class="nav-next"] > a')
-            if type(e) == Tag:
-                t: Tag = e
-                if 'href' in t.attrs:
-                    self.next_url = t.attrs['href']
-                    return self.next_url
-        except Exception as e:
-            print(e)
-            raise e
-
-    def extract_question_num(self) -> str:
-        try:
-            e: PageElement = self.soup.select_one('li[class="cur_chapter"] > a')
-            t: Tag = e
-            title: str = t.get_text()
-            num: str = next(re.finditer('\d+', title)).group()
-            try:
-                self.num = int(num)
-                self.trunk.entityId = ID_PREFIX + num
-                return num
-            except ValueError as e:
-                print(e)
-                self.trunk.entityId = object_id()
-        except Exception as e:
-            print(e)
-            raise e
 
     def extract_split_point(self) -> (int, int) or None:
         try:
@@ -136,8 +107,8 @@ class QuestionParser:
                 [_.get_text(separator='\n', strip=True)[0] for _ in self.entry_node.select('p[class="rightAnswer"]')])
             opts: List[(str, str)] = list()
             cache: Set[str] = set()
-            l = self.p_list[self.option_start:self.analysis_start]
-            for e in l:
+            lst: List[PageElement] = self.p_list[self.option_start:self.analysis_start]
+            for e in lst:
                 tag: Tag = e
                 text: str = tag.get_text(separator='\n', strip=True).replace('Show Answer', '').strip()
                 text = '\n' + text
@@ -189,13 +160,9 @@ class QuestionParser:
             raise e
 
 
-def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
-    num: int = 0
-    q: QuestionParser = QuestionParser(url, html)
+def parse_html(num: int, url: str, html: str) -> (Trunk, List[Option]):
+    q: QuestionParser = QuestionParser(num, url, html)
     try:
-        q.extract_question_num()
-        num = q.num
-        q.extract_next_url()
         q.extract_split_point()
         q.extract_trunk()
         q.extract_analysis()
@@ -206,7 +173,7 @@ def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
                 url=url
             )
             open('not.log', 'a').write(out)
-        return q.next_url, q.trunk, q.options
+        return q.trunk, q.options
     except Exception as e:
         out: str = '\n\n{num} - {err_type}:{err} - {url}\n\n'.format(
             num=num,
@@ -215,41 +182,39 @@ def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
             url=url
         )
         open('not.log', 'a').write(out)
-        return q.next_url, None, None
+        raise e
+
+
+def read_list(fn: str = 'list.txt') -> Dict:
+    lst: List[str] = [_.strip() for _ in open(fn, 'r').readlines() if len(_.strip()) > 0 and '\t' in _.strip()]
+    r: Dict = dict()
+    for i, line in enumerate(lst):
+        a = line.split('\t')
+        num: int = int(a[0])
+        url: int = a[1]
+        assert num == i + 1
+        r[num] = url
+    return r
 
 
 def main():
-    start_url: str = 'http://www.briefmenow.org/comptia/which-of-the-following-should-sara-configure-11/'
-    url: str = start_url
-    prev_url: str = 'http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/'
-    while True:
-        html: str = req(prev_url, url)
-        # _ = parse_html(url, html)
-        _url, trunk, options = parse_html(url, html)
-        if trunk is not None and options is not None:
-            QuestionService.save(trunk, options, None)
-        if _url is not None:
-            prev_url = url
-            url = _url
-        else:
-            print('maybe the last record.')
-            break
+    r: Dict = read_list()
+    for i in range(1, 1775 + 1):
+        try:
+            url = r[i]
+            html = req('http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/', url)
+            trunk, options = parse_html(i, url, html)
+            if trunk is not None and options is not None:
+                QuestionService.save(trunk, options, None)
+            else:
+                raise Exception('trunk is None or options is None.')
+        except Exception as e:
+            print(e)
         time.sleep(5)
 
 
 def test():
-    # from bs4 import BeautifulSoup
-    # 11
-    # sample_url: str = 'http://www.briefmenow.org/comptia/which-of-the-following-would-be-best-suited-for-this-task-11/'
-    # 32
-    sample_url: str = 'http://www.briefmenow.org/comptia/simulation-configure-the-firewall-fill-out-the-table-to-allow-these-four-rules/'
-    prev_url: str = 'http://www.briefmenow.org/comptia/category/exam-sy0-401-comptia-security-certification-update-november-11th-2016/'
-    # html = open('d:/tmp/r.txt', 'r').read()
-    html = req(prev_url, sample_url)
-    next_url, trunk, options = parse_html(sample_url, html)
-    print(repr(trunk))
-    print("=======================================================")
-    print(repr(options))
+    print(read_list())
 
 
 if __name__ == '__main__':

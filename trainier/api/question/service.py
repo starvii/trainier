@@ -59,7 +59,7 @@ class QuestionService:
             session.close()
 
     @staticmethod
-    def save(trunk: Trunk, options: List[Option], pics: List[Pic] = None) -> bool:
+    def save(trunk: Trunk, options: List[Option], pics: List[Pic] = None) -> None:
         session: Session = Session()
         try:
             if trunk.entityId is None or len(trunk.entityId.strip()) == 0:
@@ -96,6 +96,6 @@ class QuestionService:
         except Exception as e:
             session.rollback()
             logger.error(e)
-            return False
+            raise e
         finally:
             session.close()
