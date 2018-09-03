@@ -9,7 +9,8 @@ class Trunk(Base):
     __tablename__ = 'trunk'
     __table_args__ = {'extend_existing': True}
 
-    entityId = Column(String(32), primary_key=True)
+    entityId = Column(String(24), primary_key=True)
+    code = Column(String, unique=True)
     enTrunk = Column(String)
     cnTrunk = Column(String)
     analysis = Column(String)
@@ -19,8 +20,19 @@ class Trunk(Base):
 
     def __repr__(self) -> str:
         super().__repr__()
-        return '{{entityId={}, enTrunk={}, cnTrunk={}, analysis={}, source={}, level={}, comment={}}}'.format(
+        return '''{{
+entityId="{}",
+code="{}",
+enTrunk="{}",
+cnTrunk="{}",
+analysis="{}",
+source="{}",
+level="{}",
+comment="{}",
+}}
+'''.format(
             self.entityId,
+            self.code,
             self.enTrunk,
             self.cnTrunk,
             self.analysis,
@@ -34,8 +46,9 @@ class Option(Base):
     __tablename__ = 'option'
     __table_args__ = {'extend_existing': True}
 
-    entityId = Column(String(32), primary_key=True)
-    trunkId = Column(String(32), nullable=False)
+    entityId = Column(String(24), primary_key=True)
+    trunkId = Column(String(24), nullable=False)
+    code = Column(String, unique=True)
     enOption = Column(String)
     cnOption = Column(String)
     isTrue = Column(Integer)
@@ -44,8 +57,19 @@ class Option(Base):
 
     def __repr__(self) -> str:
         super().__repr__()
-        return '{{entityId={}, trunkId={}, enOption={}, cnOption={}, isTrue={}, orderNum={}, comment={}}}'.format(
+        return '''{{
+entityId="{}",
+code="{}",
+trunkId="{}",
+enOption="{}",
+cnOption="{}",
+isTrue="{}",
+orderNum="{}",
+comment="{}",
+}}
+'''.format(
             self.entityId,
+            self.code,
             self.trunkId,
             self.enOption,
             self.cnOption,
@@ -59,8 +83,8 @@ class Pic(Base):
     __tablename__ = 'pic'
     __table_args__ = {'extend_existing': True}
 
-    entityId = Column(String(32), primary_key=True)
-    trunkId = Column(String(32), nullable=False)
+    entityId = Column(String(24), primary_key=True)
+    trunkId = Column(String(24), nullable=False)
     title = Column(String)
     data = Column(BLOB)
     orderNum = Column(Integer)
