@@ -4,9 +4,24 @@
         <input id="entityId" readonly="readonly" value="{{ entity_id }}">
     </div>
     {% raw %}
-    <div class="columns" id="app">
-        <div class="column">
-            <form>
+    <div id="app">
+        <div class="columns">
+            <div class="column is-1">
+                <label class="label">编号</label>
+            </div>
+            <div class="column is-5">
+                <pre v-text="trunk.code"></pre>
+            </div>
+            <div class="column is-1">
+                <label class="label">等级</label>
+            </div>
+            <div class="column is-5">
+                <pre v-text="trunk.level"></pre>
+            </div>
+        </div>
+
+        <div class="columns">
+            <div class="column">
                 <div class="field" v-if="trunk.enTrunk.length > 0">
                     <label class="label">英文题目</label>
                     <div class="control">
@@ -19,52 +34,46 @@
                         <pre v-text="trunk.cnTrunk"></pre>
                     </div>
                 </div>
-                <div class="field" v-for="(opt, index) in options">
-                    <div class="field-body">
-                        <div class="field">
-                            <p class="control">
-                                <span class="icon is-right">
-                                    <i class="fas fa-check is-true" v-if="opt.isTrue"></i>
-                                    <i class="fas fa-times is-false" v-if="!opt.isTrue"></i>
-                                </span>
-                                <span class="is-pulled-right" :class="[opt.isTrue ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-                            </p>
-                        </div>
-                        <div class="field">
-                            <p class="control">
-                                <p v-text="opt.enOption"></p>
-                            </p>
-                        </div>
-                        <div class="field">
-                            <p class="control">
-                                <p v-text="opt.cnOption"></p>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="field" v-if="trunk.analysis.length > 0">
-                    <label class="label">详解</label>
-                    <div class="control">
-                        <pre v-text="trunk.analysis"></pre>
-                    </div>
-                </div>
-                <div class="field" v-if="trunk.source.length > 0">
-                    <label class="label">来源</label>
-                    <div class="control">
-                        <pre v-text="trunk.source"></pre>
-                    </div>
-                </div>
-                <div class="field" v-if="trunk.comment.length > 0">
-                    <label class="label">备注</label>
-                    <div class="control">
-                        <pre v-text="trunk.comment"></pre>
-                    </div>
-                </div>
-
-
-                <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
-            </form>
+            </div>
         </div>
+        <div class="columns" v-for="(opt, index) in options">
+            <div class="column is-1">
+                <span class="icon is-right">
+                    <i class="fas fa-check is-true" v-if="opt.isTrue"></i>
+                    <i class="fas fa-times is-false" v-if="!opt.isTrue"></i>
+                </span>
+            </div>
+            <div class="column is-1">
+                <span :class="[opt.isTrue ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+            </div>
+            <div class="column is-5">
+                <p class="control" v-text="opt.enOption"></p>
+            </div>
+            <div class="column is-5">
+                <p class="control" v-text="opt.cnOption"></p>
+            </div>
+        </div>
+        <div class="field" v-if="trunk.analysis.length > 0">
+            <label class="label">详解</label>
+            <div class="control">
+                <pre v-text="trunk.analysis"></pre>
+            </div>
+        </div>
+        <div class="field" v-if="trunk.source.length > 0">
+            <label class="label">来源</label>
+            <div class="control">
+                <pre v-text="trunk.source"></pre>
+            </div>
+        </div>
+        <div class="field" v-if="trunk.comment.length > 0">
+            <label class="label">备注</label>
+            <div class="control">
+                <pre v-text="trunk.comment"></pre>
+            </div>
+        </div>
+
+
+        <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
     </div>
     {% endraw %}
 {% endblock %}
@@ -78,6 +87,7 @@
                 encodedTrunkId: '',
                 trunk: {
                     entityId: '',
+                    code: '',
                     enTrunk: '',
                     cnTrunk: '',
                     level: 0,
@@ -90,9 +100,7 @@
             },
             mounted: function() {
                 this.encodedTrunkId = window.document.getElementById('entityId').value;
-                if (this.encodedTrunkId.trim().length === 16) {
-                    this.load();
-                }
+                this.load();
             },
             methods: {
                 load: function () {

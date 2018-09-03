@@ -17,9 +17,9 @@
                 </tr>
                 <tr>
                     <th>编号</th>
+                    <th>编码</th>
                     <th>题目（英文）</th>
                     <th>题目（中文）</th>
-                    <th>难度</th>
                     <th>
                         <a class="button is-small" href="edit" title="添加">
                         <span class="icon is-small">
@@ -41,13 +41,13 @@
                         <a :href="`view?id=` + item.entityId" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                     </td>
                     <td>
+                        <a :href="`view?id=` + item.entityId" v-text="item.code"></a>
+                    </td>
+                    <td>
                         <a :href="`view?id=` + item.entityId" v-text="item.enTrunk"></a>
                     </td>
                     <td>
                         <a :href="`view?id=` + item.entityId" v-text="item.cnTrunk"></a>
-                    </td>
-                    <td>
-                        <a :href="`view?id=` + item.entityId" v-text="item.level"></a>
                     </td>
                     <td>
                         <a class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">

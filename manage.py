@@ -39,6 +39,9 @@ def bind_views() -> None:
     import trainier.api.question.controller
     app.register_blueprint(trainier.api.question.controller.blueprint)
     logger.info('%s loaded.', trainier.api.question.controller)
+    import trainier.api.quiz.controller
+    app.register_blueprint(trainier.api.quiz.controller.blueprint)
+    logger.info('%s loaded.', trainier.api.quiz.controller)
 
 
 def main() -> None:
