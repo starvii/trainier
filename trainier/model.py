@@ -85,7 +85,9 @@ class Pic(Base):
 
     entityId = Column(String(24), primary_key=True)
     trunkId = Column(String(24), nullable=False)
+    code = Column(String)
     title = Column(String)
     data = Column(BLOB)
+    source = Column(String)
     orderNum = Column(Integer)
     comment = Column(String)

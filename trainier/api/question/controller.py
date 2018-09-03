@@ -50,19 +50,22 @@ def index(req: Request) -> Response:
         if 'keyword' in j and type(j['keyword']) == str:
             keyword = j['keyword'].strip()
         trunks, c = QuestionService.select_trunks(keyword, page, size)
-        fields: Set[InstrumentedAttribute] = {
-            Trunk.entityId,
-            Trunk.code,
-            Trunk.enTrunk,
-            Trunk.cnTrunk,
-        }
-        l: List[Dict] = labelify(trunks, fields)
-        # 数据简化
-        for item in l:
-            if len(item['enTrunk']) > 50:
-                item['enTrunk'] = item['enTrunk'][:47] + '...'
-            if len(item['cnTrunk']) > 50:
-                item['cnTrunk'] = item['cnTrunk'][:47] + '...'
+        if trunks is None or len(trunks) == 0:
+            l = []
+        else:
+            fields: Set[InstrumentedAttribute] = {
+                Trunk.entityId,
+                Trunk.code,
+                Trunk.enTrunk,
+                Trunk.cnTrunk,
+            }
+            l: List[Dict] = labelify(trunks, fields)
+            # 数据简化
+            for item in l:
+                if len(item['enTrunk']) > 50:
+                    item['enTrunk'] = item['enTrunk'][:47] + '...'
+                if len(item['cnTrunk']) > 50:
+                    item['cnTrunk'] = item['cnTrunk'][:47] + '...'
         r: Dict = dict(
             page=page,
             size=size,
