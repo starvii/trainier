@@ -19,6 +19,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(filename)s:%(li
 
 class QuestionParser:
     TITLE_PATTERN: Pattern = re.compile(r'(?<=Test)\s+Q\d+')
+    CORRECT_ANSWER: str = 'Correct Answer:'
 
     def __init__(self, cur_url: str) -> None:
         super().__init__()
@@ -40,8 +41,11 @@ class QuestionParser:
 
         self.html: str = None
         self.soup: BeautifulSoup = None
-        self.entry_node: Tag = None
-        self.p_list: List[Tag] = None
+        # self.entry_node: Tag = None
+        # self.p_list: List[Tag] = None
+        self.corrects_tag: Tag = None
+        self.corrects: Set[str] = None
+        self.options_tag: Tag = None
 
     def f0_request(self) -> bool:
         headers: Dict = {
@@ -58,15 +62,16 @@ class QuestionParser:
         try:
             r: requests.Response = requests.get(self.cur_url, headers=headers)
             self.html = r.text
-            self.soup = BeautifulSoup(self.html, features="html.parser")
+            # self.soup = BeautifulSoup(self.html, features="html.parser")
+            self.soup = BeautifulSoup(self.html, features="lxml")
             return True
         except Exception as e:
             logging.error(e)
-            return False
+            raise e
 
     def f0_parse_html(self, html: str):
         self.html = html
-        self.soup = BeautifulSoup(self.html, features="html.parser")
+        self.soup = BeautifulSoup(self.html, features="lxml")
 
     def f1_next_url(self) -> str or None:
         try:
@@ -75,7 +80,7 @@ class QuestionParser:
             return self.next_url
         except Exception as e:
             logging.error(e)
-            return None
+            raise e
 
     def f2_title(self) -> str or None:
         try:
@@ -89,36 +94,66 @@ class QuestionParser:
             return self.title
         except Exception as e:
             logging.error(e)
-            return None
+            raise e
 
     def f3_entry(self) -> None:
-        self.entry_node: Tag = self.soup.select_one('div[class="entry-content"]')
-        self.p_list: List[Tag] = self.entry_node.find_all('p', recursive=True)
-        buf: List[str] = list()
-        for tag in self.p_list:
-            text: str = tag.get_text()
-            if 'Show Answer' in text and 'Hide Answer' in text:
-                continue
-            logging.debug(text)
-            ts: List[Tag] = tag.find_all('strong')
-            if len(ts) == 1:  # 题干
-                buf.append(tag.get_text(separator='\n', strip=True))
-            elif len(ts) > 1:  # 选项
-                self._deal_options(tag)
-            # else:
-            #     logging.debug('strong? try to debug.')
-            ts: List[Tag] = tag.find_all('img')
-            if len(ts) == 1:
-                self._deal_pic(ts[0])
-            elif len(ts) > 1:
-                logging.debug('img? try to debug.')
-        self.trunk.enTrunk = '\n'.join(buf)
+        entry_node: Tag = self.soup.select_one('div[class="entry-content"]')
+        p_list: List[Tag] = entry_node.find_all('p', recursive=True)
 
-    def f4_analysis(self):
-        pass
+        # 先做部分分离
+        buf_trunk: List[Tag] = list()
+        buf_analysis: List[Tag] = list()
+        buf: List[Tag] = buf_trunk
+        for tag in p_list:
+            ts: List[Tag] = tag.find_all('strong')
+            if len(ts) > 3:  # 选项
+                self.options_tag = tag
+                continue
+            text: str = tag.get_text(strip=True)
+            if 'Show Answer' in text and 'Hide Answer' in text:
+                # === 切换buf ===
+                buf = buf_analysis
+                # === 切换buf ===
+                continue
+            if text.lower().startswith(self.CORRECT_ANSWER.lower()):
+                text = tag.select_one('strong').get_text(strip=True)
+                text = text[len(self.CORRECT_ANSWER):].strip()
+                self.corrects: Set[str] = set([_.strip() for _ in text.split(',') if len(_.strip()) > 0])
+                buf.append(tag.select_one('em').get_text(separator='\n', strip=True))
+                continue
+            buf.append(tag)
+
+        def deal(tag_buf: List[PageElement]) -> str:
+            buffer: List[str] = list()
+            for t in tag_buf:
+                if type(t) == Tag:
+                    _t: Tag = t
+                    ti: List[Tag] = _t.find_all('img')
+                    if len(ti) == 1:
+                        self._deal_pic(_t)
+                    elif len(ti) > 1:
+                        logging.debug('images? try to debug.')
+                    else:
+                        buffer.append(_t.get_text(separator='\n', strip=True))
+                else:
+                    # print(type(t), t)
+                    buffer.append(str(t))
+                buffer.append('\n')
+            return '\n'.join(buffer).strip()
+
+        self.trunk.enTrunk = deal(buf_trunk)
+        self.trunk.analysis = deal(buf_analysis)
+        self._deal_options(self.options_tag)
+
+    # def f4_answer(self):
+    #     answer_node: Tag = self.soup.select_one('div[id="hidden-div"]').select_one('span')
+    #     assert answer_node is not None
+    #     self.p_list: List[Tag] = answer_node.find_all('p', recursive=True)
+    #     print(self.p_list)
+    #     print(self.entry_node.get_text(separator='\n', strip=True))
 
     def _deal_pic(self, pic_tag: Tag) -> None:
-        assert pic_tag.name == 'img'
+        img: Tag = pic_tag.select_one('img')
         n: int = len(self.pics)
         pic: Pic = Pic(
             entityId='',
@@ -126,7 +161,7 @@ class QuestionParser:
             code=self.trunk.code + '-' + str(n),
             title='',
             data=b'',
-            source=pic_tag.attrs['src'],
+            source=img.attrs['src'],
             orderNum=n,
             comment=''
         )
@@ -150,7 +185,7 @@ class QuestionParser:
             for el in d[t]:
                 # print(type(_), _)
                 if type(el) == Tag:
-                    t:Tag = el
+                    t: Tag = el
                     buf.append(t.get_text(strip=True))
                 elif type(el) == NavigableString:
                     buf.append(str(el).strip())
@@ -163,10 +198,11 @@ class QuestionParser:
                 code=self.trunk.code + '-' + title,
                 enOption=text,
                 cnOption='',
-                isTrue=False,
+                isTrue=title in self.corrects,
                 orderNum=i,
                 comment=''
             ))
+
 
 # class QuestionParser(HTMLParser):
 #
@@ -250,6 +286,7 @@ def test():
     p.f1_next_url()
     p.f2_title()
     p.f3_entry()
+    # p.f4_answer()
     logging.info('next_url=%s', p.next_url)
     logging.info('title=%s', p.title)
 
