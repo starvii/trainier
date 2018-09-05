@@ -50,16 +50,14 @@
                         <a :href="`view?id=` + item.entityId" v-text="item.cnTrunk"></a>
                     </td>
                     <td>
-                        <a class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">
-                        <span class="icon is-small">
-                            <i class="fas fa-edit"></i>
-                        </span>
-                        </a>
-                        <a class="button is-small" title="删除" @click="remove(item.entityId)">
-                        <span class="icon is-small">
-                            <i class="fas fa-minus"></i>
-                        </span>
-                        </a>
+                        <div class="buttons has-addons">
+                            <span class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">
+                                <i class="fas fa-edit"></i>
+                            </span>
+                            <span class="button is-small" title="删除" @click="remove(item.entityId)">
+                                <i class="fas fa-minus"></i>
+                            </span>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

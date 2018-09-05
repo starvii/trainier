@@ -61,7 +61,7 @@
                     </span>
                 </p>
             </div>
-            <div class="column is-4">
+            <div class="column is-5">
                 <p class="control has-icons-right">
                     <input class="input is-small" type="text" placeholder="Chinese Option" v-model="opt.cnOption"
                            :class="[opt.isTrue ? 'is-success' : 'is-danger']">
@@ -71,9 +71,11 @@
                     </span>
                 </p>
             </div>
-            <div class="column is-2">
-                <a class="button is-small" @click="insertOption(index)"><i class="fas fa-plus"></i></a>
-                <a class="button is-small" @click="removeOption(index)"><i class="fas fa-minus"></i></a>
+            <div class="column is-1">
+                <div class="buttons has-addons">
+                    <span class="button is-small" @click="insertOption(index)"><i class="fas fa-plus"></i></span>
+                    <span class="button is-small" @click="removeOption(index)"><i class="fas fa-minus"></i></span>
+                </div>
             </div>
         </div>
         <div class="columns">

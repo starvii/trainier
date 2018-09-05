@@ -24,6 +24,7 @@ class QuestionParser:
     def __init__(self, cur_url: str) -> None:
         super().__init__()
         self.cur_url = cur_url
+        self.num = ''
         self.next_url: str = ''
         self.title: str = ''
         self.trunk: Trunk = Trunk(
@@ -88,9 +89,9 @@ class QuestionParser:
             self.title: str = tag.get_text(strip=True)
             _: List[str] = self.TITLE_PATTERN.findall(self.title, re.I)
             assert len(_) >= 1
-            num: str = _[0].strip()[1:]
-            logging.debug(num)
-            self.trunk.code = 'C-' + num
+            self.num: str = _[0].strip()[1:]
+            # logging.debug(num)
+            self.trunk.code = 'C-' + self.num
             return self.title
         except Exception as e:
             logging.error(e)
@@ -145,13 +146,6 @@ class QuestionParser:
         self.trunk.analysis = deal(buf_analysis)
         self._deal_options(self.options_tag)
 
-    # def f4_answer(self):
-    #     answer_node: Tag = self.soup.select_one('div[id="hidden-div"]').select_one('span')
-    #     assert answer_node is not None
-    #     self.p_list: List[Tag] = answer_node.find_all('p', recursive=True)
-    #     print(self.p_list)
-    #     print(self.entry_node.get_text(separator='\n', strip=True))
-
     def _deal_pic(self, pic_tag: Tag) -> None:
         img: Tag = pic_tag.select_one('img')
         n: int = len(self.pics)
@@ -204,40 +198,6 @@ class QuestionParser:
             ))
 
 
-# class QuestionParser(HTMLParser):
-#
-#     def __init__(self, *, convert_charrefs=True):
-#         super().__init__(convert_charrefs=convert_charrefs)
-#         self.status: str = None
-#         self._list: List = None
-#         self.source = ''
-#         self.text = ''
-#
-#     def handle_starttag(self, tag, attrs):
-#         super().handle_starttag(tag, attrs)
-#         if tag == 'h1' and ('class', 'entry-title') in attrs:
-#             self.status = 'source'
-#         elif tag == 'div' and ('class', 'entry-content') in attrs:
-#             self.status = 'text'
-#             self._list = list()
-#
-#     def handle_data(self, data):
-#         super().handle_data(data)
-#         if 'source' == self.status:
-#             self.source = data.strip()
-#         elif 'text' == self.status:
-#             _ = data.strip()
-#             self._list.append(_)
-#
-#     def handle_endtag(self, tag):
-#         super().handle_endtag(tag)
-#         if tag == 'h1' and self.status == 'source':
-#             self.status = None
-#         elif tag == 'div' and self.status == 'text':
-#             self.status = None
-#             self.text = '\n'.join(self._list)
-
-
 # def main():
 #     N: int = 1784
 #     headers: Dict = {
@@ -281,12 +241,11 @@ class QuestionParser:
 
 def test():
     p = QuestionParser('http://comptiaexamtest.com/Security+SY0-401/comptia-security-plus-mock-test-q520/')
-    # p.f0_request()
-    p.f0_parse_html(open('sample.html', 'r').read())
+    p.f0_request()
+    # p.f0_parse_html(open('sample.html', 'r').read())
     p.f1_next_url()
     p.f2_title()
     p.f3_entry()
-    # p.f4_answer()
     logging.info('next_url=%s', p.next_url)
     logging.info('title=%s', p.title)
 
