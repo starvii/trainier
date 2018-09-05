@@ -51,12 +51,12 @@
                     </td>
                     <td>
                         <div class="buttons has-addons">
-                            <span class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">
+                            <a class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">
                                 <i class="fas fa-edit"></i>
-                            </span>
-                            <span class="button is-small" title="删除" @click="remove(item.entityId)">
+                            </a>
+                            <a class="button is-small" title="删除" @click="remove(item.entityId)">
                                 <i class="fas fa-minus"></i>
-                            </span>
+                            </a>
                         </div>
                     </td>
                 </tr>

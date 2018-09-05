@@ -9,14 +9,14 @@ class Trunk(Base):
     __tablename__ = 'trunk'
     __table_args__ = {'extend_existing': True}
 
-    entityId = Column(String(24), primary_key=True)
-    code = Column(String, unique=True)
-    enTrunk = Column(String)
-    cnTrunk = Column(String)
-    analysis = Column(String)
-    source = Column(String)
-    level = Column(Integer)
-    comment = Column(String)
+    entityId = Column(String(24), primary_key=True, default='')
+    code = Column(String, unique=True, default='')
+    enTrunk = Column(String, default='')
+    cnTrunk = Column(String, default='')
+    analysis = Column(String, default='')
+    source = Column(String, default='')
+    level = Column(Integer, default=0)
+    comment = Column(String, default='')
 
     def __repr__(self) -> str:
         super().__repr__()
@@ -46,14 +46,14 @@ class Option(Base):
     __tablename__ = 'option'
     __table_args__ = {'extend_existing': True}
 
-    entityId = Column(String(24), primary_key=True)
-    trunkId = Column(String(24), nullable=False)
-    code = Column(String, unique=True)
-    enOption = Column(String)
-    cnOption = Column(String)
-    isTrue = Column(Integer)
-    orderNum = Column(Integer)
-    comment = Column(String)
+    entityId = Column(String(24), primary_key=True, default='')
+    trunkId = Column(String(24), nullable=False, default='')
+    code = Column(String, unique=True, default='')
+    enOption = Column(String, default='')
+    cnOption = Column(String, default='')
+    isTrue = Column(Integer, default=0)
+    orderNum = Column(Integer, default=0)
+    comment = Column(String, default='')
 
     def __repr__(self) -> str:
         super().__repr__()
@@ -83,11 +83,11 @@ class Pic(Base):
     __tablename__ = 'pic'
     __table_args__ = {'extend_existing': True}
 
-    entityId = Column(String(24), primary_key=True)
-    trunkId = Column(String(24), nullable=False)
-    code = Column(String)
-    title = Column(String)
-    data = Column(BLOB)
-    source = Column(String)
-    orderNum = Column(Integer)
-    comment = Column(String)
+    entityId = Column(String(24), primary_key=True, default='')
+    trunkId = Column(String(24), nullable=False, default='')
+    code = Column(String, default='')
+    title = Column(String, default='')
+    data = Column(BLOB, default=b'')
+    source = Column(String, default='')
+    orderNum = Column(Integer, default=0)
+    comment = Column(String, default='')
