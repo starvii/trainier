@@ -8,18 +8,7 @@
 结果页面/保存（测验）
 """
 
-import json
-from logging import Logger
-import base64
-import binascii
-from typing import Dict, List, Set
-from flask import Blueprint, Response, Request, request, make_response, abort
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-from trainier.model import Trunk, Option, Pic
-from trainier.logger import logger
-from trainier.api.service import dict_to_entity, list_to_entities
-from trainier.api.question.service import QuestionService
-from trainier.api.service import labelify
+from flask import Blueprint, Response
 
 blueprint: Blueprint = Blueprint('api-quiz', __name__, url_prefix='/api/quiz')
 
@@ -44,6 +33,11 @@ class Quiz:
 
     @staticmethod
     def stat() -> Response:
+        pass
+
+    @staticmethod
+    @blueprint.route('/<quiz_id>', methods=('POST',))
+    def quiz(quiz_id: str) -> Response:
         pass
 
     @staticmethod

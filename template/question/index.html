@@ -38,23 +38,23 @@
                 <tbody>
                 <tr v-for="(item, idx) in data">
                     <td>
-                        <a :href="`view?id=` + item.entityId" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                        <a :href="`view?id=` + item.entity_id" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                     </td>
                     <td>
-                        <a :href="`view?id=` + item.entityId" v-text="item.code"></a>
+                        <a :href="`view?id=` + item.entity_id" v-text="item.code"></a>
                     </td>
                     <td>
-                        <a :href="`view?id=` + item.entityId" v-text="item.enTrunk"></a>
+                        <a :href="`view?id=` + item.entity_id" v-text="item.en_trunk"></a>
                     </td>
                     <td>
-                        <a :href="`view?id=` + item.entityId" v-text="item.cnTrunk"></a>
+                        <a :href="`view?id=` + item.entity_id" v-text="item.cn_trunk"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
-                            <a class="button is-small" title="编辑" :href="`edit?id=` + item.entityId">
+                            <a class="button is-small" title="编辑" :href="`edit?id=` + item.entity_id">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a class="button is-small" title="删除" @click="remove(item.entityId)">
+                            <a class="button is-small" title="删除" @click="remove(item.entity_id)">
                                 <i class="fas fa-minus"></i>
                             </a>
                         </div>
@@ -118,7 +118,7 @@
                         }
                     );
                 },
-                remove: function (entityId) {
+                remove: function (entity_id) {
                     alert('现在还不能删除哟');
                 },
                 search: function () {

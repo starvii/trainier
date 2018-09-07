@@ -2,20 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import base64
-from flask import Flask, render_template, request
-from trainier import get_flask_app
+from flask import Blueprint, request, render_template
 
-from trainier.logger import logger
-
-app: Flask = get_flask_app()
+blueprint: Blueprint = Blueprint('api-question', __name__, url_prefix='/question')
 
 
-@app.route('/question/', methods=('GET',))
+@blueprint.route('/question/', methods=('GET',))
 def index() -> str:
     return render_template('question/index.html')
 
 
-@app.route('/question/edit', methods=('GET',))
+@blueprint.route('/question/edit', methods=('GET',))
 def edit() -> str:
     entity_id: str = request.args.get('id')
     if entity_id is not None and len(entity_id.strip()) > 0:
@@ -25,7 +22,7 @@ def edit() -> str:
     return render_template('question/edit.html', entity_id=entity_id)
 
 
-@app.route('/question/view', methods=('GET',))
+@blueprint.route('/question/view', methods=('GET',))
 def view() -> str:
     entity_id: str = request.args.get('id')
     if entity_id is not None and len(entity_id.strip()) > 0:
@@ -33,8 +30,3 @@ def view() -> str:
     else:
         entity_id = ''
     return render_template('question/view.html', entity_id=entity_id)
-
-
-@app.route('/quiz', methods=('GET',))
-def quiz() -> str:
-    return render_template('quiz/quiz.html')

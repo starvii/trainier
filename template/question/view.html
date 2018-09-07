@@ -1,7 +1,7 @@
 {% extends "base/skeleton.html" %}
 {% block container %}
     <div class="is-hidden">
-        <input id="entityId" readonly="readonly" value="{{ entity_id }}">
+        <input id="entity_id" readonly="readonly" value="{{ entity_id }}">
     </div>
     {% raw %}
     <div id="app">
@@ -47,10 +47,10 @@
                 <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
             </div>
             <div class="column is-5">
-                <p class="control" v-text="opt.en_option"></p>
+                <pre v-text="opt.en_option"></pre>
             </div>
             <div class="column is-5">
-                <p class="control" v-text="opt.cn_option"></p>
+                <pre v-text="opt.cn_option"></pre>
             </div>
         </div>
         <div class="field" v-if="trunk.analysis.length > 0">

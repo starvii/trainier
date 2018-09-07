@@ -10,9 +10,9 @@ from typing import List, Set, Dict
 from bs4 import BeautifulSoup, Tag, PageElement
 import requests
 
-from trainier.model import Trunk, Option
+from dao.model import Trunk, Option
 from trainier.util.object_id import object_id
-from trainier.api.question.service import QuestionService
+from web.question.service import QuestionService
 
 OPT_PATTERN = re.compile(r'[A-J]\.\n')
 OPT_EXP_PATTERN = re.compile(r'\n[A-J]\.\n|\nExplanation:\n')

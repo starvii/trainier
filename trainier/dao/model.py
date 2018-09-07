@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from sqlalchemy import Column, Integer, String, BLOB, DATETIME, TEXT
-from trainier.orm import Base, metadata
+from dao.orm import Base, metadata
 
 
 class Trunk(Base):

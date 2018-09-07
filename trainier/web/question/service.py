@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import string
-from typing import List, Dict, Set
+from typing import List
 from sqlalchemy.sql import or_
-from trainier.orm import Session
+from dao.orm import Session
 from trainier.util.object_id import object_id
-from trainier.model import Trunk, Option, Pic
-from trainier.logger import logger
+from dao.model import Trunk, Option, Pic
+from util.logger import logger
 
 
 class QuestionService:

@@ -13,4 +13,3 @@ metadata = MetaData(engine)
 Base = declarative_base(bind=engine, metadata=metadata)
 
 Session = sessionmaker(bind=engine)
-

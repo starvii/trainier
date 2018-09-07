@@ -10,8 +10,8 @@ from typing import List, Set
 from bs4 import BeautifulSoup, Tag, PageElement
 import requests
 
-from trainier.model import Trunk, Option
-from trainier.api.service import ImportService
+from dao.model import Trunk, Option
+from util.labelify import ImportService
 
 OPT_TITLE_PATTERN = re.compile(r'^[A-J]{1}\.')
 

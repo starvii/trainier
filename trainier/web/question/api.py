@@ -2,15 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import json
-import base64
 from typing import Dict, List, Set
 from flask import Blueprint, Response, Request, request, make_response, abort
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from trainier.model import Trunk, Option, Pic
-from trainier.logger import logger
-from trainier.api.service import dict_to_entity, list_to_entities
-from trainier.api.question.service import QuestionService
-from trainier.api.service import labelify
+from dao.model import Trunk, Option, Pic
+from util.logger import logger
+from util.labelify import dict_to_entity, list_to_entities
+from web.question.service import QuestionService
+from util.labelify import labelify
 from trainier.util.value import extract_id
 
 blueprint: Blueprint = Blueprint('api-question', __name__, url_prefix='/api/question')

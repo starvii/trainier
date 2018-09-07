@@ -5,14 +5,12 @@ import sys
 
 sys.path.append('../')
 
-import time
 import re
 import logging
-from typing import Dict, List, Set, Pattern, Tuple
+from typing import Dict, List, Set, Pattern
 import requests
 from bs4 import BeautifulSoup, Tag, PageElement, NavigableString
-from trainier.api.question.service import QuestionService
-from trainier.model import Trunk, Option, Pic
+from dao.model import Trunk, Option, Pic
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s')
 
