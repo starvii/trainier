@@ -142,7 +142,7 @@ class QuestionParser:
                 buffer.append('\n')
             return '\n'.join(buffer).strip()
 
-        self.trunk.enTrunk = deal(buf_trunk)
+        self.trunk.en_trunk = deal(buf_trunk)
         self.trunk.analysis = deal(buf_analysis)
         self._deal_options(self.options_tag)
 

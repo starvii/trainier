@@ -60,7 +60,7 @@ def parse_html(url: str, html: str) -> (str, Trunk, List[Option]):
             buf.append(t.text.strip())
 
         trunk: Trunk = Trunk(source=url, level=0, comment='', analysis='', cnTrunk='')
-        trunk.enTrunk = '\n'.join(buf)
+        trunk.en_trunk = '\n'.join(buf)
 
         # 提取正确答案
         corrects: Set[str] = set([_.text.strip()[0] for _ in entry_node.select('p[class="rightAnswer"]')])

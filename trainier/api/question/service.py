@@ -15,11 +15,11 @@ class QuestionService:
     def select_trunk_options_pics_by_id(entity_id: str) -> (Trunk, List[Option], List[Pic]) or None:
         session: Session = Session()
         try:
-            trunk: Trunk = session.query(Trunk).filter(Trunk.entityId == entity_id).one_or_none()
+            trunk: Trunk = session.query(Trunk).filter(Trunk.entity_id == entity_id).one_or_none()
             if trunk is None:
                 return None
-            options: List[Option] = session.query(Option).filter(Option.trunkId == entity_id).all()
-            pics: List[Pic] = session.query(Pic).filter(Pic.trunkId == entity_id).all()
+            options: List[Option] = session.query(Option).filter(Option.trunk_id == entity_id).all()
+            pics: List[Pic] = session.query(Pic).filter(Pic.trunk_id == entity_id).all()
             return trunk, options, pics
         except Exception as e:
             logger.error(e)
@@ -41,8 +41,8 @@ class QuestionService:
             if len(keyword) > 0:
                 k: str = '%' + keyword + '%'
                 q = session.query(Trunk).filter(or_(
-                    Trunk.enTrunk.like(k),
-                    Trunk.cnTrunk.like(k),
+                    Trunk.en_trunk.like(k),
+                    Trunk.cn_trunk.like(k),
                     Trunk.analysis.like(k),
                     Trunk.source.like(k),
                     Trunk.comment.like(k)
@@ -63,49 +63,49 @@ class QuestionService:
     def save(trunk: Trunk, options: List[Option], pics: List[Pic] = None) -> None:
         session: Session = Session()
         try:
-            if trunk.entityId is None or len(trunk.entityId.strip()) == 0:
+            if trunk.entity_id is None or len(trunk.entity_id.strip()) == 0:
                 trunk_id = object_id()
-                trunk.entityId = trunk_id
+                trunk.entity_id = trunk_id
                 session.add(trunk)
                 if options is not None and len(options) > 0:
                     for i, option in enumerate(options):
-                        option.entityId = object_id()
-                        option.trunkId = trunk_id
-                        option.orderNum = i
+                        option.entity_id = object_id()
+                        option.trunk_id = trunk_id
+                        option.order_num = i
                         if trunk.code is not None and len(trunk.code.strip()) > 0:
                             option.code = trunk.code.strip() + '-' + string.ascii_uppercase[i]
                     session.add_all(options)
                 if pics is not None and len(pics) > 0:
                     for i, pic in enumerate(pics):
-                        pic.entityId = object_id()
-                        pic.trunkId = trunk_id
-                        pic.orderNum = i
+                        pic.entity_id = object_id()
+                        pic.trunk_id = trunk_id
+                        pic.order_num = i
                         if trunk.code is not None and len(trunk.code.strip()) > 0:
                             pic.code = trunk.code.strip() + '-' + str(i)
                     session.add_all(options)
             else:
-                trunk_id = trunk.entityId
+                trunk_id = trunk.entity_id
                 session.merge(trunk)
                 # assert len(options) >= 4
                 if options is not None and len(options) > 0:
                     for i, option in enumerate(options):
-                        option.trunkId = trunk_id
-                        option.orderNum = i
+                        option.trunk_id = trunk_id
+                        option.order_num = i
                         if trunk.code is not None and len(trunk.code.strip()) > 0:
                             option.code = trunk.code.strip() + '-' + string.ascii_uppercase[i]
-                        if option.entityId is None or len(option.entityId.strip()) == 0:
-                            option.entityId = object_id()
+                        if option.entity_id is None or len(option.entity_id.strip()) == 0:
+                            option.entity_id = object_id()
                             session.add(option)
                         else:
                             session.merge(option)
                 if pics is not None and len(pics) > 0:
                     for i, pic in enumerate(pics):
-                        pic.trunkId = trunk_id
-                        pic.orderNum = i
+                        pic.trunk_id = trunk_id
+                        pic.order_num = i
                         if trunk.code is not None and len(trunk.code.strip()) > 0:
                             pic.code = trunk.code.strip() + '-' + str(i)
-                        if pic.entityId is None or len(pic.entityId.strip()) == 0:
-                            pic.entityId = object_id()
+                        if pic.entity_id is None or len(pic.entity_id.strip()) == 0:
+                            pic.entity_id = object_id()
                             session.add(pic)
                         else:
                             session.merge(pic)

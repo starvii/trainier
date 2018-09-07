@@ -18,14 +18,14 @@ class ImportService:
     def save(trunk: Trunk, options: List[Option]) -> bool:
         session = Session()
         try:
-            if trunk.entityId is None or len(trunk.entityId.strip()) == 0:
-                trunk.entityId = object_id()
+            if trunk.entity_id is None or len(trunk.entity_id.strip()) == 0:
+                trunk.entity_id = object_id()
             # session.execute('BEGIN;')
             session.add(trunk)
             for option in options:
-                option.trunkId = trunk.entityId
-                if option.entityId is None or len(option.entityId.strip()) == 0:
-                    option.entityId = object_id()
+                option.trunk_id = trunk.entity_id
+                if option.entity_id is None or len(option.entity_id.strip()) == 0:
+                    option.entity_id = object_id()
                 session.add(option)
             session.commit()
             # session.execute('COMMIT;')

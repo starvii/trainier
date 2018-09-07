@@ -54,10 +54,10 @@ def index(req: Request) -> Response:
             l = []
         else:
             fields: Set[InstrumentedAttribute] = {
-                Trunk.entityId,
+                Trunk.entity_id,
                 Trunk.code,
-                Trunk.enTrunk,
-                Trunk.cnTrunk,
+                Trunk.en_trunk,
+                Trunk.cn_trunk,
             }
             l: List[Dict] = labelify(trunks, fields)
             # 数据简化
@@ -144,7 +144,7 @@ def put(entity_id: str) -> Response or None:
     logger.debug(j)
     trunk: Trunk = Trunk()
     trunk = dict_to_entity(j['trunk'], trunk)
-    if trunk.entityId != eid:
+    if trunk.entity_id != eid:
         abort(404)
         return None
     options = list_to_entities(j['options'], Option())

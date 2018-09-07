@@ -95,7 +95,7 @@ class QuestionParser:
                 buf.append(t.get_text(separator='\n', strip=True))
 
             en_trunk = '\n'.join(buf).strip()
-            self.trunk.enTrunk = en_trunk
+            self.trunk.en_trunk = en_trunk
             return self.trunk
         except Exception as e:
             print(e)
@@ -128,10 +128,10 @@ class QuestionParser:
                 opts.append((option_chars[0][0], opt))
             self.options: List[Option] = list()
             for i, (opt, text) in enumerate(opts):
-                option_id = object_id() if len(self.trunk.entityId) == 24 else self.trunk.entityId + '-' + opt
+                option_id = object_id() if len(self.trunk.entity_id) == 24 else self.trunk.entity_id + '-' + opt
                 self.options.append(Option(
                     entityId=option_id,
-                    trunkId=self.trunk.entityId,
+                    trunkId=self.trunk.entity_id,
                     enOption=text,
                     isTrue=opt in corrects,
                     cnOption='',
