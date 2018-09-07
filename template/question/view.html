@@ -1,8 +1,5 @@
 {% extends "base/skeleton.html" %}
 {% block container %}
-    <div class="is-hidden">
-        <input id="entity_id" readonly="readonly" value="{{ entity_id }}">
-    </div>
     {% raw %}
     <div id="app">
         <div class="columns">
@@ -99,13 +96,17 @@
                 pics: [],
             },
             mounted: function() {
-                this.encodedTrunkId = window.document.getElementById('entity_id').value;
-                this.load();
+                let hsh = location.hash.trim();
+                if (hsh[0] === '#') {
+                    hsh = hsh.substring(1);
+                    this.encodedTrunkId = hsh;
+                    this.load();
+                }
             },
             methods: {
                 load: function () {
                     axios({
-                        url: '/api/question/' + this.encodedTrunkId,
+                        url: '/question/api/' + this.encodedTrunkId,
                         method: 'GET',
                     }).then(
                         function (response) {

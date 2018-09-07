@@ -38,20 +38,20 @@
                 <tbody>
                 <tr v-for="(item, idx) in data">
                     <td>
-                        <a :href="`view?id=` + item.entity_id" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                        <a :href="`view#` + item.entity_id" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                     </td>
                     <td>
-                        <a :href="`view?id=` + item.entity_id" v-text="item.code"></a>
+                        <a :href="`view#` + item.entity_id" v-text="item.code"></a>
                     </td>
                     <td>
-                        <a :href="`view?id=` + item.entity_id" v-text="item.en_trunk"></a>
+                        <a :href="`view#` + item.entity_id" v-text="item.en_trunk"></a>
                     </td>
                     <td>
-                        <a :href="`view?id=` + item.entity_id" v-text="item.cn_trunk"></a>
+                        <a :href="`view#` + item.entity_id" v-text="item.cn_trunk"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
-                            <a class="button is-small" title="编辑" :href="`edit?id=` + item.entity_id">
+                            <a class="button is-small" title="编辑" :href="`edit#` + item.entity_id">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a class="button is-small" title="删除" @click="remove(item.entity_id)">
@@ -91,10 +91,7 @@
                 list: function () {
                     axios({
                         method: 'POST',
-                        url: '/api/question/',
-                        headers: {
-                            'X-HTTP-Method-Override': 'GET',
-                        },
+                        url: '/question/api/',
                         data: {
                             page: this.pageConf.currentPage,
                             size: this.pageConf.itemsPerPage,

@@ -31,14 +31,10 @@ class RegexConverter(BaseConverter):
 
 def bind_views() -> None:
     app = get_flask_app()
-    import web.page
-    logger.info('%s loaded.', web.page)
-    import web.question.api
-    app.register_blueprint(web.question.api.blueprint)
-    logger.info('%s loaded.', web.question.api)
-    import web.quiz.api
-    app.register_blueprint(web.quiz.api.blueprint)
-    logger.info('%s loaded.', web.quiz.api)
+    import web.question.view
+    logger.info('%s loaded.', web.question.view)
+    app.register_blueprint(web.question.view.blueprint)
+
 
 
 def main() -> None:
