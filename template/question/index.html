@@ -44,10 +44,10 @@
                         <a :href="`view#` + item.entity_id" v-text="item.code"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" v-text="item.en_trunk"></a>
+                        <a :href="`view#` + item.entity_id" :title="item.en_trunk_full" v-text="item.en_trunk"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" v-text="item.cn_trunk"></a>
+                        <a :href="`view#` + item.entity_id" :title="item.cn_trunk_full" v-text="item.cn_trunk"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">

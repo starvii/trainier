@@ -18,6 +18,7 @@ class Trunk(Base):
     source = Column(TEXT, index=True, default='')
     level = Column(Integer, default=0)
     comment = Column(TEXT, default='')
+    parent = Column(String(24), default='')
 
     def __repr__(self) -> str:
         super().__repr__()

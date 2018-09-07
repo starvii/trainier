@@ -84,6 +84,8 @@ class API:
                 l: List[Dict] = labelify(trunks, fields)
                 # 数据简化
                 for item in l:
+                    item['en_trunk_full'] = item['en_trunk']
+                    item['cn_trunk_full'] = item['cn_trunk']
                     if len(item['en_trunk']) > 50:
                         item['en_trunk'] = item['en_trunk'][:47] + '...'
                     if len(item['cn_trunk']) > 50:
