@@ -1,7 +1,7 @@
 {% extends "base/skeleton.html" %}
 {% block container %}
     <div class="is-hidden">
-        <input id="entityId" readonly="readonly" value="{{ entity_id }}">
+        <input id="entity_id" readonly="readonly" value="{{ entity_id }}">
     </div>
     {% raw %}
     <div id="app">
@@ -31,7 +31,7 @@
                     <label class="label">英文题目</label>
                     <div class="control">
                         <textarea rows="5" class="textarea is-small" placeholder="English Trunk"
-                                  v-model="trunk.enTrunk"></textarea>
+                                  v-model="trunk.en_trunk"></textarea>
                     </div>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                     <label class="label">中文题目</label>
                     <div class="control">
                         <textarea rows="3" class="textarea is-small" placeholder="Chinese Trunk"
-                                  v-model="trunk.cnTrunk"></textarea>
+                                  v-model="trunk.cn_trunk"></textarea>
                     </div>
                 </div>
             </div>
@@ -53,21 +53,21 @@
             </div>
             <div class="column is-5">
                 <p class="control has-icons-right">
-                    <input class="input is-small" type="text" placeholder="English Option" v-model="opt.enOption"
-                           :class="[opt.isTrue ? 'is-success' : 'is-danger']">
+                    <input class="input is-small" type="text" placeholder="English Option" v-model="opt.en_option"
+                           :class="[opt.is_true ? 'is-success' : 'is-danger']">
                     <span class="icon is-small is-right">
-                        <i class="fas fa-check" v-if="opt.isTrue"></i>
-                        <i class="fas fa-times" v-if="!opt.isTrue"></i>
+                        <i class="fas fa-check" v-if="opt.is_true"></i>
+                        <i class="fas fa-times" v-if="!opt.is_true"></i>
                     </span>
                 </p>
             </div>
             <div class="column is-5">
                 <p class="control has-icons-right">
-                    <input class="input is-small" type="text" placeholder="Chinese Option" v-model="opt.cnOption"
-                           :class="[opt.isTrue ? 'is-success' : 'is-danger']">
+                    <input class="input is-small" type="text" placeholder="Chinese Option" v-model="opt.cn_option"
+                           :class="[opt.is_true ? 'is-success' : 'is-danger']">
                     <span class="icon is-small is-right">
-                        <i class="fas fa-check" v-if="opt.isTrue"></i>
-                        <i class="fas fa-times" v-if="!opt.isTrue"></i>
+                        <i class="fas fa-check" v-if="opt.is_true"></i>
+                        <i class="fas fa-times" v-if="!opt.is_true"></i>
                     </span>
                 </p>
             </div>
@@ -122,9 +122,9 @@
 
                 encodedTrunkId: '',
                 trunk: {
-                    entityId: '',
-                    enTrunk: '',
-                    cnTrunk: '',
+                    entity_id: '',
+                    en_trunk: '',
+                    cn_trunk: '',
                     level: 0,
                     comment: '',
                     analysis: '',
@@ -132,46 +132,46 @@
                 },
                 options: [
                     {
-                        entityId: '',
-                        trunkId: '',
-                        enOption: '',
-                        cnOption: '',
-                        isTrue: false,
-                        orderNum: 0,
+                        entity_id: '',
+                        trunk_id: '',
+                        en_option: '',
+                        cn_option: '',
+                        is_true: false,
+                        order_num: 0,
                         comment: '',
                     },
                     {
-                        entityId: '',
-                        trunkId: '',
-                        enOption: '',
-                        cnOption: '',
-                        isTrue: false,
-                        orderNum: 0,
+                        entity_id: '',
+                        trunk_id: '',
+                        en_option: '',
+                        cn_option: '',
+                        is_true: false,
+                        order_num: 0,
                         comment: '',
                     },
                     {
-                        entityId: '',
-                        trunkId: '',
-                        enOption: '',
-                        cnOption: '',
-                        isTrue: false,
-                        orderNum: 0,
+                        entity_id: '',
+                        trunk_id: '',
+                        en_option: '',
+                        cn_option: '',
+                        is_true: false,
+                        order_num: 0,
                         comment: '',
                     },
                     {
-                        entityId: '',
-                        trunkId: '',
-                        enOption: '',
-                        cnOption: '',
-                        isTrue: false,
-                        orderNum: 0,
+                        entity_id: '',
+                        trunk_id: '',
+                        en_option: '',
+                        cn_option: '',
+                        is_true: false,
+                        order_num: 0,
                         comment: '',
                     },
                 ],
                 pics: [],
             },
             mounted: function () {
-                this.encodedTrunkId = window.document.getElementById('entityId').value;
+                this.encodedTrunkId = window.document.getElementById('entity_id').value;
                 this.load();
             },
             methods: {
@@ -198,11 +198,11 @@
                 insertOption: function (idx) {
                     if (this.options.length < 12) {
                         this.options.splice(idx + 1, 0, {
-                            entityId: '',
-                            trunkId: '',
-                            enOption: '',
-                            cnOption: '',
-                            isTrue: false,
+                            entity_id: '',
+                            trunk_id: '',
+                            en_option: '',
+                            cn_option: '',
+                            is_true: false,
                         });
                     }
                 },
@@ -237,7 +237,7 @@
                     );
                 },
                 changeAnswer: function (index) {
-                    app.options[index].isTrue = !app.options[index].isTrue;
+                    app.options[index].is_true = !app.options[index].is_true;
                 },
             },
         });

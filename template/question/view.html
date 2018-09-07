@@ -22,16 +22,16 @@
 
         <div class="columns">
             <div class="column">
-                <div class="field" v-if="trunk.enTrunk.length > 0">
+                <div class="field" v-if="trunk.en_trunk.length > 0">
                     <label class="label">英文题目</label>
                     <div class="control">
-                        <pre v-text="trunk.enTrunk"></pre>
+                        <pre v-text="trunk.en_trunk"></pre>
                     </div>
                 </div>
-                <div class="field" v-if="trunk.cnTrunk.length > 0">
+                <div class="field" v-if="trunk.cn_trunk.length > 0">
                     <label class="label">中文题目</label>
                     <div class="control">
-                        <pre v-text="trunk.cnTrunk"></pre>
+                        <pre v-text="trunk.cn_trunk"></pre>
                     </div>
                 </div>
             </div>
@@ -39,18 +39,18 @@
         <div class="columns" v-for="(opt, index) in options">
             <div class="column is-1">
                 <span class="icon is-right">
-                    <i class="fas fa-check is-true" v-if="opt.isTrue"></i>
-                    <i class="fas fa-times is-false" v-if="!opt.isTrue"></i>
+                    <i class="fas fa-check is-true" v-if="opt.is_true"></i>
+                    <i class="fas fa-times is-false" v-if="!opt.is_true"></i>
                 </span>
             </div>
             <div class="column is-1">
-                <span :class="[opt.isTrue ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+                <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
             </div>
             <div class="column is-5">
-                <p class="control" v-text="opt.enOption"></p>
+                <p class="control" v-text="opt.en_option"></p>
             </div>
             <div class="column is-5">
-                <p class="control" v-text="opt.cnOption"></p>
+                <p class="control" v-text="opt.cn_option"></p>
             </div>
         </div>
         <div class="field" v-if="trunk.analysis.length > 0">
@@ -86,10 +86,10 @@
 
                 encodedTrunkId: '',
                 trunk: {
-                    entityId: '',
+                    entity_id: '',
                     code: '',
-                    enTrunk: '',
-                    cnTrunk: '',
+                    en_trunk: '',
+                    cn_trunk: '',
                     level: 0,
                     comment: '',
                     analysis: '',
@@ -99,7 +99,7 @@
                 pics: [],
             },
             mounted: function() {
-                this.encodedTrunkId = window.document.getElementById('entityId').value;
+                this.encodedTrunkId = window.document.getElementById('entity_id').value;
                 this.load();
             },
             methods: {

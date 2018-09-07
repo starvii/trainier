@@ -62,10 +62,10 @@ def index(req: Request) -> Response:
             l: List[Dict] = labelify(trunks, fields)
             # 数据简化
             for item in l:
-                if len(item['enTrunk']) > 50:
-                    item['enTrunk'] = item['enTrunk'][:47] + '...'
-                if len(item['cnTrunk']) > 50:
-                    item['cnTrunk'] = item['cnTrunk'][:47] + '...'
+                if len(item['en_trunk']) > 50:
+                    item['en_trunk'] = item['en_trunk'][:47] + '...'
+                if len(item['cn_trunk']) > 50:
+                    item['cn_trunk'] = item['cn_trunk'][:47] + '...'
         r: Dict = dict(
             page=page,
             size=size,
