@@ -3,14 +3,13 @@
 
 import json
 from typing import Dict, List, Set
-from flask import Blueprint, Response, Request, request, make_response, abort, render_template
+from flask import Blueprint, Response, request, make_response, abort, render_template
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from dao.model import Trunk, Option, Pic
 from util.logger import logger
 from util.labelify import dict_to_entity, list_to_entities
 from web.question.service import QuestionService
 from util.labelify import labelify
-from trainier.util.value import extract_id
 
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
@@ -82,14 +81,14 @@ class API:
                     Trunk.cn_trunk,
                 }
                 l: List[Dict] = labelify(trunks, fields)
-                # 数据简化
-                for item in l:
-                    item['en_trunk_full'] = item['en_trunk']
-                    item['cn_trunk_full'] = item['cn_trunk']
-                    if len(item['en_trunk']) > 50:
-                        item['en_trunk'] = item['en_trunk'][:47] + '...'
-                    if len(item['cn_trunk']) > 50:
-                        item['cn_trunk'] = item['cn_trunk'][:47] + '...'
+                # # 数据简化
+                # for item in l:
+                #     item['en_trunk_full'] = item['en_trunk']
+                #     item['cn_trunk_full'] = item['cn_trunk']
+                #     if len(item['en_trunk']) > 50:
+                #         item['en_trunk'] = item['en_trunk'][:47] + '...'
+                #     if len(item['cn_trunk']) > 50:
+                #         item['cn_trunk'] = item['cn_trunk'][:47] + '...'
             r: Dict = dict(
                 page=page,
                 size=size,
@@ -113,8 +112,7 @@ class API:
         :param entity_id: TrunkId
         :return:
         """
-        eid: str = extract_id(entity_id)
-        _ = QuestionService.select_trunk_options_pics_by_id(eid)
+        _ = QuestionService.select_trunk_options_pics_by_id(entity_id)
         if _ is not None and _[0] is not None:
             trunk, options, pics = _
             r: Dict = dict(
@@ -160,13 +158,12 @@ class API:
         :param entity_id:
         :return:
         """
-        eid: str = extract_id(entity_id)
         data: bytes = request.data
         j = json.loads(data)
         logger.debug(j)
         trunk: Trunk = Trunk()
         trunk = dict_to_entity(j['trunk'], trunk)
-        if trunk.entity_id != eid:
+        if trunk.entity_id != entity_id:
             abort(404)
             return
         options = list_to_entities(j['options'], Option())
@@ -184,6 +181,7 @@ class API:
     def remove(entity_id: str) -> Response:
         """
         DELETE /api/<entity_id>
+        暂不提供删除功能
         :param entity_id:
         :return:
         """

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+从Sqlalchemy实体中筛选出必要的数据（供前台展示使用）
+"""
+
 from typing import Dict, Set, List
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 

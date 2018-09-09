@@ -1,38 +1,30 @@
 const PageComponent = Vue
     .extend({
         template: ''
-            + '<div class="pagination is-centered is-small">'
+            + '<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">'
+            + '<a class="pagination-previous" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><i class="fas fa-angle-left"></i></a>'
+            + '<a class="pagination-next" :class="{\'is-disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><i class="fas fa-angle-right"></i></a>'
             + '<ul class="pagination-list" v-show="conf.totalItems > 0">'
-            + '<li class="pagination-link" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><span><i class="fas fa-angle-left"></i></span></li>'
-            + '<li v-for="item in pageList" track-by="$index" :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}"'
-            + '@click="changeCurrentPage(item)">'
-            + '<span v-text="item"></span></li>'
-            + '<li class="pagination-link" :class="{\'is-disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><span><i class="fas fa-angle-right"></i></span></li>'
+            + '<li v-for="item in pageList">'
+            + '<a :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}" @click="changeCurrentPage(item)" v-text="item"></a>'
+            + '</li>'
             + '</ul>'
             + '<div class="page-total" v-show="conf.totalItems > 0">'
             + '<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>'
             + '<input class="input is-small is-rounded" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>'
             + '<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>'
             + '<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>'
-            + '<select class="select is-small is-rounded" v-model="conf.itemsPerPage"><option v-for="option in conf.perPageOptions">{{option}}</option></select>'
+            + '<select class="select is-small is-rounded" v-model="conf.itemsPerPage"><option v-for="option in conf.perPageOptions" v-text="option"></option></select>'
             + '<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">'
             + '</div>'
             + '<div v-show="conf.totalItems <= 0">暂无数据</div>'
-            + '</div>',
+            + '</nav>',
         replace: true,
         props: {
             conf: {
                 type: Object,
                 require: true,
             },
-            // jumpPageNum: {
-            //     type: String,
-            //     require: false,
-            // },
-            // pageList: {
-            //     type: Array,
-            //     require: false,
-            // },
         },
         data: function () {
             return {
@@ -45,15 +37,6 @@ const PageComponent = Vue
                 return '/共' + this.conf.totalItems + '条';
             }
         },
-        // props: [{
-        //     name: 'conf',
-        //     require: true
-        // }, 'jumpPageNum', 'pageList'],
-        // props: [
-        //     'conf',
-        //     'jumpPageNum',
-        //     'pageList',
-        // ],
         mounted: function () {
             this.conf.pagesLength = parseInt(this.conf.pagesLength) ? parseInt(this.conf.pagesLength)
                 : 9;
@@ -212,10 +195,7 @@ const PageComponent = Vue
                 if (!this.conf.totalItems) {
                     this.conf.totalItems = 0;
                 }
-                let watchState = this.conf.totalItems + ' '
-                    + this.conf.currentPage + ' '
-                    + this.conf.itemsPerPage;
-                return watchState;
+                return this.conf.totalItems + ' ' + this.conf.currentPage + ' ' + this.conf.itemsPerPage;
             },
         },
     });

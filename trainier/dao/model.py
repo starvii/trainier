@@ -105,7 +105,9 @@ class Quiz(Base):
     entity_id = Column(String(24), unique=True, index=True, default='')
     code = Column(String(100), index=True, default='')
     name = Column(TEXT, index=True, default='')
-    questions = Column(TEXT, default='')
+    questions = Column(TEXT, default='')  # 使用【,】进行分割
+    random_trunk = Column(Integer, default=0)
+    random_choice = Column(Integer, default=0)
     comment = Column(TEXT, default='')
 
 

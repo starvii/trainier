@@ -1,10 +1,138 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base/skeleton.html" %}
+{% block container %}
+    {% raw %}
+    <div class="columns" id="app">
+        <div class="column">
+            <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+                <thead>
+                <tr>
+                    <td colspan="5">
+                        <page-component :conf.sync="pageConf"></page-component>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                    </td>
+                    <td><a class="button is-small" title="查找" @click="search()">
+                        <span class="icon is-small">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </a></td>
+                </tr>
+                <tr>
+                    <th>编号</th>
+                    <th>编码</th>
+                    <th>题目（英文）</th>
+                    <th>题目（中文）</th>
+                    <th>
+                        <a class="button is-small" href="edit" title="添加">
+                        <span class="icon is-small">
+                            <i class="fas fa-plus"></i>
+                        </span>
+                        </a>
 
-</body>
-</html>
+                    </th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <td>
+                        <page-component :conf.sync="pageConf"></page-component>
+                    </td>
+                </tr>
+                </tfoot>
+                <tbody>
+                <tr v-for="(item, idx) in data">
+                    <td>
+                        <a :href="`view#` + item.entity_id" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                    </td>
+                    <td>
+                        <a :href="`view#` + item.entity_id" v-text="item.code"></a>
+                    </td>
+                    <td>
+                        <a :href="`view#` + item.entity_id" :title="item.en_trunk_full" v-text="item.en_trunk"></a>
+                    </td>
+                    <td>
+                        <a :href="`view#` + item.entity_id" :title="item.cn_trunk_full" v-text="item.cn_trunk"></a>
+                    </td>
+                    <td>
+                        <div class="buttons has-addons">
+                            <a class="button is-small" title="编辑" :href="`edit#` + item.entity_id">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a class="button is-small" title="删除" @click="remove(item.entity_id)">
+                                <i class="fas fa-minus"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+    {% endraw %}
+{% endblock %}
+{% block script %}
+    {% raw %}
+    <script src="/js/page.js"></script>
+    <script>
+        const app = new window.Vue({
+            el: '#app',
+            data: {
+                data: [],
+                pageConf: {
+                    currentPage: 1,
+                    totalItems: 1000,
+                    itemsPerPage: 10,
+                    pagesLength: 9,
+                    perPageOptions: [10, 15, 30, 50, 100],
+                    onChange: 'list',
+                },
+                keyword: '',
+                kw: '',
+            },
+            methods: {
+                list: function () {
+                    axios({
+                        method: 'POST',
+                        url: '/question/api/',
+                        data: {
+                            page: this.pageConf.currentPage,
+                            size: this.pageConf.itemsPerPage,
+                            keyword: this.keyword,
+                        },
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                let t = response.data;
+                                this.pageConf.currentPage = t.page;
+                                this.pageConf.totalItems = t.total;
+                                this.pageConf.itemsPerPage = t.size;
+                                this.data = t.data;
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志');
+                        }
+                    );
+                },
+                remove: function (entity_id) {
+                    alert('现在还不能删除哟');
+                },
+                search: function () {
+                    if (this.keyword !== this.kw.trim()) {
+                        this.keyword = this.kw.trim();
+                        this.list();
+                    }
+                },
+            },
+        });
+    </script>
+    {% endraw %}
+{% endblock %}

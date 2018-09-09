@@ -6,6 +6,12 @@
             <table class="table is-striped is-narrow is-fullwidth is-hoverable">
                 <thead>
                 <tr>
+                    <td colspan="5">
+                        <page-component :conf.sync="pageConf"></page-component>
+                    </td>
+                </tr>
+
+                <tr>
                     <td colspan="4">
                         <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
                     </td>
@@ -32,7 +38,10 @@
                 </thead>
                 <tfoot>
                 <tr>
-                    <page-component :conf.sync="pageConf"></page-component>
+                    <td colspan="5">
+                        <page-component :conf.sync="pageConf"></page-component>
+                    </td>
+
                 </tr>
                 </tfoot>
                 <tbody>
@@ -43,11 +52,14 @@
                     <td>
                         <a :href="`view#` + item.entity_id" v-text="item.code"></a>
                     </td>
-                    <td>
-                        <a :href="`view#` + item.entity_id" :title="item.en_trunk_full" v-text="item.en_trunk"></a>
+                    <td colspan="2" v-if="item.x_trunk.length > 0">
+                        <a :href="`view#` + item.entity_id" :title="item.x_trunk" v-text="item.x_trunk_digest"></a>
                     </td>
-                    <td>
-                        <a :href="`view#` + item.entity_id" :title="item.cn_trunk_full" v-text="item.cn_trunk"></a>
+                    <td v-if="item.x_trunk.length == 0">
+                        <a :href="`view#` + item.entity_id" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
+                    </td>
+                    <td v-if="item.x_trunk.length == 0">
+                        <a :href="`view#` + item.entity_id" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
@@ -71,7 +83,10 @@
 {% block script %}
     {% raw %}
     <script src="/js/page.js"></script>
+    <script src="/js/common.js"></script>
     <script>
+
+
         const app = new window.Vue({
             el: '#app',
             data: {
@@ -101,10 +116,14 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 let t = response.data;
+                                // 进行简化处理
+                                let trunks = t.data;
+                                digest(trunks);
+                                // 分页器赋值
                                 this.pageConf.currentPage = t.page;
                                 this.pageConf.totalItems = t.total;
                                 this.pageConf.itemsPerPage = t.size;
-                                this.data = t.data;
+                                this.data = trunks;
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }

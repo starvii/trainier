@@ -1,0 +1,125 @@
+{% extends "base/skeleton.html" %}
+{% block container %}
+    <div class="is-hidden">
+        <input id="entityId" readonly="readonly" value="{{ entity_id }}">
+    </div>
+    {% raw %}
+    <div class="columns" id="app">
+        <div class="column">
+            <form>
+                <div class="field" v-if="trunk.enTrunk.length > 0">
+                    <label class="label">英文题目</label>
+                    <div class="control">
+                        <pre v-text="trunk.enTrunk"></pre>
+                    </div>
+                </div>
+                <div class="field" v-if="trunk.cnTrunk.length > 0">
+                    <label class="label">中文题目</label>
+                    <div class="control">
+                        <pre v-text="trunk.cnTrunk"></pre>
+                    </div>
+                </div>
+                <div class="field" v-for="(opt, index) in options">
+                    <div class="field-body">
+                        <div class="field">
+                            <p class="control">
+                                <span class="icon is-right">
+                                    <i class="fas fa-check is-true" v-if="opt.isTrue"></i>
+                                    <i class="fas fa-times is-false" v-if="!opt.isTrue"></i>
+                                </span>
+                                <span class="is-pulled-right" :class="[opt.isTrue ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <p class="control">
+                                <p v-text="opt.enOption"></p>
+                            </p>
+                        </div>
+                        <div class="field">
+                            <p class="control">
+                                <p v-text="opt.cnOption"></p>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="field" v-if="trunk.analysis.length > 0">
+                    <label class="label">详解</label>
+                    <div class="control">
+                        <pre v-text="trunk.analysis"></pre>
+                    </div>
+                </div>
+                <div class="field" v-if="trunk.source.length > 0">
+                    <label class="label">来源</label>
+                    <div class="control">
+                        <pre v-text="trunk.source"></pre>
+                    </div>
+                </div>
+                <div class="field" v-if="trunk.comment.length > 0">
+                    <label class="label">备注</label>
+                    <div class="control">
+                        <pre v-text="trunk.comment"></pre>
+                    </div>
+                </div>
+
+
+                <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
+            </form>
+        </div>
+    </div>
+    {% endraw %}
+{% endblock %}
+{% block script %}
+    {% raw %}
+    <script type="text/javascript">
+        const app = new window.Vue({
+            el: '#app',
+            data: {
+
+                encodedTrunkId: '',
+                trunk: {
+                    entityId: '',
+                    enTrunk: '',
+                    cnTrunk: '',
+                    level: 0,
+                    comment: '',
+                    analysis: '',
+                    source: '',
+                },
+                options: [],
+                pics: [],
+            },
+            mounted: function() {
+                this.encodedTrunkId = window.document.getElementById('entityId').value;
+                if (this.encodedTrunkId.trim().length === 16) {
+                    this.load();
+                }
+            },
+            methods: {
+                load: function () {
+                    axios({
+                        url: '/api/question/' + this.encodedTrunkId,
+                        method: 'GET',
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                this.trunk = response.data.trunk;
+                                this.options = response.data.options;
+                                this.pics = response.data.pics;
+                            } else {
+                                alert('请求失败，请检查日志');
+                            }
+                        }.bind(this)
+                    ).catch(
+                        function (error) {
+                            alert('请求失败，请检查日志。' + error);
+                        }
+                    );
+                },
+                ok: function () {
+                    window.history.back(-1);
+                },
+            },
+        });
+    </script>
+    {% endraw %}
+{% endblock %}

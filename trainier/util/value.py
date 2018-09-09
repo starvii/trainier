@@ -18,9 +18,9 @@ def not_none(val) -> str:
         return str(val).strip()
 
 
-def extract_id(web_id: str) -> str:
-    if BASE64_PATTERN.match(web_id):
-        _ = base64.urlsafe_b64decode(web_id).decode()
-        if HEX_PATTERN.match(_):
-            return _
-    return web_id
+# def extract_id(web_id: str) -> str:
+#     if BASE64_PATTERN.match(web_id):
+#         _ = base64.urlsafe_b64decode(web_id).decode()
+#         if HEX_PATTERN.match(_):
+#             return _
+#     return web_id
