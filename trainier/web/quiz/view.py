@@ -12,7 +12,6 @@ import json
 from typing import Dict, List, Set
 from flask import Blueprint, Response, request, make_response, abort, render_template
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from dao.model import Trunk, Option, Pic
 from util.logger import logger
 from util.labelify import dict_to_entity, list_to_entities
 from web.question.service import QuestionService
@@ -23,6 +22,8 @@ blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
 
 class API:
     @staticmethod
+    @blueprint.route('/api', methods=('POST',))
+    @blueprint.route('/api/', methods=('POST',))
     def api_quiz_index() -> Response:
         pass
 
@@ -45,6 +46,7 @@ class API:
 
 class View:
     @staticmethod
+    @blueprint.route('/', methods=('GET',))
     def quiz_index() -> str:
         """
         参数：page, size, keyword

@@ -3,13 +3,14 @@
 
 import json
 from typing import Dict, List, Set
-from flask import Blueprint, Response, request, make_response, abort, render_template
+from flask import Blueprint, Response, Request, request, make_response, abort, render_template
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from dao.model import Trunk, Option, Pic
 from util.logger import logger
 from util.labelify import dict_to_entity, list_to_entities
 from web.question.service import QuestionService
 from util.labelify import labelify
+from util.value import read_int_json_or_cookie, read_str_json_or_cookie
 
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
@@ -53,23 +54,16 @@ class API:
         :param keyword KeyWord
         :return:
         """
-        page: int = 1
-        size: int = 10
-        keyword: str = ''
         try:
             data: bytes = request.data
             try:
                 j: Dict = json.loads(data)
-            except json.JSONDecodeError as _:
+            except json.JSONDecodeError:
                 j = dict()
-            if 'page' in j and type(j['page']) == int:
-                page = j['page']
-            if 'size' in j and type(j['size']) == int:
-                size = j['size']
-            if size not in {10, 15, 20, 30, 50, 100}:
-                size = 10
-            if 'keyword' in j and type(j['keyword']) == str:
-                keyword = j['keyword'].strip()
+            page = read_int_json_or_cookie('page', j, request, 1)
+            size = read_int_json_or_cookie('size', j, request, 10)
+            keyword = read_str_json_or_cookie('keyword', j, request, '')
+
             trunks, c = QuestionService.select_trunks(keyword, page, size)
             if trunks is None or len(trunks) == 0:
                 l = []
@@ -81,14 +75,7 @@ class API:
                     Trunk.cn_trunk,
                 }
                 l: List[Dict] = labelify(trunks, fields)
-                # # 数据简化
-                # for item in l:
-                #     item['en_trunk_full'] = item['en_trunk']
-                #     item['cn_trunk_full'] = item['cn_trunk']
-                #     if len(item['en_trunk']) > 50:
-                #         item['en_trunk'] = item['en_trunk'][:47] + '...'
-                #     if len(item['cn_trunk']) > 50:
-                #         item['cn_trunk'] = item['cn_trunk'][:47] + '...'
+
             r: Dict = dict(
                 page=page,
                 size=size,
@@ -99,6 +86,9 @@ class API:
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
             res.data = json.dumps(r).encode()
+            # res.set_cookie('page', str(page), secure=True, httponly=True)
+            # res.set_cookie('size', str(size), secure=True, httponly=True)
+            # res.set_cookie('keyword', keyword, secure=True, httponly=True)
             return res
         except Exception as e:
             logger.error(e)

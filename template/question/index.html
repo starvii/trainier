@@ -27,7 +27,7 @@
                     <th>题目（英文）</th>
                     <th>题目（中文）</th>
                     <th>
-                        <a class="button is-small" href="edit" title="添加">
+                        <a class="button is-small" href="edit" target="_blank" title="添加">
                         <span class="icon is-small">
                             <i class="fas fa-plus"></i>
                         </span>
@@ -47,33 +47,32 @@
                 <tbody>
                 <tr v-for="(item, idx) in data">
                     <td>
-                        <a :href="`view#` + item.entity_id" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                        <a :href="`view#` + item.entity_id" target="_blank" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" v-text="item.code"></a>
+                        <a :href="`view#` + item.entity_id" target="_blank" v-text="item.code"></a>
                     </td>
                     <td colspan="2" v-if="item.x_trunk.length > 0">
-                        <a :href="`view#` + item.entity_id" :title="item.x_trunk" v-text="item.x_trunk_digest"></a>
+                        <a :href="`view#` + item.entity_id" target="_blank" :title="item.x_trunk" v-text="item.x_trunk_digest"></a>
                     </td>
                     <td v-if="item.x_trunk.length == 0">
-                        <a :href="`view#` + item.entity_id" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
+                        <a :href="`view#` + item.entity_id" target="_blank" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
                     </td>
                     <td v-if="item.x_trunk.length == 0">
-                        <a :href="`view#` + item.entity_id" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
+                        <a :href="`view#` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
-                            <a class="button is-small" title="编辑" :href="`edit#` + item.entity_id">
+                            <a class="button is-small" title="编辑" :href="`edit#` + item.entity_id" target="_blank">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a class="button is-small" title="删除" @click="remove(item.entity_id)">
+                            <a class="button is-small" title="删除" @click="remove(item.entity_id)" target="_blank">
                                 <i class="fas fa-minus"></i>
                             </a>
                         </div>
                     </td>
                 </tr>
                 </tbody>
-
             </table>
         </div>
     </div>
@@ -85,8 +84,6 @@
     <script src="/js/page.js"></script>
     <script src="/js/common.js"></script>
     <script>
-
-
         const app = new window.Vue({
             el: '#app',
             data: {
@@ -104,14 +101,15 @@
             },
             methods: {
                 list: function () {
+                    let data = {
+                        page: this.pageConf.currentPage,
+                        size: this.pageConf.itemsPerPage,
+                        keyword: this.keyword,
+                    };
                     axios({
                         method: 'POST',
                         url: '/question/api/',
-                        data: {
-                            page: this.pageConf.currentPage,
-                            size: this.pageConf.itemsPerPage,
-                            keyword: this.keyword,
-                        },
+                        data: data,
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
@@ -123,6 +121,7 @@
                                 this.pageConf.currentPage = t.page;
                                 this.pageConf.totalItems = t.total;
                                 this.pageConf.itemsPerPage = t.size;
+                                this.keyword = t.keyword;
                                 this.data = trunks;
                             } else {
                                 alert('请求服务失败，请检查日志');

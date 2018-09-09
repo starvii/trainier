@@ -75,7 +75,7 @@ const PageComponent = Vue
 
                 // conf.itemsPerPage (default:15)
                 this.conf.itemsPerPage = parseInt(this.conf.itemsPerPage) ? parseInt(this.conf.itemsPerPage)
-                    : 15;
+                    : 10;
 
                 // numberOfPages
                 this.conf.numberOfPages = Math.ceil(this.conf.totalItems
