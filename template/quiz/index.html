@@ -27,18 +27,13 @@
                     <th>随机题目</th>
                     <th>随机选项</th>
                     <th>
-                        <a class="button is-small" href="edit" title="添加">
-                        <span class="icon is-small">
-                            <i class="fas fa-plus"></i>
-                        </span>
-                        </a>
-
+                        <a class="button is-small" href="edit" title="添加"><i class="fas fa-plus"></i></a>
                     </th>
                 </tr>
                 </thead>
                 <tfoot>
                 <tr>
-                    <td>
+                    <td colspan="6">
                         <page-component :conf.sync="pageConf"></page-component>
                     </td>
                 </tr>
@@ -52,10 +47,13 @@
                         <a :href="`view#` + item.entity_id" v-text="item.code"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" :title="item.en_trunk_full" v-text="item.en_trunk"></a>
+                        <a :href="`view#` + item.entity_id" :title="item.name" v-text="item.name"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" :title="item.cn_trunk_full" v-text="item.cn_trunk"></a>
+                        <a :href="`view#` + item.entity_id" v-text="item.random_trunk"></a>
+                    </td>
+                    <td>
+                        <a :href="`view#` + item.entity_id" v-text="item.random_choice"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">

@@ -64,9 +64,9 @@ class API:
             size = read_int_json_or_cookie('size', j, request, 10)
             keyword = read_str_json_or_cookie('keyword', j, request, '')
 
-            trunks, c = QuestionService.select_trunks(keyword, page, size)
+            trunks, c = QuestionService.select_trunks(page, size, keyword)
             if trunks is None or len(trunks) == 0:
-                l = []
+                lst: List[Dict] = dict()
             else:
                 fields: Set[InstrumentedAttribute] = {
                     Trunk.entity_id,
@@ -74,21 +74,18 @@ class API:
                     Trunk.en_trunk,
                     Trunk.cn_trunk,
                 }
-                l: List[Dict] = labelify(trunks, fields)
+                lst: List[Dict] = labelify(trunks, fields)
 
             r: Dict = dict(
                 page=page,
                 size=size,
                 total=c,
                 keyword=keyword,
-                data=l,
+                data=lst,
             )
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
             res.data = json.dumps(r).encode()
-            # res.set_cookie('page', str(page), secure=True, httponly=True)
-            # res.set_cookie('size', str(size), secure=True, httponly=True)
-            # res.set_cookie('keyword', keyword, secure=True, httponly=True)
             return res
         except Exception as e:
             logger.error(e)

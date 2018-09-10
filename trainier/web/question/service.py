@@ -28,34 +28,49 @@ class QuestionService:
             session.close()
 
     @staticmethod
-    def select_trunks(keyword: str = '', page: int = 1, pagesize: int = 20) -> (List[Trunk], int) or None:
+    def select_trunks(page: int = 1, size: int = 10, keyword: str = '') -> (List[Trunk], int):
         """
 
         :param keyword:
         :param page:
-        :param pagesize:
+        :param size:
         :return: (data: List[Trunk], record size: int)
         """
         session: Session = Session()
         try:
             if len(keyword) > 0:
                 k: str = '%' + keyword + '%'
+                # 查询符合条件的option
+                lst: List[Option] = session.query(Option).filter(or_(
+                    Option.en_option.like(k),
+                    Option.cn_option.like(k)
+                )).all()
+                entity_ids = set([o.trunk_id for o in lst])
+                # 查询符合条件的pic
+                lst: List[Pic] = session.query(Pic).filter(or_(
+                    Pic.name.like(k),
+                    Pic.source.like(k)
+                )).all()
+                entity_ids = entity_ids.union(set([o.trunk_id for o in lst]))
+
                 q = session.query(Trunk).filter(or_(
+                    Trunk.code.like(k),
                     Trunk.en_trunk.like(k),
                     Trunk.cn_trunk.like(k),
                     Trunk.analysis.like(k),
                     Trunk.source.like(k),
-                    Trunk.comment.like(k)
+                    Trunk.comment.like(k),
+                    Trunk.entity_id.in_(entity_ids)
                 ))
             else:
                 q = session.query(Trunk)
             c: int = q.count()
 
-            l: List[Trunk] = q.offset((page - 1) * pagesize).limit(pagesize).all()
+            l: List[Trunk] = q.offset((page - 1) * size).limit(size).all()
             return l, c
         except Exception as e:
             logger.error(e)
-            return None
+            return None, -1
         finally:
             session.close()
 

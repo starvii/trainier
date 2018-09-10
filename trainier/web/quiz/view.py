@@ -12,10 +12,12 @@ import json
 from typing import Dict, List, Set
 from flask import Blueprint, Response, request, make_response, abort, render_template
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from util.logger import logger
-from util.labelify import dict_to_entity, list_to_entities
-from web.question.service import QuestionService
-from util.labelify import labelify
+from trainier.util.logger import logger
+from trainier.dao.model import Quiz
+from trainier.util.labelify import dict_to_entity, list_to_entities
+from trainier.web.quiz.service import QuizService
+from trainier.util.labelify import labelify
+from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie
 
 blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
 
@@ -25,7 +27,38 @@ class API:
     @blueprint.route('/api', methods=('POST',))
     @blueprint.route('/api/', methods=('POST',))
     def api_quiz_index() -> Response:
-        pass
+        try:
+            data: bytes = request.data
+            j: Dict = json.loads(data)
+            page = read_int_json_or_cookie('page', j, request, 1)
+            size = read_int_json_or_cookie('size', j, request, 10)
+            keyword = read_str_json_or_cookie('keyword', j, request, '')
+            quiz, c = QuizService.select_quiz(page, size, keyword)
+            if quiz is None or len(quiz) == 0:
+                lst: List[Dict] = list()
+            else:
+                fields: Set[InstrumentedAttribute] = {
+                    Quiz.entity_id,
+                    Quiz.code,
+                    Quiz.name,
+                    Quiz.random_trunk,
+                    Quiz.random_choice,
+                }
+                lst: List[Dict] = labelify(quiz, fields)
+            r: Dict = dict(
+                page=page,
+                size=size,
+                total=c,
+                keyword=keyword,
+                data=lst,
+            )
+            res: Response = make_response()
+            res.content_type = 'application/json; charset=utf-8'
+            res.data = json.dumps(r).encode()
+            return res
+        except Exception as e:
+            logger.error(e)
+            abort(500)
 
     @staticmethod
     def api_quiz_get() -> Response:
