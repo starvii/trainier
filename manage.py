@@ -17,7 +17,7 @@ if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_in
 from flask import Flask
 from werkzeug.routing import BaseConverter
 from trainier import Config, set_flask_app, get_flask_app
-from util.logger import  logger
+from trainier.util.logger import  logger
 
 
 class RegexConverter(BaseConverter):

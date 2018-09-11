@@ -57,23 +57,31 @@ class API:
             res.data = json.dumps(r).encode()
             return res
         except Exception as e:
-            logger.error(e)
+            logger.error(str(e))
             abort(500)
 
     @staticmethod
-    def api_quiz_get() -> Response:
+    @blueprint.route('/api/<entity_id>', methods=('GET',))
+    @blueprint.route('/api/<entity_id>/', methods=('GET',))
+    def api_quiz_get(entity_id: str) -> Response:
         pass
 
     @staticmethod
+    @blueprint.route('/api', methods=('POST',))
+    @blueprint.route('/api/', methods=('POST',))
     def api_quiz_create() -> Response:
         pass
 
     @staticmethod
-    def api_quiz_modify() -> Response:
+    @blueprint.route('/api/<entity_id>', methods=('POST',))
+    @blueprint.route('/api/<entity_id>/', methods=('POST',))
+    def api_quiz_modify(entity_id: str) -> Response:
         pass
 
     @staticmethod
-    def api_quiz_remove() -> Response:
+    @blueprint.route('/api/<entity_id>', methods=('POST',))
+    @blueprint.route('/api/<entity_id>/', methods=('POST',))
+    def api_quiz_remove(entity_id: str) -> Response:
         pass
 
 
