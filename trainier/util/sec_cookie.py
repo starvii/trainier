@@ -8,7 +8,7 @@ cookie编码解码
 import hmac
 import hashlib
 import secrets
-from trainier.util import rc4
+from . import rc4
 
 
 def enc(secret_key: bytes, clear_data: bytes) -> bytes:

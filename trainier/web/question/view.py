@@ -5,12 +5,11 @@ import json
 from typing import Dict, List, Set
 from flask import Blueprint, Response, Request, request, make_response, abort, render_template
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from dao.model import Trunk, Option, Pic
-from util.logger import logger
-from util.labelify import dict_to_entity, list_to_entities
-from web.question.service import QuestionService
-from util.labelify import labelify
-from util.value import read_int_json_or_cookie, read_str_json_or_cookie
+from trainier.dao.model import Trunk, Option, Pic
+from trainier.util.logger import logger
+from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
+from trainier.web.question.service import QuestionService
+from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie
 
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')

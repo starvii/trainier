@@ -4,9 +4,10 @@
 from typing import List
 from sqlalchemy.sql import or_
 from sqlalchemy.orm.query import Query
-from trainier.dao.model import Quiz
-from dao.orm import Session
-from util.logger import logger
+from trainier.dao.model import Quiz, Trunk
+from trainier.dao.orm import Session
+from trainier.util.logger import logger
+from trainier.web.question.service import QuestionService
 
 
 class QuizService:
@@ -31,3 +32,9 @@ class QuizService:
         finally:
             session.close()
 
+    @staticmethod
+    def select_quiz_by_id(quiz_id: str) -> Quiz or None:
+        session: Session = Session()
+        if quiz_id is not None and len(quiz_id) > 0:
+            quiz: Quiz = session.query(Quiz).filter(Quiz.entity_id == quiz_id).one_or_none()
+            return quiz

@@ -4,10 +4,10 @@
 import string
 from typing import List
 from sqlalchemy.sql import or_
-from dao.orm import Session
+from trainier.dao.orm import Session
 from trainier.util.object_id import object_id
-from dao.model import Trunk, Option, Pic
-from util.logger import logger
+from trainier.dao.model import Trunk, Option, Pic
+from trainier.util.logger import logger
 
 
 class QuestionService:

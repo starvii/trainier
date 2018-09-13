@@ -34,7 +34,9 @@ def bind_views() -> None:
     import web.question.view
     logger.info('%s loaded.', web.question.view)
     app.register_blueprint(web.question.view.blueprint)
-
+    import web.quiz.view
+    logger.info('%s loaded.', web.quiz.view)
+    app.register_blueprint(web.quiz.view.blueprint)
 
 
 def main() -> None:
