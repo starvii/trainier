@@ -24,12 +24,15 @@ blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
 
 class API:
     @staticmethod
-    @blueprint.route('/api', methods=('POST',))
+    # @blueprint.route('/api', methods=('POST',))
     @blueprint.route('/api/', methods=('POST',))
     def api_quiz_index() -> Response:
         try:
             data: bytes = request.data
-            j: Dict = json.loads(data)
+            try:
+                j: Dict = json.loads(data)
+            except json.JSONDecodeError:
+                j = dict()
             page = read_int_json_or_cookie('page', j, request, 1)
             size = read_int_json_or_cookie('size', j, request, 10)
             keyword = read_str_json_or_cookie('keyword', j, request, '')
@@ -61,26 +64,32 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('GET',))
+    # @blueprint.route('/api/<entity_id>', methods=('GET',))
     @blueprint.route('/api/<entity_id>/', methods=('GET',))
     def api_quiz_get(entity_id: str) -> Response:
         pass
 
     @staticmethod
-    @blueprint.route('/api', methods=('POST',))
-    @blueprint.route('/api/', methods=('POST',))
+    # @blueprint.route('/api/<entity_id>', methods=('POST',))
+    @blueprint.route('/api/<entity_id>/', methods=('POST',))
+    def api_quiz_trunks(entity_id: str) -> Response:
+        pass
+
+    @staticmethod
+    # @blueprint.route('/api', methods=('PUT',))
+    @blueprint.route('/api/', methods=('PUT',))
     def api_quiz_create() -> Response:
         pass
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('POST',))
-    @blueprint.route('/api/<entity_id>/', methods=('POST',))
+    # @blueprint.route('/api/<entity_id>', methods=('PUT',))
+    @blueprint.route('/api/<entity_id>/', methods=('PUT',))
     def api_quiz_modify(entity_id: str) -> Response:
         pass
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('POST',))
-    @blueprint.route('/api/<entity_id>/', methods=('POST',))
+    # @blueprint.route('/api/<entity_id>', methods=('DELETE',))
+    @blueprint.route('/api/<entity_id>/', methods=('DELETE',))
     def api_quiz_remove(entity_id: str) -> Response:
         pass
 
@@ -98,7 +107,7 @@ class View:
         return render_template('quiz/index.html')
 
     @staticmethod
-    def quiz_edit():
+    def quiz_edit() -> str:
         """
         参数: quiz_id
         调用api:
@@ -109,7 +118,7 @@ class View:
         pass
 
     @staticmethod
-    def question_index():
+    def question_index() -> str:
         """
         获取一项测验中的所有题目
         参数：quiz_id
@@ -121,7 +130,7 @@ class View:
         pass
 
     @staticmethod
-    def question_answer():
+    def question_answer() -> str:
         """
         获取一项题目，并可进行答题
         参数：quiz_id, trunk_id
@@ -133,7 +142,7 @@ class View:
         pass
 
     @staticmethod
-    def quiz_result():
+    def quiz_result() -> str:
         """
         计分和查看结果（全部、错误）
         参数：quiz_id, take_id?
@@ -144,7 +153,7 @@ class View:
         pass
 
     @staticmethod
-    def statistics():
+    def statistics() -> str:
         """
         数据统计，全局来看，某道题做过几次、错误几次
         参数：

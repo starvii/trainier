@@ -12,18 +12,18 @@ from trainier.util.logger import logger
 
 class QuestionService:
     @staticmethod
-    def select_trunk_options_pics_by_id(entity_id: str) -> (Trunk, List[Option], List[Pic]) or None:
+    def select_trunk_options_pics_by_id(entity_id: str) -> (Trunk, List[Option], List[Pic]):
         session: Session = Session()
         try:
             trunk: Trunk = session.query(Trunk).filter(Trunk.entity_id == entity_id).one_or_none()
             if trunk is None:
-                return None
+                return None, None, None
             options: List[Option] = session.query(Option).filter(Option.trunk_id == entity_id).all()
             pics: List[Pic] = session.query(Pic).filter(Pic.trunk_id == entity_id).all()
             return trunk, options, pics
         except Exception as e:
             logger.error(e)
-            return None
+            return None, None, None
         finally:
             session.close()
 
@@ -70,7 +70,7 @@ class QuestionService:
             return l, c
         except Exception as e:
             logger.error(e)
-            return None, -1
+            return None, 0
         finally:
             session.close()
 

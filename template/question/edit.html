@@ -215,10 +215,10 @@
                 save: function () {
                     axios({
                         url: '/question/api/' + this.encodedTrunkId,
-                        method: 'POST',
-                        headers: {
-                            'X-HTTP-Method-Override': 'PUT',
-                        },
+                        method: 'PUT',
+                        //headers: {
+                        //    'X-HTTP-Method-Override': 'PUT',
+                        //},
                         data: {
                             trunk: this.trunk,
                             options: this.options,

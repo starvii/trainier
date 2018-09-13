@@ -28,13 +28,23 @@ class QuizService:
             return l, c
         except Exception as e:
             logger.error(e)
-            return None, -1
+            return None, 0
         finally:
             session.close()
 
     @staticmethod
     def select_quiz_by_id(quiz_id: str) -> Quiz or None:
         session: Session = Session()
-        if quiz_id is not None and len(quiz_id) > 0:
-            quiz: Quiz = session.query(Quiz).filter(Quiz.entity_id == quiz_id).one_or_none()
-            return quiz
+        try:
+            if quiz_id is not None and len(quiz_id) > 0:
+                quiz: Quiz = session.query(Quiz).filter(Quiz.entity_id == quiz_id).one_or_none()
+                return quiz
+        except Exception as e:
+            logger.error(e)
+            return None
+        finally:
+            session.close()
+
+    @staticmethod
+    def select_trunk_by_quiz_id(quiz_id: str) -> List[Trunk]:
+        session: Session = Session()

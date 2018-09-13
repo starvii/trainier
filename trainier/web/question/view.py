@@ -16,34 +16,34 @@ blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
 
 
 class API:
-    @staticmethod
-    @blueprint.route('/api', methods=('POST',))
-    @blueprint.route('/api/', methods=('POST',))
-    def index_or_create_dispatch() -> Response:
-        """
-        检查 X-HTTP-Method-Override 字段并根据情况调用 index 还是 create
-        :return:
-        """
-        if 'X-HTTP-Method-Override' in request.headers and request.headers['X-HTTP-Method-Override'] == 'PUT':
-            return API.create()
-        else:
-            return API.index()
+    # @staticmethod
+    # @blueprint.route('/api', methods=('POST',))
+    # @blueprint.route('/api/', methods=('POST',))
+    # def index_or_create_dispatch() -> Response:
+    #     """
+    #     检查 X-HTTP-Method-Override 字段并根据情况调用 index 还是 create
+    #     :return:
+    #     """
+    #     if 'X-HTTP-Method-Override' in request.headers and request.headers['X-HTTP-Method-Override'] == 'PUT':
+    #         return API.create()
+    #     else:
+    #         return API.index()
+    #
+    # @staticmethod
+    # @blueprint.route('/api/<entity_id>', methods=('POST',))
+    # def modify_or_remove_dispatch(entity_id: str) -> Response:
+    #     """
+    #     检查 X-HTTP-Method-Override 字段并根据情况调用 remove 还是 modify
+    #     :param entity_id:
+    #     :return:
+    #     """
+    #     if 'X-HTTP-Method-Override' in request.headers and request.headers['X-HTTP-Method-Override'] == 'DELETE':
+    #         return API.remove(entity_id)
+    #     else:
+    #         return API.modify(entity_id)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('POST',))
-    def modify_or_remove_dispatch(entity_id: str) -> Response:
-        """
-        检查 X-HTTP-Method-Override 字段并根据情况调用 remove 还是 modify
-        :param entity_id:
-        :return:
-        """
-        if 'X-HTTP-Method-Override' in request.headers and request.headers['X-HTTP-Method-Override'] == 'DELETE':
-            return API.remove(entity_id)
-        else:
-            return API.modify(entity_id)
-
-    @staticmethod
-    @blueprint.route('/api', methods=('POST',))
+    # @blueprint.route('/api', methods=('POST',))
     @blueprint.route('/api/', methods=('POST',))
     def index() -> Response:
         """
@@ -91,16 +91,16 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('GET',))
+    # @blueprint.route('/api/<entity_id>', methods=('GET',))
+    @blueprint.route('/api/<entity_id>/', methods=('GET',))
     def read(entity_id: str) -> Response:
         """
         GET /api
         :param entity_id: TrunkId
         :return:
         """
-        _ = QuestionService.select_trunk_options_pics_by_id(entity_id)
-        if _ is not None and _[0] is not None:
-            trunk, options, pics = _
+        trunk, options, pics = QuestionService.select_trunk_options_pics_by_id(entity_id)
+        if trunk is not None:
             r: Dict = dict(
                 trunk=labelify(trunk),
                 options=labelify(options),
@@ -114,8 +114,8 @@ class API:
             abort(404)
 
     @staticmethod
-    @blueprint.route('/api', methods=('POST',))
-    @blueprint.route('/api/', methods=('POST',))
+    # @blueprint.route('/api', methods=('PUT',))
+    @blueprint.route('/api/', methods=('PUT',))
     def create() -> Response:
         """
         PUT /api
@@ -137,7 +137,8 @@ class API:
         return res
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('POST',))
+    # @blueprint.route('/api/<entity_id>', methods=('PUT',))
+    @blueprint.route('/api/<entity_id>/', methods=('PUT',))
     def modify(entity_id: str) -> Response or None:
         """
         PUT /api/<entity_id>
@@ -163,7 +164,8 @@ class API:
         return res
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('POST',))
+    # @blueprint.route('/api/<entity_id>', methods=('DELETE',))
+    @blueprint.route('/api/<entity_id>/', methods=('DELETE',))
     def remove(entity_id: str) -> Response:
         """
         DELETE /api/<entity_id>
