@@ -1,5 +1,5 @@
 function digest(trunks) {
-    for (let i = 0; i < trunks.length; i++) {
+    for (let i = 0, len = trunks.length; i < len; i++) {
         let trunk = trunks[i];
         trunk.en_trunk = trunk.en_trunk.trim();
         trunk.cn_trunk = trunk.cn_trunk.trim();
