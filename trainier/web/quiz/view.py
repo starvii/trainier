@@ -32,10 +32,11 @@ class API:
             try:
                 j: Dict = json.loads(data)
             except json.JSONDecodeError:
-                j = dict()
-            page = read_int_json_or_cookie('page', j, request, 1)
-            size = read_int_json_or_cookie('size', j, request, 10)
-            keyword = read_str_json_or_cookie('keyword', j, request, '')
+                j: Dict = dict()
+            page: int = read_int_json_or_cookie('page', j, request, 1)
+            size: int = read_int_json_or_cookie('size', j, request, 10)
+            keyword: str = read_str_json_or_cookie('keyword', j, request, '')
+
             quiz, c = QuizService.select_quiz(page, size, keyword)
             if quiz is None or len(quiz) == 0:
                 lst: List[Dict] = list()

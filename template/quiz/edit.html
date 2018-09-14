@@ -128,8 +128,8 @@
             el: '#app',
             data: {
                 quiz: {},
-                trunkList: [],
-                selectedTrunk: [],
+                trunks: [],
+                selected: new Set(),
                 onlySelect: true,
                 pageConf: {
                     currentPage: 1,
@@ -151,18 +151,94 @@
                 }
             },
             methods: {
-                load: function () {
-
-                },
-                list: function () {
-                    if (this.onlySelect) {
-                        // 从 quiz.questions 中选择
-                    } else {
-                        // 从所有
+                initSet: function () {
+                    let q = this.quiz.questions.split(',');
+                    for (let s of q) {
+                        let s1 = s.trim();
+                        if (s1.length > 0) {
+                            this.selected.add(s1);
+                        }
                     }
                 },
-                save: function () {
+                markList: function (trunks) {
+                    for (let trunk of trunks) {
+                        trunk.selected = this.selected.has(trunk.entity_id);
+                    }
+                },
+                load: function () {
+                    axios({
+                        url: '/quiz/api/' + this.quiz.entity_id,
+                        method: 'GET',
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                this.quiz = response.data.quiz;
+                            } else {
+                                alert('请求失败，请检查日志');
+                            }
+                        }.bind(this)
+                    ).catch(
+                        function (error) {
+                            alert('请求失败，请检查日志。' + error);
+                        }
+                    );
+                },
+                list: function () {
+                    let data = {
+                        page: this.pageConf.currentPage,
+                        size: this.pageConf.itemsPerPage,
+                        keyword: this.keyword,
+                    };
+                    if (this.onlySelect) {
+                        // 从 quiz.questions 中选择
+                        data.ids = this.quiz.questions;
+                    }
+                    axios({
+                        method: 'POST',
+                        url: '/question/api/',
+                        data: data,
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                let t = response.data;
+                                // 进行简化处理
+                                let trunks = t.data;
+                                digest(trunks);
+                                // 分页器赋值
+                                this.pageConf.currentPage = t.page;
+                                this.pageConf.totalItems = t.total;
+                                this.pageConf.itemsPerPage = t.size;
+                                this.keyword = t.keyword;
+                                this.trunks = trunks;
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
 
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志');
+                        }
+                    );
+                },
+                save: function () {
+                    axios({
+                        url: '/quiz/api/' + this.quiz.entity_id,
+                        method: 'PUT',
+                        data: {
+                            quiz: this.quiz,
+                        },
+                    }).then(function (response) {
+                        if (response.status === 200 && response.statusText === 'OK') {
+                            alert('保存成功');
+                            window.location.href = './';
+                        } else {
+                            alert('保存失败，请检查日志');
+                        }
+                    }.bind(this)).catch(
+                        function (error) {
+                            alert('保存失败，请检查日志。' + error);
+                        }
+                    );
                 },
                 search: function () {
                     if (this.keyword !== this.kw.trim()) {
