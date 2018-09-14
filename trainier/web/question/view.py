@@ -62,6 +62,7 @@ class API:
             page = read_int_json_or_cookie('page', j, request, 1)
             size = read_int_json_or_cookie('size', j, request, 10)
             keyword = read_str_json_or_cookie('keyword', j, request, '')
+            ids: str = read_str_json_or_cookie('ids', j, request, '')
 
             trunks, c = QuestionService.select_trunks(page, size, keyword)
             if trunks is None or len(trunks) == 0:

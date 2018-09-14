@@ -28,17 +28,18 @@ class QuestionService:
             session.close()
 
     @staticmethod
-    def select_trunks(page: int = 1, size: int = 10, keyword: str = '') -> (List[Trunk], int):
+    def select_trunks(page: int = 1, size: int = 10, keyword: str = '', ids: str = '') -> (List[Trunk], int):
         """
 
         :param keyword:
         :param page:
         :param size:
+        :param ids:
         :return: (data: List[Trunk], record size: int)
         """
         session: Session = Session()
         try:
-            if len(keyword) > 0:
+            if keyword is not None and len(keyword) > 0:
                 k: str = '%' + keyword + '%'
                 # 查询符合条件的option
                 lst: List[Option] = session.query(Option).filter(or_(
@@ -64,6 +65,8 @@ class QuestionService:
                 ))
             else:
                 q = session.query(Trunk)
+            if ids is not None and len(ids) > 0:
+                q = q.filter(Trunk.entity_id.in_(ids))
             c: int = q.count()
 
             l: List[Trunk] = q.offset((page - 1) * size).limit(size).all()
