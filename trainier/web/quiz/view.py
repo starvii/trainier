@@ -107,6 +107,7 @@ class View:
         return render_template('quiz/index.html')
 
     @staticmethod
+    @blueprint.route('/edit', methods=('GET',))
     def quiz_edit() -> str:
         """
         参数: quiz_id
@@ -115,7 +116,7 @@ class View:
             保存quiz（新建、修改）
         :return:
         """
-        pass
+        return render_template('quiz/edit.html')
 
     @staticmethod
     def question_index() -> str:

@@ -1,122 +1,174 @@
 {% extends "base/skeleton.html" %}
 {% block container %}
-    <div class="is-hidden">
-        <input id="entityId" readonly="readonly" value="{{ entity_id }}">
-    </div>
     {% raw %}
-    <div class="columns" id="app">
-        <div class="column">
-            <form>
-                <div class="field" v-if="trunk.enTrunk.length > 0">
-                    <label class="label">英文题目</label>
-                    <div class="control">
-                        <pre v-text="trunk.enTrunk"></pre>
-                    </div>
+    <div id="app">
+        <div class="columns">
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label">测验编码</label>
+                    <p class="control">
+                        <input class="input is-small" placeholder="code" v-model="quiz.code">
+                    </p>
                 </div>
-                <div class="field" v-if="trunk.cnTrunk.length > 0">
-                    <label class="label">中文题目</label>
-                    <div class="control">
-                        <pre v-text="trunk.cnTrunk"></pre>
-                    </div>
+            </div>
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label">测验名称</label>
+                    <p class="control">
+                        <input class="input is-small" placeholder="name" v-model="quiz.name">
+                    </p>
                 </div>
-                <div class="field" v-for="(opt, index) in options">
-                    <div class="field-body">
-                        <div class="field">
-                            <p class="control">
-                                <span class="icon is-right">
-                                    <i class="fas fa-check is-true" v-if="opt.isTrue"></i>
-                                    <i class="fas fa-times is-false" v-if="!opt.isTrue"></i>
-                                </span>
-                                <span class="is-pulled-right" :class="[opt.isTrue ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-                            </p>
-                        </div>
-                        <div class="field">
-                            <p class="control">
-                                <p v-text="opt.enOption"></p>
-                            </p>
-                        </div>
-                        <div class="field">
-                            <p class="control">
-                                <p v-text="opt.cnOption"></p>
-                            </p>
-                        </div>
-                    </div>
+            </div>
+            <div class="column is-2">
+                <div class="field">
+                    <label class="label">&nbsp;</label>
+                    <p class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" v-model="quiz.random_trunk">
+                            <strong>随机题目顺序</strong>
+                        </label>
+                    </p>
                 </div>
-                <div class="field" v-if="trunk.analysis.length > 0">
-                    <label class="label">详解</label>
-                    <div class="control">
-                        <pre v-text="trunk.analysis"></pre>
-                    </div>
+            </div>
+            <div class="column is-2">
+                <div class="field">
+                    <label class="label">&nbsp;</label>
+                    <p class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" v-model="quiz.random_choice">
+                            <strong>随机选项顺序</strong>
+                        </label>
+                    </p>
                 </div>
-                <div class="field" v-if="trunk.source.length > 0">
-                    <label class="label">来源</label>
-                    <div class="control">
-                        <pre v-text="trunk.source"></pre>
-                    </div>
-                </div>
-                <div class="field" v-if="trunk.comment.length > 0">
-                    <label class="label">备注</label>
-                    <div class="control">
-                        <pre v-text="trunk.comment"></pre>
-                    </div>
-                </div>
-
-
-                <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
-            </form>
+            </div>
         </div>
+        <div class="columns">
+            <textarea rows="5" class="textarea is-small" readonly="readonly"
+                                  v-model="quiz.question"></textarea>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+                    <thead>
+                    <tr>
+                        <td colspan="5">
+                            <page-component :conf.sync="pageConf"></page-component>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="onlySelect" @click="list()">
+                                <strong>仅已选</strong>
+                            </label>
+                        </td>
+                        <td colspan="3">
+                            <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                        </td>
+                        <td><a class="button is-small" title="查找" @click="search()">
+                            <i class="fas fa-search"></i>
+                        </a></td>
+                    </tr>
+                    <tr>
+                        <th>选择</th>
+                        <th>编号</th>
+                        <th>编码</th>
+                        <th>题目（英文）</th>
+                        <th>题目（中文）</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <td colspan="5">
+                            <page-component :conf.sync="pageConf"></page-component>
+                        </td>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+                    <tr v-for="(trunk, idx) in trunkList">
+                        <td>
+                            <input type="checkbox" @click="list()">
+                        </td>
+                        <td>
+                            <a :href="`view#` + trunk.entity_id" target="_blank"
+                               v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                        </td>
+                        <td>
+                            <a :href="`view#` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
+                        </td>
+                        <td colspan="2" v-if="trunk.x_trunk.length > 0">
+                            <a :href="`view#` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
+                               v-text="trunk.x_trunk_digest"></a>
+                        </td>
+                        <td v-if="trunk.x_trunk.length == 0">
+                            <a :href="`view#` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
+                               v-text="trunk.en_trunk_digest"></a>
+                        </td>
+                        <td v-if="trunk.x_trunk.length == 0">
+                            <a :href="`view#` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
+                               v-text="trunk.cn_trunk_digest"></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <a class="button is-link is-success is-pulled-right" @click="save()">保存</a>
     </div>
+
     {% endraw %}
 {% endblock %}
 {% block script %}
     {% raw %}
+    <script src="/js/page.js"></script>
+    <script src="/js/common.js"></script>
     <script type="text/javascript">
         const app = new window.Vue({
             el: '#app',
             data: {
-
-                encodedTrunkId: '',
-                trunk: {
-                    entityId: '',
-                    enTrunk: '',
-                    cnTrunk: '',
-                    level: 0,
-                    comment: '',
-                    analysis: '',
-                    source: '',
+                quiz: {},
+                trunkList: [],
+                selectedTrunk: [],
+                onlySelect: true,
+                pageConf: {
+                    currentPage: 1,
+                    totalItems: 1000,
+                    itemsPerPage: 10,
+                    pagesLength: 9,
+                    perPageOptions: [10, 15, 30, 50, 100],
+                    onChange: 'list',
                 },
-                options: [],
-                pics: [],
+                keyword: '',
+                kw: '',
             },
-            mounted: function() {
-                this.encodedTrunkId = window.document.getElementById('entityId').value;
-                if (this.encodedTrunkId.trim().length === 16) {
+            mounted: function () {
+                let hsh = location.hash.trim();
+                if (hsh[0] === '#') {
+                    hsh = hsh.substring(1);
+                    this.quiz.entity_id = hsh;
                     this.load();
                 }
             },
             methods: {
                 load: function () {
-                    axios({
-                        url: '/api/question/' + this.encodedTrunkId,
-                        method: 'GET',
-                    }).then(
-                        function (response) {
-                            if (response.status === 200 && response.statusText === 'OK') {
-                                this.trunk = response.data.trunk;
-                                this.options = response.data.options;
-                                this.pics = response.data.pics;
-                            } else {
-                                alert('请求失败，请检查日志');
-                            }
-                        }.bind(this)
-                    ).catch(
-                        function (error) {
-                            alert('请求失败，请检查日志。' + error);
-                        }
-                    );
+
                 },
-                ok: function () {
-                    window.history.back(-1);
+                list: function () {
+                    if (this.onlySelect) {
+                        // 从 quiz.questions 中选择
+                    } else {
+                        // 从所有
+                    }
+                },
+                save: function () {
+
+                },
+                search: function () {
+                    if (this.keyword !== this.kw.trim()) {
+                        this.keyword = this.kw.trim();
+                        this.list();
+                    }
                 },
             },
         });
