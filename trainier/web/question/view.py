@@ -16,34 +16,7 @@ blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
 
 
 class API:
-    # @staticmethod
-    # @blueprint.route('/api', methods=('POST',))
-    # @blueprint.route('/api/', methods=('POST',))
-    # def index_or_create_dispatch() -> Response:
-    #     """
-    #     检查 X-HTTP-Method-Override 字段并根据情况调用 index 还是 create
-    #     :return:
-    #     """
-    #     if 'X-HTTP-Method-Override' in request.headers and request.headers['X-HTTP-Method-Override'] == 'PUT':
-    #         return API.create()
-    #     else:
-    #         return API.index()
-    #
-    # @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('POST',))
-    # def modify_or_remove_dispatch(entity_id: str) -> Response:
-    #     """
-    #     检查 X-HTTP-Method-Override 字段并根据情况调用 remove 还是 modify
-    #     :param entity_id:
-    #     :return:
-    #     """
-    #     if 'X-HTTP-Method-Override' in request.headers and request.headers['X-HTTP-Method-Override'] == 'DELETE':
-    #         return API.remove(entity_id)
-    #     else:
-    #         return API.modify(entity_id)
-
     @staticmethod
-    # @blueprint.route('/api', methods=('POST',))
     @blueprint.route('/api/', methods=('POST',))
     def index() -> Response:
         """
@@ -62,9 +35,10 @@ class API:
             page = read_int_json_or_cookie('page', j, request, 1)
             size = read_int_json_or_cookie('size', j, request, 10)
             keyword = read_str_json_or_cookie('keyword', j, request, '')
-            ids: str = read_str_json_or_cookie('ids', j, request, '')
+            ids: str = read_str_json_or_cookie('ids', j, request, None)
+            ids: List[str] = [_.strip() for _ in ids.split(',') if len(_.strip()) > 0]
 
-            trunks, c = QuestionService.select_trunks(page, size, keyword)
+            trunks, c = QuestionService.select_trunks(page, size, keyword, ids)
             if trunks is None or len(trunks) == 0:
                 lst: List[Dict] = dict()
             else:
@@ -83,6 +57,8 @@ class API:
                 keyword=keyword,
                 data=lst,
             )
+            if ids is not None:
+                r['ids'] = ids
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
             res.data = json.dumps(r).encode()

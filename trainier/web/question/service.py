@@ -28,7 +28,7 @@ class QuestionService:
             session.close()
 
     @staticmethod
-    def select_trunks(page: int = 1, size: int = 10, keyword: str = '', ids: str = '') -> (List[Trunk], int):
+    def select_trunks(page: int = 1, size: int = 10, keyword: str = '', ids: List[str] = None) -> (List[Trunk], int):
         """
 
         :param keyword:
@@ -65,7 +65,7 @@ class QuestionService:
                 ))
             else:
                 q = session.query(Trunk)
-            if ids is not None and len(ids) > 0:
+            if ids is not None:
                 q = q.filter(Trunk.entity_id.in_(ids))
             c: int = q.count()
 

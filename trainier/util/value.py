@@ -18,8 +18,8 @@ def not_none(val) -> str:
         return str(val).strip()
 
 
-def read_str_json_or_cookie(key: str, _json: Dict, req: Request, def_val: str = '') -> str:
-    if key in _json and len(_json[key]) > 0:
+def read_str_json_or_cookie(key: str, _json: Dict, req: Request, def_val: str or None = '') -> str or None:
+    if key in _json:
         return str(_json[key])
     if key in req.cookies and len(req.cookies[key]) > 0:
         return req.cookies[key]
