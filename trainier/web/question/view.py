@@ -9,7 +9,7 @@ from trainier.dao.model import Trunk, Option, Pic
 from trainier.util.logger import logger
 from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
 from trainier.web.question.service import QuestionService
-from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie
+from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json
 
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
@@ -35,12 +35,11 @@ class API:
             page = read_int_json_or_cookie('page', j, request, 1)
             size = read_int_json_or_cookie('size', j, request, 10)
             keyword = read_str_json_or_cookie('keyword', j, request, '')
-            ids: str = read_str_json_or_cookie('ids', j, request, None)
-            ids: List[str] = [_.strip() for _ in ids.split(',') if len(_.strip()) > 0]
+            ids: List[str] = read_list_json('ids', j, None)
 
             trunks, c = QuestionService.select_trunks(page, size, keyword, ids)
             if trunks is None or len(trunks) == 0:
-                lst: List[Dict] = dict()
+                lst: List[Dict] = list()
             else:
                 fields: Set[InstrumentedAttribute] = {
                     Trunk.entity_id,
