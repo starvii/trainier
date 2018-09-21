@@ -44,7 +44,3 @@ class QuizService:
             return None
         finally:
             session.close()
-
-    @staticmethod
-    def select_trunk_by_quiz_id(quiz_id: str) -> List[Trunk]:
-        session: Session = Session()

@@ -24,7 +24,6 @@ blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
 
 class API:
     @staticmethod
-    # @blueprint.route('/api', methods=('POST',))
     @blueprint.route('/api/', methods=('POST',))
     def api_quiz_index() -> Response:
         try:
@@ -65,10 +64,17 @@ class API:
             abort(500)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('GET',))
     @blueprint.route('/api/<entity_id>/', methods=('GET',))
     def api_quiz_get(entity_id: str) -> Response:
-        pass
+        q: Quiz = QuizService.select_quiz_by_id(entity_id)
+        if q is not None:
+            r: Dict = labelify(q)
+            res: Response = make_response()
+            res.content_type = 'application/json; charset=utf-8'
+            res.data = json.dumps(r).encode()
+            return res
+        else:
+            abort(404)
 
     @staticmethod
     # @blueprint.route('/api/<entity_id>', methods=('POST',))
@@ -80,13 +86,13 @@ class API:
     # @blueprint.route('/api', methods=('PUT',))
     @blueprint.route('/api/', methods=('PUT',))
     def api_quiz_create() -> Response:
-        pass
+        logger.debug(request.data)
 
     @staticmethod
     # @blueprint.route('/api/<entity_id>', methods=('PUT',))
     @blueprint.route('/api/<entity_id>/', methods=('PUT',))
     def api_quiz_modify(entity_id: str) -> Response:
-        pass
+        logger.debug(request.data)
 
     @staticmethod
     # @blueprint.route('/api/<entity_id>', methods=('DELETE',))
