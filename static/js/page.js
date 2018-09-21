@@ -2,14 +2,14 @@ const PageComponent = Vue
     .extend({
         template: ''
             + '<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">'
-            + '<a class="pagination-previous" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><i class="fas fa-angle-left"></i></a>'
-            + '<a class="pagination-next" :class="{\'is-disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><i class="fas fa-angle-right"></i></a>'
-            + '<ul class="pagination-list" v-show="conf.totalItems > 0">'
+            + '<a v-if="conf.totalItems > 0" class="pagination-previous" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><i class="fas fa-angle-left"></i></a>'
+            + '<a v-if="conf.totalItems > 0" class="pagination-next" :class="{\'is-disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><i class="fas fa-angle-right"></i></a>'
+            + '<ul class="pagination-list" v-if="conf.totalItems > 0">'
             + '<li v-for="item in pageList">'
             + '<a :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}" @click="changeCurrentPage(item)" v-text="item"></a>'
             + '</li>'
             + '</ul>'
-            + '<div class="page-total" v-show="conf.totalItems > 0">'
+            + '<div class="page-total" v-if="conf.totalItems > 0">'
             + '<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>'
             + '<input class="input is-small is-rounded" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>'
             + '<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>'
@@ -17,7 +17,7 @@ const PageComponent = Vue
             + '<select class="select is-small is-rounded" v-model="conf.itemsPerPage"><option v-for="option in conf.perPageOptions" v-text="option"></option></select>'
             + '<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">'
             + '</div>'
-            + '<div v-show="conf.totalItems <= 0">暂无数据</div>'
+            + '<div v-if="conf.totalItems <= 0">暂无数据</div>'
             + '</nav>',
         replace: true,
         props: {
