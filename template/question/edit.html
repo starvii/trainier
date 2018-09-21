@@ -216,9 +216,6 @@
                     axios({
                         url: '/question/api/' + this.encodedTrunkId,
                         method: 'PUT',
-                        //headers: {
-                        //    'X-HTTP-Method-Override': 'PUT',
-                        //},
                         data: {
                             trunk: this.trunk,
                             options: this.options,
