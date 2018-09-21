@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Pattern, Dict
+from typing import Pattern, Dict, List
 import re
 from requests import Request
 
@@ -34,4 +34,10 @@ def read_int_json_or_cookie(key: str, _json: Dict, req: Request, def_val: int = 
             return int(req.cookies[key])
     except ValueError:
         pass
+    return def_val
+
+
+def read_list_json(key: str, _json: Dict, def_val: List = None) -> List or None:
+    if key in _json and type(_json[key]) == list:
+        return _json[key]
     return def_val
