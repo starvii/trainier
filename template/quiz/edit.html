@@ -43,10 +43,6 @@
             </div>
         </div>
         <div class="columns">
-            <textarea rows="5" class="textarea is-small" readonly="readonly"
-                                  v-model="quiz.question"></textarea>
-        </div>
-        <div class="columns">
             <div class="column">
                 <table class="table is-striped is-narrow is-fullwidth is-hoverable">
                     <thead>
@@ -59,7 +55,7 @@
                     <tr>
                         <td>
                             <label class="checkbox">
-                                <input type="checkbox" v-model="onlySelect" @click="list()">
+                                <input type="checkbox" v-model="onlyShowSelected">
                                 <strong>仅已选</strong>
                             </label>
                         </td>
@@ -86,9 +82,9 @@
                     </tr>
                     </tfoot>
                     <tbody>
-                    <tr v-for="(trunk, idx) in trunkList">
+                    <tr v-for="(trunk, idx) in trunks">
                         <td>
-                            <input type="checkbox" @click="list()">
+                            <input type="checkbox" :value="trunk.entity_id" v-model="selLst">
                         </td>
                         <td>
                             <a :href="`view#` + trunk.entity_id" target="_blank"
@@ -124,13 +120,21 @@
     <script src="/js/page.js"></script>
     <script src="/js/common.js"></script>
     <script type="text/javascript">
+        /*
+        数据流：
+            load 时，将数据写入 selSet，再将 selSet 同步至 selLst
+            平时是由 selLst 同步至 selSet // 只同步add / remove 动作
+            保存时，仅保存 selSet （将 selSet （排序后？）写入 quiz.questions）
+         */
         const app = new window.Vue({
             el: '#app',
             data: {
+                is_mounted: false,
                 quiz: {},
                 trunks: [],
-                selected: new Set(),
-                onlySelect: true,
+                onlyShowSelected: true,
+                selLst: [],
+                selSet: new Set(),
                 pageConf: {
                     currentPage: 1,
                     totalItems: 1000,
@@ -142,27 +146,67 @@
                 keyword: '',
                 kw: '',
             },
+            watch: {
+                onlyShowSelected: function (val, oldVal) {
+                    this.list();
+                },
+                selLst: function (val, oldVal) {
+                    if (this.is_mounted) {
+                        //console.debug(oldVal);
+                        //console.debug(val);
+                        let lst0 = oldVal;
+                        let lst1 = val;
+                        if (val.length < oldVal.length) {
+                            lst0 = val;
+                            lst1 = oldVal;
+                        }
+                        let set0 = new Set(lst0);
+                        let set1 = new Set(lst1);
+                        let set = new Set();
+                        for (let e of set1) {
+                            if (!set0.has(e)) {
+                                set.add(e)
+                            }
+                        }
+                        for (let e of set) {
+                            if (this.selSet.has(e)) {
+                                this.selSet.delete(e);
+                            } else {
+                                this.selSet.add(e);
+                            }
+                        }
+                        //console.debug(this.selSet);
+                    }
+                }
+            },
             mounted: function () {
                 let hsh = location.hash.trim();
                 if (hsh[0] === '#') {
                     hsh = hsh.substring(1);
                     this.quiz.entity_id = hsh;
                     this.load();
+                } else {
+                    this.quiz.entity_id = '';
+                    this.is_mounted = true;
                 }
             },
             methods: {
-                initSet: function () {
-                    let q = this.quiz.questions.split(',');
-                    for (let s of q) {
-                        let s1 = s.trim();
+                initSync: function() {
+                    this.selLst = [];
+                    this.selSet = new Set();
+                    for (let s0 of this.quiz.questions) {
+                        let s1 = s0.trim();
                         if (s1.length > 0) {
-                            this.selected.add(s1);
+                            this.selSet.add(s1);
+                            this.selLst.push(s1);
                         }
                     }
+                    this.is_mounted = true;
                 },
                 markList: function (trunks) {
                     for (let trunk of trunks) {
-                        trunk.selected = this.selected.has(trunk.entity_id);
+                        //console.debug(this.selSet);
+                        trunk.selected = this.selSet.has(trunk.entity_id);
                     }
                 },
                 load: function () {
@@ -173,6 +217,7 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 this.quiz = response.data.quiz;
+                                this.initSync();
                             } else {
                                 alert('请求失败，请检查日志');
                             }
@@ -188,10 +233,12 @@
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
                         keyword: this.keyword,
+                        ids: null,
                     };
-                    if (this.onlySelect) {
+                    if (this.onlyShowSelected) {
                         // 从 quiz.questions 中选择
-                        data.ids = this.quiz.questions;
+                        data.ids = this.selLst;
+                        //console.debug(data);
                     }
                     axios({
                         method: 'POST',
@@ -204,6 +251,7 @@
                                 // 进行简化处理
                                 let trunks = t.data;
                                 digest(trunks);
+                                this.markList(trunks);
                                 // 分页器赋值
                                 this.pageConf.currentPage = t.page;
                                 this.pageConf.totalItems = t.total;
@@ -216,11 +264,15 @@
 
                         }.bind(this)).catch(
                         function (error) {
-                            alert('请求服务失败，请检查日志');
+                            alert('请求服务失败，请检查日志。' + error);
                         }
                     );
                 },
                 save: function () {
+                    // 将 selSet 排序后写入 quiz.questions
+                    let lst = Array.from(this.selSet);
+                    this.quiz.questions = lst.sort();
+                    console.debug(this.quiz.questions);
                     axios({
                         url: '/quiz/api/' + this.quiz.entity_id,
                         method: 'PUT',
@@ -244,6 +296,21 @@
                     if (this.keyword !== this.kw.trim()) {
                         this.keyword = this.kw.trim();
                         this.list();
+                    }
+                },
+                changeSelectList: function (trunk) {
+                    alert(trunk.selected);
+                    if (trunk.selected && !this.selSet.has(trunk.entity_id)) {
+                        this.selLst.push(trunk.entity_id);
+                        return;
+                    }
+                    if (!trunk.selected && this.selSet.has(trunk.entity_id)) {
+                        for (let i = 0; i < this.selLst.length; i++) {
+                            if (this.selLst[i] === trunk.entity_id) {
+                                this.selLst.splice(i, 1);
+                                break;
+                            }
+                        }
                     }
                 },
             },
