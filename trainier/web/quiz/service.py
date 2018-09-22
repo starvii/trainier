@@ -7,6 +7,7 @@ from sqlalchemy.orm.query import Query
 from trainier.dao.model import Quiz, Trunk
 from trainier.dao.orm import Session
 from trainier.util.logger import logger
+from trainier.util.object_id import object_id
 from trainier.web.question.service import QuestionService
 
 
@@ -42,5 +43,22 @@ class QuizService:
         except Exception as e:
             logger.error(e)
             return None
+        finally:
+            session.close()
+
+    @staticmethod
+    def save(quiz: Quiz) -> None:
+        session: Session = Session()
+        try:
+            if quiz.entity_id is None or len(quiz.entity_id.strip()) == 0:
+                quiz.entity_id = object_id()
+                session.add(quiz)
+            else:
+                session.merge(quiz)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(e)
+            raise e
         finally:
             session.close()

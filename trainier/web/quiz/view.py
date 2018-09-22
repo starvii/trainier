@@ -69,6 +69,7 @@ class API:
         q: Quiz = QuizService.select_quiz_by_id(entity_id)
         if q is not None:
             r: Dict = labelify(q)
+            r['questions'] = q.questions.split(',')
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
             res.data = json.dumps(r).encode()
@@ -77,27 +78,58 @@ class API:
             abort(404)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('POST',))
-    @blueprint.route('/api/<entity_id>/', methods=('POST',))
-    def api_quiz_trunks(entity_id: str) -> Response:
-        pass
-
-    @staticmethod
-    # @blueprint.route('/api', methods=('PUT',))
     @blueprint.route('/api/', methods=('PUT',))
     def api_quiz_create() -> Response:
-        logger.debug(request.data)
+        try:
+            data: bytes = request.data
+            try:
+                j: Dict = json.loads(data)
+            except json.JSONDecodeError:
+                j: Dict = dict()
+            if 'quiz' in j and 'questions' in j['quiz'] and type(j['quiz']['questions']) == list:
+                j['quiz']['questions'] = ','.join(j['quiz']['questions'])
+            q: Quiz = Quiz()
+            q = dict_to_entity(j['quiz'], q)
+            QuizService.save(q)
+            res: Response = make_response()
+            res.content_type = 'application/json; charset=utf-8'
+            res.data = json.dumps(dict(result=True)).encode()
+            return res
+        except Exception as e:
+            logger.error(e)
+            abort(500)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('PUT',))
     @blueprint.route('/api/<entity_id>/', methods=('PUT',))
     def api_quiz_modify(entity_id: str) -> Response:
-        logger.debug(request.data)
+        try:
+            data: bytes = request.data
+            try:
+                j: Dict = json.loads(data)
+            except json.JSONDecodeError:
+                j: Dict = dict()
+            q: Quiz = Quiz()
+            q = dict_to_entity(j['quiz'], q)
+            if q.entity_id != entity_id:
+                abort(404)
+            QuizService.save(q)
+            res: Response = make_response()
+            res.content_type = 'application/json; charset=utf-8'
+            res.data = json.dumps(dict(result=True)).encode()
+            return res
+        except Exception as e:
+            logger.error(e)
+            abort(500)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('DELETE',))
     @blueprint.route('/api/<entity_id>/', methods=('DELETE',))
     def api_quiz_remove(entity_id: str) -> Response:
+        """
+        DELETE /api/<entity_id>
+        暂不提供删除功能
+        :param entity_id:
+        :return:
+        """
         pass
 
 
