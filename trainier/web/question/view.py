@@ -67,7 +67,6 @@ class API:
             abort(500)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('GET',))
     @blueprint.route('/api/<entity_id>/', methods=('GET',))
     def read(entity_id: str) -> Response:
         """
@@ -90,30 +89,31 @@ class API:
             abort(404)
 
     @staticmethod
-    # @blueprint.route('/api', methods=('PUT',))
     @blueprint.route('/api/', methods=('PUT',))
     def create() -> Response:
         """
         PUT /api
         :return:
         """
-        data: bytes = request.data
-        j = json.loads(data)
-        logger.debug(j)
-        trunk: Trunk = Trunk()
-        trunk = dict_to_entity(j['trunk'], trunk)
-        options = list_to_entities(j['options'], Option())
-        pics = list_to_entities(j['pics'], Pic())
+        try:
+            data: bytes = request.data
+            j = json.loads(data)
+            trunk: Trunk = Trunk()
+            trunk = dict_to_entity(j['trunk'], trunk)
+            options = list_to_entities(j['options'], Option())
+            pics = list_to_entities(j['pics'], Pic())
 
-        QuestionService.save(trunk, options, pics)
+            QuestionService.save(trunk, options, pics)
 
-        res: Response = make_response()
-        res.content_type = 'application/json; charset=utf-8'
-        res.data = json.dumps(dict(result=True)).encode()
-        return res
+            res: Response = make_response()
+            res.content_type = 'application/json; charset=utf-8'
+            res.data = json.dumps(dict(result=True)).encode()
+            return res
+        except Exception as e:
+            logger.error(e)
+            abort(500)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('PUT',))
     @blueprint.route('/api/<entity_id>/', methods=('PUT',))
     def modify(entity_id: str) -> Response or None:
         """
@@ -121,26 +121,29 @@ class API:
         :param entity_id:
         :return:
         """
-        data: bytes = request.data
-        j = json.loads(data)
-        logger.debug(j)
-        trunk: Trunk = Trunk()
-        trunk = dict_to_entity(j['trunk'], trunk)
-        if trunk.entity_id != entity_id:
-            abort(404)
-            return
-        options = list_to_entities(j['options'], Option())
-        pics = list_to_entities(j['pics'], Pic())
+        try:
+            data: bytes = request.data
+            j = json.loads(data)
+            logger.debug(j)
+            trunk: Trunk = Trunk()
+            trunk = dict_to_entity(j['trunk'], trunk)
+            if trunk.entity_id != entity_id:
+                abort(404)
+                return
+            options = list_to_entities(j['options'], Option())
+            pics = list_to_entities(j['pics'], Pic())
 
-        QuestionService.save(trunk, options, pics)
+            QuestionService.save(trunk, options, pics)
 
-        res: Response = make_response()
-        res.content_type = 'application/json; charset=utf-8'
-        res.data = json.dumps(dict(result=True)).encode()
-        return res
+            res: Response = make_response()
+            res.content_type = 'application/json; charset=utf-8'
+            res.data = json.dumps(dict(result=True)).encode()
+            return res
+        except Exception as e:
+            logger.error(e)
+            abort(500)
 
     @staticmethod
-    # @blueprint.route('/api/<entity_id>', methods=('DELETE',))
     @blueprint.route('/api/<entity_id>/', methods=('DELETE',))
     def remove(entity_id: str) -> Response:
         """
