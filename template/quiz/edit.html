@@ -67,7 +67,12 @@
                         </a></td>
                     </tr>
                     <tr>
-                        <th>选择</th>
+                        <th>
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="selectAll">
+                                <strong>全选</strong>
+                            </label>
+                        </th>
                         <th>编号</th>
                         <th>编码</th>
                         <th>题目（英文）</th>
@@ -122,17 +127,21 @@
     <script type="text/javascript">
         /*
         数据流：
-            load 时，将数据写入 selSet，再将 selSet 同步至 selLst
+            同步关闭
+            load 时，将question_id写入 selSet
+
+
             平时是由 selLst 同步至 selSet // 只同步add / remove 动作
             保存时，仅保存 selSet （将 selSet （排序后？）写入 quiz.questions）
          */
         const app = new window.Vue({
             el: '#app',
             data: {
-                is_mounted: false,
+                toSync: false,
                 quiz: {},
                 trunks: [],
                 onlyShowSelected: true,
+                selectAll: false,
                 selLst: [],
                 selSet: new Set(),
                 pageConf: {
@@ -150,8 +159,53 @@
                 onlyShowSelected: function (val, oldVal) {
                     this.list();
                 },
+                selectAll: function (val, oldVal) {
+                    if (val) {
+                        for (let t of this.trunks) {
+                            let _in = false;
+                            let id = t.entity_id;
+                            for (let e of this.selLst) {
+                                if (e === id) {
+                                    _in = true;
+                                    break;
+                                }
+                            }
+                            if (!_in) {
+                                this.selLst.push(id);
+                            }
+                        }
+                    } else {
+                        let n = this.selLst.length;
+                        this.selLst.slice(0, n)
+                    }
+                    /*
+                    if (val) {
+                        for (let t of this.trunks) {
+                            if (!this.selSet.has(t.entity_id)) {
+                                this.selLst.push(t.entity_id);
+                            }
+                        }
+                    } else {
+                        for (let t of this.trunks) {
+                            if (this.selSet.has(t.entity_id)) {
+                                let idx = -1;
+                                for (let i = 0; i < this.selLst.length; i++) {
+                                    let e = this.selLst[i];
+                                    if (e === t.entity_id) {
+                                        idx = i;
+                                        break;
+                                    }
+                                }
+                                if (idx >= 0) {
+                                    this.selLst.slice(idx, 1)
+                                }
+                            }
+                        }
+                    }
+                    */
+                },
                 selLst: function (val, oldVal) {
-                    if (this.is_mounted) {
+                    if (this.toSync) {
                         //console.debug(oldVal);
                         //console.debug(val);
                         let lst0 = oldVal;
@@ -177,6 +231,7 @@
                         }
                         //console.debug(this.selSet);
                     }
+                    this.selectAll = this.selLst.length === this.pageConf.itemsPerPage;
                 }
             },
             mounted: function () {
@@ -203,12 +258,12 @@
                     }
                     this.is_mounted = true;
                 },
-                markList: function (trunks) {
-                    for (let trunk of trunks) {
-                        //console.debug(this.selSet);
-                        trunk.selected = this.selSet.has(trunk.entity_id);
-                    }
-                },
+//                markList: function (trunks) {
+//                    for (let trunk of trunks) {
+//                        //console.debug(this.selSet);
+//                        trunk.selected = this.selSet.has(trunk.entity_id);
+//                    }
+//                },
                 load: function () {
                     axios({
                         url: '/quiz/api/' + this.quiz.entity_id,
@@ -251,7 +306,16 @@
                                 // 进行简化处理
                                 let trunks = t.data;
                                 digest(trunks);
-                                this.markList(trunks);
+                                // 同步页面元素
+                                this.toSync = false;
+                                this.selLst = [];
+                                for (let t of trunks) {
+                                    if (this.selSet.has(t.entity_id)) {
+                                        this.selLst.push(t.entity_id);
+                                    }
+                                }
+                                this.toSync = true;
+                                //this.markList(trunks);
                                 // 分页器赋值
                                 this.pageConf.currentPage = t.page;
                                 this.pageConf.totalItems = t.total;
