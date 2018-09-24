@@ -157,6 +157,29 @@
                     this.list();
                 },
                 selectAll: function (val, oldVal) {
+                    if (val) {
+                        for (let t of this.trunks) {
+                            if (!this.selSet.has(t.entity_id)) {
+                                this.selLst.push(t.entity_id);
+                            }
+                        }
+                    } else {
+                        for (let t of this.trunks) {
+                            let idx = -1;
+                            let id = t.entity_id;
+                            for (let i = 0; i < this.selLst.length; i++) {
+                                if (this.selLst[i] === id) {
+                                    idx = i;
+                                    break;
+                                }
+                            }
+                            if (idx > -1) {
+                                this.selLst.slice(idx, 1);
+                            }
+                        }
+                    }
+
+                    /*
                     if (this.toSync) {
                         if (val) {
                             for (let t of this.trunks) {
@@ -177,6 +200,7 @@
                             this.selLst.slice(0, n)
                         }
                     }
+                    */
                     /*
                     if (val) {
                         for (let t of this.trunks) {
@@ -229,9 +253,16 @@
                             }
                         }
                         //console.debug(this.selSet);
-                        this.selectAll = this.selLst.length === this.pageConf.itemsPerPage;
+                        //this.selectAll = this.selLst.length === this.pageConf.itemsPerPage;
                     }
-
+                    let allIn = true;
+                    for (let t of this.trunks) {
+                        if (!this.selSet.has(t.entity_id)) {
+                            allIn = false;
+                            break;
+                        }
+                    }
+                    this.selectAll = allIn;
                 }
             },
             mounted: function () {
@@ -242,6 +273,7 @@
                     this.load();
                 } else {
                     this.quiz.entity_id = '';
+                    this.toSync = true;
                 }
             },
             methods: {
@@ -255,6 +287,7 @@
                             this.selLst.push(s1);
                         }
                     }
+                    this.toSync = true;
                 },
                 load: function () {
                     axios({
@@ -299,15 +332,15 @@
                                 let trunks = t.data;
                                 digest(trunks);
                                 // 同步页面元素
-                                this.toSync = false;
-                                let sl = [];
-                                for (let t of trunks) {
-                                    if (this.selSet.has(t.entity_id)) {
-                                        sl.push(t.entity_id);
-                                    }
-                                }
-                                this.selLst = sl;
-                                this.toSync = true;
+                                //this.toSync = false;
+                                //let sl = [];
+                                //for (let t of trunks) {
+                                //    if (this.selSet.has(t.entity_id)) {
+                                //        sl.push(t.entity_id);
+                                //    }
+                                //}
+                                //this.selLst = sl;
+                                //this.toSync = true;
                                 //this.markList(trunks);
                                 // 分页器赋值
                                 this.pageConf.currentPage = t.page;
@@ -355,6 +388,7 @@
                         this.list();
                     }
                 },
+                /*
                 changeSelectList: function (trunk) {
                     alert(trunk.selected);
                     if (trunk.selected && !this.selSet.has(trunk.entity_id)) {
@@ -370,6 +404,7 @@
                         }
                     }
                 },
+                */
             },
         });
     </script>
