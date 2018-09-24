@@ -127,10 +127,7 @@
     <script type="text/javascript">
         /*
         数据流：
-            同步关闭
-            load 时，将question_id写入 selSet
-
-
+            load 时，将question_id写入 selSet 与 selLst
             平时是由 selLst 同步至 selSet // 只同步add / remove 动作
             保存时，仅保存 selSet （将 selSet （排序后？）写入 quiz.questions）
          */
@@ -160,23 +157,25 @@
                     this.list();
                 },
                 selectAll: function (val, oldVal) {
-                    if (val) {
-                        for (let t of this.trunks) {
-                            let _in = false;
-                            let id = t.entity_id;
-                            for (let e of this.selLst) {
-                                if (e === id) {
-                                    _in = true;
-                                    break;
+                    if (this.toSync) {
+                        if (val) {
+                            for (let t of this.trunks) {
+                                let _in = false;
+                                let id = t.entity_id;
+                                for (let e of this.selLst) {
+                                    if (e === id) {
+                                        _in = true;
+                                        break;
+                                    }
+                                }
+                                if (!_in) {
+                                    this.selLst.push(id);
                                 }
                             }
-                            if (!_in) {
-                                this.selLst.push(id);
-                            }
+                        } else {
+                            let n = this.selLst.length;
+                            this.selLst.slice(0, n)
                         }
-                    } else {
-                        let n = this.selLst.length;
-                        this.selLst.slice(0, n)
                     }
                     /*
                     if (val) {
@@ -230,8 +229,9 @@
                             }
                         }
                         //console.debug(this.selSet);
+                        this.selectAll = this.selLst.length === this.pageConf.itemsPerPage;
                     }
-                    this.selectAll = this.selLst.length === this.pageConf.itemsPerPage;
+
                 }
             },
             mounted: function () {
@@ -242,7 +242,6 @@
                     this.load();
                 } else {
                     this.quiz.entity_id = '';
-                    this.is_mounted = true;
                 }
             },
             methods: {
@@ -256,14 +255,7 @@
                             this.selLst.push(s1);
                         }
                     }
-                    this.is_mounted = true;
                 },
-//                markList: function (trunks) {
-//                    for (let trunk of trunks) {
-//                        //console.debug(this.selSet);
-//                        trunk.selected = this.selSet.has(trunk.entity_id);
-//                    }
-//                },
                 load: function () {
                     axios({
                         url: '/quiz/api/' + this.quiz.entity_id,
@@ -292,7 +284,7 @@
                     };
                     if (this.onlyShowSelected) {
                         // 从 quiz.questions 中选择
-                        data.ids = this.selLst;
+                        data.ids = Array.from(this.selSet);
                         //console.debug(data);
                     }
                     axios({
@@ -308,12 +300,13 @@
                                 digest(trunks);
                                 // 同步页面元素
                                 this.toSync = false;
-                                this.selLst = [];
+                                let sl = [];
                                 for (let t of trunks) {
                                     if (this.selSet.has(t.entity_id)) {
-                                        this.selLst.push(t.entity_id);
+                                        sl.push(t.entity_id);
                                     }
                                 }
+                                this.selLst = sl;
                                 this.toSync = true;
                                 //this.markList(trunks);
                                 // 分页器赋值
