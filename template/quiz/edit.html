@@ -138,9 +138,9 @@
                 quiz: {},
                 trunks: [],
                 onlyShowSelected: true,
-                selectAll: false,
+                //selectAll: false,
                 selLst: [],
-                selSet: new Set(),
+                //selSet: new Set(),
                 pageConf: {
                     currentPage: 1,
                     totalItems: 1000,
@@ -152,81 +152,51 @@
                 keyword: '',
                 kw: '',
             },
+            computed: {
+                selectAll: {
+                    get: function () {
+                        let allIn = true;
+                        let selSet = new Set(this.selLst);
+                        for (let t of this.trunks) {
+                            if (!selSet.has(t.entity_id)) {
+                                allIn = false;
+                                break;
+                            }
+                        }
+                        return allIn;
+                    },
+                    set: function (val) {
+                        let selSet = new Set(this.selLst);
+                        if (val) {
+                            for (let t of this.trunks) {
+                                if (!selSet.has(t.entity_id)) {
+                                    this.selLst.push(t.entity_id)
+                                }
+                            }
+                        } else {
+                            for (let t of this.trunks) {
+                                if (selSet.has(t.entity_id)) {
+                                    let idx = -1;
+                                    for (let i = 0; i < this.selLst.length; i++) {
+                                        if (this.selLst[i] === t.entity_id) {
+                                            idx = i;
+                                            break;
+                                        }
+                                    }
+                                    if (idx >= 0) {
+                                        this.selLst.slice(idx, 1);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+            },
             watch: {
                 onlyShowSelected: function (val, oldVal) {
                     this.list();
                 },
-                selectAll: function (val, oldVal) {
-                    if (val) {
-                        for (let t of this.trunks) {
-                            if (!this.selSet.has(t.entity_id)) {
-                                this.selLst.push(t.entity_id);
-                            }
-                        }
-                    } else {
-                        for (let t of this.trunks) {
-                            let idx = -1;
-                            let id = t.entity_id;
-                            for (let i = 0; i < this.selLst.length; i++) {
-                                if (this.selLst[i] === id) {
-                                    idx = i;
-                                    break;
-                                }
-                            }
-                            if (idx > -1) {
-                                this.selLst.slice(idx, 1);
-                            }
-                        }
-                    }
-
-                    /*
-                    if (this.toSync) {
-                        if (val) {
-                            for (let t of this.trunks) {
-                                let _in = false;
-                                let id = t.entity_id;
-                                for (let e of this.selLst) {
-                                    if (e === id) {
-                                        _in = true;
-                                        break;
-                                    }
-                                }
-                                if (!_in) {
-                                    this.selLst.push(id);
-                                }
-                            }
-                        } else {
-                            let n = this.selLst.length;
-                            this.selLst.slice(0, n)
-                        }
-                    }
-                    */
-                    /*
-                    if (val) {
-                        for (let t of this.trunks) {
-                            if (!this.selSet.has(t.entity_id)) {
-                                this.selLst.push(t.entity_id);
-                            }
-                        }
-                    } else {
-                        for (let t of this.trunks) {
-                            if (this.selSet.has(t.entity_id)) {
-                                let idx = -1;
-                                for (let i = 0; i < this.selLst.length; i++) {
-                                    let e = this.selLst[i];
-                                    if (e === t.entity_id) {
-                                        idx = i;
-                                        break;
-                                    }
-                                }
-                                if (idx >= 0) {
-                                    this.selLst.slice(idx, 1)
-                                }
-                            }
-                        }
-                    }
-                    */
-                },
+                /*
                 selLst: function (val, oldVal) {
                     if (this.toSync) {
                         //console.debug(oldVal);
@@ -252,18 +222,9 @@
                                 this.selSet.add(e);
                             }
                         }
-                        //console.debug(this.selSet);
-                        //this.selectAll = this.selLst.length === this.pageConf.itemsPerPage;
                     }
-                    let allIn = true;
-                    for (let t of this.trunks) {
-                        if (!this.selSet.has(t.entity_id)) {
-                            allIn = false;
-                            break;
-                        }
-                    }
-                    this.selectAll = allIn;
-                }
+                },
+                */
             },
             mounted: function () {
                 let hsh = location.hash.trim();
@@ -279,11 +240,11 @@
             methods: {
                 initSync: function() {
                     this.selLst = [];
-                    this.selSet = new Set();
+                    //this.selSet = new Set();
                     for (let s0 of this.quiz.questions) {
                         let s1 = s0.trim();
                         if (s1.length > 0) {
-                            this.selSet.add(s1);
+                            //this.selSet.add(s1);
                             this.selLst.push(s1);
                         }
                     }
@@ -317,7 +278,7 @@
                     };
                     if (this.onlyShowSelected) {
                         // 从 quiz.questions 中选择
-                        data.ids = Array.from(this.selSet);
+                        data.ids = this.selLst;
                         //console.debug(data);
                     }
                     axios({
@@ -360,7 +321,7 @@
                 },
                 save: function () {
                     // 将 selSet 排序后写入 quiz.questions
-                    let lst = Array.from(this.selSet);
+                    let lst = Array.from(new Set(this.selLst));
                     this.quiz.questions = lst.sort();
                     console.debug(this.quiz.questions);
                     axios({
