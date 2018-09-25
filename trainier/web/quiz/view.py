@@ -64,7 +64,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>/', methods=('GET',))
+    @blueprint.route('/api/<entity_id>', methods=('GET',))
     def api_quiz_get(entity_id: str) -> Response:
         q: Quiz = QuizService.select_quiz_by_id(entity_id)
         if q is not None:
@@ -100,7 +100,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>/', methods=('PUT',))
+    @blueprint.route('/api/<entity_id>', methods=('PUT',))
     def api_quiz_modify(entity_id: str) -> Response:
         try:
             data: bytes = request.data
@@ -108,6 +108,8 @@ class API:
                 j: Dict = json.loads(data)
             except json.JSONDecodeError:
                 j: Dict = dict()
+            if 'quiz' in j and 'questions' in j['quiz'] and type(j['quiz']['questions']) == list:
+                j['quiz']['questions'] = ','.join(j['quiz']['questions'])
             q: Quiz = Quiz()
             q = dict_to_entity(j['quiz'], q)
             if q.entity_id != entity_id:
@@ -122,7 +124,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>/', methods=('DELETE',))
+    @blueprint.route('/api/<entity_id>', methods=('DELETE',))
     def api_quiz_remove(entity_id: str) -> Response:
         """
         DELETE /api/<entity_id>
