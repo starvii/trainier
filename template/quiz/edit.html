@@ -92,22 +92,22 @@
                             <input type="checkbox" :value="trunk.entity_id" v-model="selLst">
                         </td>
                         <td>
-                            <a :href="`view#` + trunk.entity_id" target="_blank"
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank"
                                v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                         </td>
                         <td>
-                            <a :href="`view#` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
                         </td>
                         <td colspan="2" v-if="trunk.x_trunk.length > 0">
-                            <a :href="`view#` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
                                v-text="trunk.x_trunk_digest"></a>
                         </td>
                         <td v-if="trunk.x_trunk.length == 0">
-                            <a :href="`view#` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
                                v-text="trunk.en_trunk_digest"></a>
                         </td>
                         <td v-if="trunk.x_trunk.length == 0">
-                            <a :href="`view#` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
                                v-text="trunk.cn_trunk_digest"></a>
                         </td>
                     </tr>
@@ -125,22 +125,13 @@
     <script src="/js/page.js"></script>
     <script src="/js/common.js"></script>
     <script type="text/javascript">
-        /*
-        数据流：
-            load 时，将question_id写入 selSet 与 selLst
-            平时是由 selLst 同步至 selSet // 只同步add / remove 动作
-            保存时，仅保存 selSet （将 selSet （排序后？）写入 quiz.questions）
-         */
         const app = new window.Vue({
             el: '#app',
             data: {
-                toSync: false,
                 quiz: {},
                 trunks: [],
                 onlyShowSelected: true,
-                //selectAll: false,
                 selLst: [],
-                //selSet: new Set(),
                 pageConf: {
                     currentPage: 1,
                     totalItems: 1000,
@@ -169,26 +160,14 @@
                         let selSet = new Set(this.selLst);
                         if (val) {
                             for (let t of this.trunks) {
-                                if (!selSet.has(t.entity_id)) {
-                                    this.selLst.push(t.entity_id)
-                                }
+                                selSet.add(t.entity_id);
                             }
                         } else {
                             for (let t of this.trunks) {
-                                if (selSet.has(t.entity_id)) {
-                                    let idx = -1;
-                                    for (let i = 0; i < this.selLst.length; i++) {
-                                        if (this.selLst[i] === t.entity_id) {
-                                            idx = i;
-                                            break;
-                                        }
-                                    }
-                                    if (idx >= 0) {
-                                        this.selLst.slice(idx, 1);
-                                    }
-                                }
+                                selSet.delete(t.entity_id);
                             }
                         }
+                        this.selLst = Array.from(selSet).sort();
                     },
                 },
             },
@@ -196,35 +175,6 @@
                 onlyShowSelected: function (val, oldVal) {
                     this.list();
                 },
-                /*
-                selLst: function (val, oldVal) {
-                    if (this.toSync) {
-                        //console.debug(oldVal);
-                        //console.debug(val);
-                        let lst0 = oldVal;
-                        let lst1 = val;
-                        if (val.length < oldVal.length) {
-                            lst0 = val;
-                            lst1 = oldVal;
-                        }
-                        let set0 = new Set(lst0);
-                        let set1 = new Set(lst1);
-                        let set = new Set();
-                        for (let e of set1) {
-                            if (!set0.has(e)) {
-                                set.add(e)
-                            }
-                        }
-                        for (let e of set) {
-                            if (this.selSet.has(e)) {
-                                this.selSet.delete(e);
-                            } else {
-                                this.selSet.add(e);
-                            }
-                        }
-                    }
-                },
-                */
             },
             mounted: function () {
                 let hsh = location.hash.trim();
@@ -234,21 +184,17 @@
                     this.load();
                 } else {
                     this.quiz.entity_id = '';
-                    this.toSync = true;
                 }
             },
             methods: {
                 initSync: function() {
                     this.selLst = [];
-                    //this.selSet = new Set();
                     for (let s0 of this.quiz.questions) {
                         let s1 = s0.trim();
                         if (s1.length > 0) {
-                            //this.selSet.add(s1);
                             this.selLst.push(s1);
                         }
                     }
-                    this.toSync = true;
                 },
                 load: function () {
                     axios({
@@ -257,7 +203,8 @@
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
-                                this.quiz = response.data.quiz;
+                                console.debug(response.data);
+                                this.quiz = response.data;
                                 this.initSync();
                             } else {
                                 alert('请求失败，请检查日志');
@@ -277,9 +224,8 @@
                         ids: null,
                     };
                     if (this.onlyShowSelected) {
-                        // 从 quiz.questions 中选择
+                        this.selLst = Array.from(new Set(this.selLst)).sort(); // 翻页时将其精简一下
                         data.ids = this.selLst;
-                        //console.debug(data);
                     }
                     axios({
                         method: 'POST',
@@ -292,17 +238,6 @@
                                 // 进行简化处理
                                 let trunks = t.data;
                                 digest(trunks);
-                                // 同步页面元素
-                                //this.toSync = false;
-                                //let sl = [];
-                                //for (let t of trunks) {
-                                //    if (this.selSet.has(t.entity_id)) {
-                                //        sl.push(t.entity_id);
-                                //    }
-                                //}
-                                //this.selLst = sl;
-                                //this.toSync = true;
-                                //this.markList(trunks);
                                 // 分页器赋值
                                 this.pageConf.currentPage = t.page;
                                 this.pageConf.totalItems = t.total;
@@ -321,8 +256,7 @@
                 },
                 save: function () {
                     // 将 selSet 排序后写入 quiz.questions
-                    let lst = Array.from(new Set(this.selLst));
-                    this.quiz.questions = lst.sort();
+                    this.quiz.questions = Array.from(new Set(this.selLst)).sort();
                     console.debug(this.quiz.questions);
                     axios({
                         url: '/quiz/api/' + this.quiz.entity_id,
@@ -349,23 +283,6 @@
                         this.list();
                     }
                 },
-                /*
-                changeSelectList: function (trunk) {
-                    alert(trunk.selected);
-                    if (trunk.selected && !this.selSet.has(trunk.entity_id)) {
-                        this.selLst.push(trunk.entity_id);
-                        return;
-                    }
-                    if (!trunk.selected && this.selSet.has(trunk.entity_id)) {
-                        for (let i = 0; i < this.selLst.length; i++) {
-                            if (this.selLst[i] === trunk.entity_id) {
-                                this.selLst.splice(i, 1);
-                                break;
-                            }
-                        }
-                    }
-                },
-                */
             },
         });
     </script>
