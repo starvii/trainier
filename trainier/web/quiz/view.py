@@ -163,6 +163,18 @@ class View:
         return render_template('quiz/edit.html')
 
     @staticmethod
+    @blueprint.route('/view', methods=('GET',))
+    def quiz_view() -> str:
+        """
+        参数: quiz_id
+        调用api:
+            获取quiz
+            保存quiz（新建、修改）
+        :return:
+        """
+        return render_template('quiz/view.html')
+
+    @staticmethod
     def question_index() -> str:
         """
         获取一项测验中的所有题目
