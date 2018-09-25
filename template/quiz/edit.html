@@ -44,6 +44,17 @@
         </div>
         <div class="columns">
             <div class="column">
+                <div class="field">
+                    <label class="label">备注</label>
+                    <p class="control">
+                        <textarea rows="5" class="textarea is-small" placeholder="Explanation"
+                                  v-model="quiz.comment"></textarea>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
                 <table class="table is-striped is-narrow is-fullwidth is-hoverable">
                     <thead>
                     <tr>
@@ -59,12 +70,12 @@
                                 <strong>仅已选</strong>
                             </label>
                         </td>
-                        <td colspan="3">
-                            <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
-                        </td>
                         <td><a class="button is-small" title="查找" @click="search()">
                             <i class="fas fa-search"></i>
                         </a></td>
+                        <td colspan="3">
+                            <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                        </td>
                     </tr>
                     <tr>
                         <th>
