@@ -44,10 +44,13 @@ class API:
                     Quiz.entity_id,
                     Quiz.code,
                     Quiz.name,
-                    Quiz.random_trunk,
-                    Quiz.random_choice,
+                    Quiz.comment,
                 }
                 lst: List[Dict] = labelify(quiz, fields)
+            # 统计数量
+            for q, d in zip(quiz, lst):
+                count = len([_.strip() for _ in q.questions.split(',') if len(_.strip()) > 0])
+                d['count'] = count
             r: Dict = dict(
                 page=page,
                 size=size,
