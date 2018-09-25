@@ -1,0 +1,244 @@
+{% extends "base/skeleton.html" %}
+{% block container %}
+    {% raw %}
+    <div id="app">
+        <div class="columns">
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label">测验编码</label>
+                    <p class="control">
+                        <pre v-text="quiz.code"></pre>
+                    </p>
+                </div>
+            </div>
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label">测验名称</label>
+                    <p class="control">
+                        <pre v-text="quiz.name"></pre>
+                    </p>
+                </div>
+            </div>
+            <div class="column is-2">
+                <div class="field">
+                    <label class="label">&nbsp;</label>
+                    <p class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" v-model="quiz.random_trunk" disabled="disabled">
+                            <strong>随机题目顺序</strong>
+                        </label>
+                    </p>
+                </div>
+            </div>
+            <div class="column is-2">
+                <div class="field">
+                    <label class="label">&nbsp;</label>
+                    <p class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" v-model="quiz.random_choice" disabled="disabled">
+                            <strong>随机选项顺序</strong>
+                        </label>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <label class="label">备注</label>
+                    <p class="control">
+                        <pre v-text="quiz.comment"></pre>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="columns">
+            <div class="column">
+                <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+                    <thead>
+                    <tr>
+                        <td colspan="5">
+                            <page-component :conf.sync="pageConf"></page-component>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="onlyShowSelected" disabled="disabled">
+                                <strong>仅已选</strong>
+                            </label>
+                        </td>
+                        <td><a class="button is-small" title="查找" @click="search()">
+                            <i class="fas fa-search"></i>
+                        </a></td>
+                        <td colspan="3">
+                            <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <label class="checkbox">
+                                <input type="checkbox" v-model="selectAll" disabled="disabled">
+                                <strong>全选</strong>
+                            </label>
+                        </th>
+                        <th>编号</th>
+                        <th>编码</th>
+                        <th>题目（英文）</th>
+                        <th>题目（中文）</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <td colspan="5">
+                            <page-component :conf.sync="pageConf"></page-component>
+                        </td>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+                    <tr v-for="(trunk, idx) in trunks">
+                        <td>
+                            <input type="checkbox" :value="trunk.entity_id" v-model="selLst" disabled="disabled">
+                        </td>
+                        <td>
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank"
+                               v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                        </td>
+                        <td>
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
+                        </td>
+                        <td colspan="2" v-if="trunk.x_trunk.length > 0">
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
+                               v-text="trunk.x_trunk_digest"></a>
+                        </td>
+                        <td v-if="trunk.x_trunk.length == 0">
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
+                               v-text="trunk.en_trunk_digest"></a>
+                        </td>
+                        <td v-if="trunk.x_trunk.length == 0">
+                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
+                               v-text="trunk.cn_trunk_digest"></a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
+    </div>
+
+    {% endraw %}
+{% endblock %}
+{% block script %}
+    {% raw %}
+    <script src="/js/page.js"></script>
+    <script src="/js/common.js"></script>
+    <script type="text/javascript">
+        const app = new window.Vue({
+            el: '#app',
+            data: {
+                quiz: {},
+                trunks: [],
+                selectAll: true,
+                onlyShowSelected: true,
+                selLst: [],
+                pageConf: {
+                    currentPage: 1,
+                    totalItems: 1000,
+                    itemsPerPage: 10,
+                    pagesLength: 9,
+                    perPageOptions: [10, 15, 30, 50, 100],
+                    onChange: 'list',
+                },
+                keyword: '',
+                kw: '',
+            },
+            mounted: function () {
+                let hsh = location.hash.trim();
+                if (hsh[0] === '#') {
+                    hsh = hsh.substring(1);
+                    this.quiz.entity_id = hsh;
+                    this.load();
+                } else {
+                    this.quiz.entity_id = '';
+                }
+            },
+            methods: {
+                initSync: function() {
+                    this.selLst = [];
+                    for (let s0 of this.quiz.questions) {
+                        let s1 = s0.trim();
+                        if (s1.length > 0) {
+                            this.selLst.push(s1);
+                        }
+                    }
+                },
+                load: function () {
+                    axios({
+                        url: '/quiz/api/' + this.quiz.entity_id,
+                        method: 'GET',
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                console.debug(response.data);
+                                this.quiz = response.data;
+                                this.initSync();
+                            } else {
+                                alert('请求失败，请检查日志');
+                            }
+                        }.bind(this)
+                    ).catch(
+                        function (error) {
+                            alert('请求失败，请检查日志。' + error);
+                        }
+                    );
+                },
+                list: function () {
+                    let data = {
+                        page: this.pageConf.currentPage,
+                        size: this.pageConf.itemsPerPage,
+                        keyword: this.keyword,
+                        ids: this.selLst,
+                    };
+                    axios({
+                        method: 'POST',
+                        url: '/question/api/',
+                        data: data,
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                let t = response.data;
+                                // 进行简化处理
+                                let trunks = t.data;
+                                digest(trunks);
+                                // 分页器赋值
+                                this.pageConf.currentPage = t.page;
+                                this.pageConf.totalItems = t.total;
+                                this.pageConf.itemsPerPage = t.size;
+                                this.keyword = t.keyword;
+                                this.trunks = trunks;
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志。' + error);
+                        }
+                    );
+                },
+                ok: function () {
+                    window.history.back(-1);
+                },
+                search: function () {
+                    if (this.keyword !== this.kw.trim()) {
+                        this.keyword = this.kw.trim();
+                        this.list();
+                    }
+                },
+            },
+        });
+    </script>
+    {% endraw %}
+{% endblock %}
