@@ -8,6 +8,7 @@ front-end:  bulma / vue.js
 """
 
 from __future__ import print_function
+
 import sys
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
@@ -17,7 +18,7 @@ if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_in
 from flask import Flask
 from werkzeug.routing import BaseConverter
 from trainier import Config, set_flask_app, get_flask_app
-from trainier.util.logger import  logger
+from trainier.util.logger import logger
 
 
 class RegexConverter(BaseConverter):
@@ -37,6 +38,9 @@ def bind_views() -> None:
     import web.quiz.view
     logger.info('%s loaded.', web.quiz.view)
     app.register_blueprint(web.quiz.view.blueprint)
+    import web.quiz.take.view
+    logger.info('%s loaded.', web.quiz.take.view)
+    app.register_blueprint(web.quiz.take.view.blueprint)
 
 
 def main() -> None:
