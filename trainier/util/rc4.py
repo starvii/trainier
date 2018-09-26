@@ -33,4 +33,4 @@ def enc(key, data):
         sbox[i], sbox[j] = sbox[j], sbox[i]
         k = sbox[(sbox[i] + sbox[j]) % n]
         buf.append(b ^ k)
-    return bytearray(buf)
+    return bytes(bytearray(buf))
