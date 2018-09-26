@@ -6,6 +6,7 @@
 """
 
 from typing import Dict, Set, List
+
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 
@@ -64,7 +65,7 @@ def __list_to_dict(lst: List[object], fields: Set[str or InstrumentedAttribute] 
     return r
 
 
-def dict_to_entity(_dict: Dict, target: object, fields: Set[str or InstrumentedAttribute]=None) -> object or None:
+def dict_to_entity(_dict: Dict, target: object, fields: Set[str or InstrumentedAttribute] = None) -> object or None:
     if target is None:
         return None
     if target._sa_class_manager is None:
@@ -82,7 +83,8 @@ def dict_to_entity(_dict: Dict, target: object, fields: Set[str or InstrumentedA
     return target
 
 
-def list_to_entities(_list: List[Dict], sample: object, fields: Set[str or InstrumentedAttribute]=None) -> List[object] or None:
+def list_to_entities(_list: List[Dict], sample: object, fields: Set[str or InstrumentedAttribute] = None) -> List[
+                                                                                                                 object] or None:
     if _list is None or len(_list) == 0:
         return None
     if sample is None:

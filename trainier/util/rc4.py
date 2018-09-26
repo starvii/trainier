@@ -6,7 +6,9 @@ rc4算法，需要兼容py2与py3
 """
 
 from __future__ import print_function
+
 import sys
+
 if sys.version_info.major < 3:
     range = xrange
 

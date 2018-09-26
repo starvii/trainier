@@ -3,8 +3,9 @@
 
 from logging import Logger, StreamHandler, Handler, Formatter, getLogger, DEBUG
 from logging.handlers import RotatingFileHandler
-from trainier import Config
 from pathlib import Path
+
+from trainier import Config
 
 log_file: str = str(Path(Config.default.LOG_PATH) / Path('trainier.log'))
 fmt: str = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'

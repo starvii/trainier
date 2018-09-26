@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import print_function, with_statement, absolute_import
-import os
-import time
-import struct
-import hashlib
-import uuid
+
 import base64
+import hashlib
+import os
+import struct
+import time
+import uuid
 from multiprocessing.dummy import Lock
 
 __ALL__ = ["ObjectId"]
@@ -29,6 +30,7 @@ class ObjectId:
         pid = struct.pack('>H', os.getpid())
         oid = timestamp + ObjectId._mac + pid + counter
         return oid
+
 
 def object_id():
     return base64.b16encode(ObjectId.gen_id()).decode().lower()

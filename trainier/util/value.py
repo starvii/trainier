@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Pattern, Dict, List
 import re
+from typing import Pattern, Dict, List
+
 from requests import Request
 
 HEX_PATTERN: Pattern = re.compile(r'[0-9a-f]{24}')
