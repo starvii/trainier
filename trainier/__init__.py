@@ -3,6 +3,7 @@
 
 import sys
 from pathlib import Path
+
 from flask import Flask
 
 
@@ -10,7 +11,7 @@ class _ConfigBase:
     APP_NAME: str = 'trainier'
     HOST: str = '127.0.0.1'
     PORT: str = 80
-    SECRET_KEY = 'train1erSecret!'
+    SECRET_KEY = b'train1erSecret!'
     APP_PATH: str = str(Path(__file__).parent.parent)
     STATIC_PATH: str = str(Path(APP_PATH) / Path('static'))
     VIEW_PATH: str = str(Path(APP_PATH) / Path('template'))
