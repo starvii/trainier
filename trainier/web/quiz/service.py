@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from typing import List
-from sqlalchemy.sql import or_
+
 from sqlalchemy.orm.query import Query
-from trainier.dao.model import Quiz, Trunk
+from sqlalchemy.sql import or_
+
+from trainier.dao.model import Quiz
 from trainier.dao.orm import Session
 from trainier.util.logger import logger
 from trainier.util.object_id import object_id
-from trainier.web.question.service import QuestionService
 
 
 class QuizService:

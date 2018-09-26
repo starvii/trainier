@@ -3,9 +3,6 @@
 
 """
 测验题目制定（管理） quiz-list(search), quiz-create, quiz-modify, quiz-delete(X)
-题目列表（测验） question-list, question-marked-list
-题目页面（测验） question-view
-结果页面/保存（测验） result, statistics
 """
 
 import json
@@ -141,7 +138,7 @@ class API:
 class View:
     @staticmethod
     @blueprint.route('/', methods=('GET',))
-    def quiz_index() -> str:
+    def view_index() -> str:
         """
         参数：page, size, keyword
         调用api:
@@ -152,7 +149,7 @@ class View:
 
     @staticmethod
     @blueprint.route('/edit', methods=('GET',))
-    def quiz_edit() -> str:
+    def view_edit() -> str:
         """
         参数: quiz_id
         调用api:
@@ -164,7 +161,7 @@ class View:
 
     @staticmethod
     @blueprint.route('/view', methods=('GET',))
-    def quiz_view() -> str:
+    def view_view() -> str:
         """
         参数: quiz_id
         调用api:
@@ -173,48 +170,3 @@ class View:
         :return:
         """
         return render_template('quiz/view.html')
-
-    @staticmethod
-    def question_index() -> str:
-        """
-        获取一项测验中的所有题目
-        参数：quiz_id
-        调用api：
-            获取quiz
-            获取question-list
-        :return:
-        """
-        pass
-
-    @staticmethod
-    def question_answer() -> str:
-        """
-        获取一项题目，并可进行答题
-        参数：quiz_id, trunk_id
-        调用api：
-            获取question
-            提交答案
-        :return:
-        """
-        pass
-
-    @staticmethod
-    def quiz_result() -> str:
-        """
-        计分和查看结果（全部、错误）
-        参数：quiz_id, take_id?
-        调用api：
-            计分
-        :return:
-        """
-        pass
-
-    @staticmethod
-    def statistics() -> str:
-        """
-        数据统计，全局来看，某道题做过几次、错误几次
-        参数：
-
-        :return:
-        """
-        pass
