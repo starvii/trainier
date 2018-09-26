@@ -3,14 +3,15 @@
 
 import json
 from typing import Dict, List, Set
-from flask import Blueprint, Response, Request, request, make_response, abort, render_template
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-from trainier.dao.model import Trunk, Option, Pic
-from trainier.util.logger import logger
-from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
-from trainier.web.question.service import QuestionService
-from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json
 
+from flask import Blueprint, Response, request, make_response, abort, render_template
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+
+from trainier.dao.model import Trunk, Option, Pic
+from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
+from trainier.util.logger import logger
+from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json
+from trainier.web.question.service import QuestionService
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
 
