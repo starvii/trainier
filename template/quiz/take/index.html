@@ -1,10 +1,154 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base/skeleton.html" %}
+{% block container %}
+    {% raw %}
+    <div class="columns" id="app">
+        <div class="column is-12" id="take_quiz" v-if="taking">
+            take_quiz
+        </div>
+        <div class="column is-12" id="select_quiz" v-else>
+            <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+                <thead>
+                <tr>
+                    <td colspan="6">
+                        <page-component :conf.sync="pageConf"></page-component>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                    </td>
+                    <td><a class="button is-small" title="查找" @click="search()">
+                        <i class="fas fa-search"></i>
+                    </a></td>
+                </tr>
+                <tr>
+                    <th>编号</th>
+                    <th>编码</th>
+                    <th>名称</th>
+                    <th>数量</th>
+                    <th>开始</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <page-component :conf.sync="pageConf"></page-component>
+                    </td>
+                </tr>
+                </tfoot>
+                <tbody>
+                <tr v-for="(item, idx) in data">
+                    <td>
+                        <a :href="`/quiz/view#` + item.entity_id"
+                           target="_blank"
+                           v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
+                           :title="item.comment"></a>
+                    </td>
+                    <td>
+                        <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.code" :title="item.comment"></a>
+                    </td>
+                    <td>
+                        <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.name" :title="item.comment"></a>
+                    </td>
+                    <td>
+                        <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.count" :title="item.comment"></a>
+                    </td>
+                    <td>
+                        <div class="buttons has-addons">
+                            <a class="button is-small" title="开始测验" @click="start(item.entity_id)">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
 
-</body>
-</html>
+            </table>
+        </div>
+    </div>
+    {% endraw %}
+{% endblock %}
+{% block script %}
+    {% raw %}
+    <script src="/js/common.js"></script>
+    <script src="/js/page.js"></script>
+    <script>
+        const app = new window.Vue({
+            el: '#app',
+            data: {
+                data: [],
+                pageConf: {
+                    currentPage: 1,
+                    totalItems: 1000,
+                    itemsPerPage: 10,
+                    pagesLength: 9,
+                    perPageOptions: [10, 15, 30, 50, 100],
+                    onChange: 'listQuiz',
+                },
+                keyword: '',
+                kw: '',
+            },
+            mounted: function () {
+            },
+            computed: {
+                taking: function () {
+                    let quiz = getCookie('quiz');
+                    return !(quiz === null);
+                },
+            },
+            methods: {
+                listQuiz: function () {
+                    axios({
+                        method: 'POST',
+                        url: '/quiz/api/',
+                        data: {
+                            page: this.pageConf.currentPage,
+                            size: this.pageConf.itemsPerPage,
+                            keyword: this.keyword,
+                        },
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                let t = response.data;
+                                this.pageConf.currentPage = t.page;
+                                this.pageConf.totalItems = t.total;
+                                this.pageConf.itemsPerPage = t.size;
+                                this.data = t.data;
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志');
+                        }
+                    );
+                },
+                start: function (quizId) {
+                    axios({
+                        method: 'GET',
+                        url: '/quiz/take/api/' + quizId,
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK') {
+                                console.debug(getCookie('quiz'));
+                                //let t = response.data;
+                                //this.pageConf.currentPage = t.page;
+                                //this.pageConf.totalItems = t.total;
+                                //this.pageConf.itemsPerPage = t.size;
+                                //this.data = t.data;
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志');
+                        }
+                    );
+                },
+            },
+        });
+    </script>
+    {% endraw %}
+{% endblock %}
