@@ -25,6 +25,12 @@ def __deal_fields(fields: Set[str or InstrumentedAttribute]) -> Set[str]:
     return _set
 
 
+def sub(obj: object, fields: Set[str or InstrumentedAttribute]) -> Set[str] or None:
+    fs: Set[str] = set([_ for _ in obj.__dict__.keys() if not _.startswith('_')])
+    sub_fs = __deal_fields(fields)
+    return fs.difference(sub_fs)
+
+
 def labelify(obj: object, fields: Set[str or InstrumentedAttribute] = None) -> Dict or List[Dict] or None:
     if type(obj) == list:
         l: List = obj
