@@ -11,12 +11,13 @@ from flask import Blueprint, Response, request, make_response, abort, render_tem
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from trainier.util.logger import logger
 from trainier.dao.model import Quiz
-from trainier.util.labelify import dict_to_entity, list_to_entities
+from trainier.util.labelify import dict_to_entity, list_to_entities, labelify, sub
 from trainier.web.quiz.service import QuizService
-from trainier.util.labelify import labelify
 from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie
 
 blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
+
+quiz_fields: Set[str] = sub(Quiz(), {Quiz.db_id})
 
 
 class API:
@@ -68,7 +69,7 @@ class API:
     def api_quiz_get(entity_id: str) -> Response:
         q: Quiz = QuizService.select_quiz_by_id(entity_id)
         if q is not None:
-            r: Dict = labelify(q)
+            r: Dict = labelify(q, quiz_fields)
             r['questions'] = q.questions.split(',')
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'

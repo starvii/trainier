@@ -16,9 +16,9 @@ from trainier.web.question.service import QuestionService
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
 
 
-trunk_fields = sub(Trunk(), {Trunk.db_id})
-option_fields = sub(Option(), {Option.db_id})
-pic_fields = sub(Pic(), {Pic.db_id})
+trunk_fields: Set[str] = sub(Trunk(), {Trunk.db_id})
+option_fields: Set[str] = sub(Option(), {Option.db_id})
+pic_fields: Set[str] = sub(Pic(), {Pic.db_id})
 
 
 class API:
