@@ -8,12 +8,17 @@ from flask import Blueprint, Response, request, make_response, abort, render_tem
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from trainier.dao.model import Trunk, Option, Pic
-from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
+from trainier.util.labelify import dict_to_entity, list_to_entities, labelify, sub
 from trainier.util.logger import logger
 from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json
 from trainier.web.question.service import QuestionService
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
+
+
+trunk_fields = sub(Trunk(), {Trunk.db_id})
+option_fields = sub(Option(), {Option.db_id})
+pic_fields = sub(Pic(), {Pic.db_id})
 
 
 class API:
@@ -78,9 +83,9 @@ class API:
         trunk, options, pics = QuestionService.select_trunk_options_pics_by_id(entity_id)
         if trunk is not None:
             r: Dict = dict(
-                trunk=labelify(trunk),
-                options=labelify(options),
-                pics=labelify(pics)
+                trunk=labelify(trunk, trunk_fields),
+                options=labelify(options, option_fields),
+                pics=labelify(pics, pic_fields)
             )
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
