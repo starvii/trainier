@@ -75,7 +75,7 @@ class API:
                 question: Dict = dict(
                     id=e,
                     marked=False,
-                    answer=[],
+                    answer='',
                     seed=-1,
                 )
                 if quiz.random_choice:
@@ -100,7 +100,7 @@ class API:
         :return:
         """
         idx: int = post_dict['idx'] - 1
-        answer: List[str] = post_dict['answer']
+        answer: List[str] or str = post_dict['answer']
         marked: bool = post_dict['marked']
         question: Dict = quiz_dict['questions'][idx]
         question['answer'] = answer
@@ -137,14 +137,14 @@ class API:
             random.seed(question.get('seed'))
             random.shuffle(options_dict)
         # 加上之前保存的答题结果
-        for option_dict in options_dict:
-            option_dict['is_true'] = False
-        answer: List[str] = question['answer']
-        for ch in answer:
-            idx: int = string.ascii_uppercase.find(ch.strip().upper())
-            if idx < 0 or idx >= len(answer):
-                raise ValueError('something wrong in answer {} of {}'.format(answer, str(question)))
-            options_dict[idx]['is_true'] = True
+        # for option_dict in options_dict:
+        #     option_dict['is_true'] = False
+        # answer: List[str] or str = question['answer']
+        # for ch in answer:
+        #     idx: int = string.ascii_uppercase.find(ch.strip().upper())
+        #     if idx < 0 or idx >= len(answer):
+        #         raise ValueError('something wrong in answer {} of {}'.format(answer, str(question)))
+        #     options_dict[idx]['is_true'] = True
         pics_dict: Dict = labelify(pics, pic_fields)
         ret: Dict = dict(
             trunk=trunk_dict,
