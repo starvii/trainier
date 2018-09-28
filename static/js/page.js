@@ -2,8 +2,8 @@ const PageComponent = Vue
     .extend({
         template: ''
             + '<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">'
-            + '<a v-if="conf.totalItems > 0" class="pagination-previous" :class="{\'is-disabled\': conf.currentPage == 1}" @click="prevPage()"><i class="fas fa-angle-left"></i></a>'
-            + '<a v-if="conf.totalItems > 0" class="pagination-next" :class="{\'is-disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><i class="fas fa-angle-right"></i></a>'
+            + '<a v-if="conf.totalItems > 0" class="pagination-previous" v-bind="{\'disabled\': conf.currentPage == 1}" @click="prevPage()"><i class="fas fa-angle-left"></i></a>'
+            + '<a v-if="conf.totalItems > 0" class="pagination-next" v-bind="{\'disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><i class="fas fa-angle-right"></i></a>'
             + '<ul class="pagination-list" v-if="conf.totalItems > 0">'
             + '<li v-for="item in pageList">'
             + '<a :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}" @click="changeCurrentPage(item)" v-text="item"></a>'
