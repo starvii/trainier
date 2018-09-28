@@ -1,70 +1,166 @@
 {% extends "base/skeleton.html" %}
 {% block container %}
     {% raw %}
-    <div class="columns" id="app">
-        <div class="column is-12" id="take_quiz" v-if="taking">
-            take_quiz
-        </div>
-        <div class="column is-12" id="select_quiz" v-else>
-            <table class="table is-striped is-narrow is-fullwidth is-hoverable">
-                <thead>
-                <tr>
-                    <td colspan="6">
-                        <page-component :conf.sync="pageConf"></page-component>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="5">
-                        <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
-                    </td>
-                    <td><a class="button is-small" title="查找" @click="search()">
-                        <i class="fas fa-search"></i>
-                    </a></td>
-                </tr>
-                <tr>
-                    <th>编号</th>
-                    <th>编码</th>
-                    <th>名称</th>
-                    <th>数量</th>
-                    <th>开始</th>
-                </tr>
-                </thead>
-                <tfoot>
-                <tr>
-                    <td colspan="6">
-                        <page-component :conf.sync="pageConf"></page-component>
-                    </td>
-                </tr>
-                </tfoot>
-                <tbody>
-                <tr v-for="(item, idx) in data">
-                    <td>
-                        <a :href="`/quiz/view#` + item.entity_id"
-                           target="_blank"
-                           v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
-                           :title="item.comment"></a>
-                    </td>
-                    <td>
-                        <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.code" :title="item.comment"></a>
-                    </td>
-                    <td>
-                        <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.name" :title="item.comment"></a>
-                    </td>
-                    <td>
-                        <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.count" :title="item.comment"></a>
-                    </td>
-                    <td>
-                        <div class="buttons has-addons">
-                            <a class="button is-small" title="开始测验" @click="start(item.entity_id)">
-                                <i class="fas fa-edit"></i>
-                            </a>
+    <div id="app">
+        <div id="take_quiz" v-if="isTaking()">
+            <nav class="navbar">
+                <div class="navbar-menu">
+                    <div class="navbar-item is-expanded">
+                        <progress class="progress is-small" value="15" max="100">15%</progress>
+                    </div>
+                    <div class="navbar-end">
+                        <div class="navbar-item">
+                            <div class="buttons">
+                                <a class="button">交卷</a>
+                                <a class="button">退出</a>
+                            </div>
                         </div>
-                    </td>
-                </tr>
-                </tbody>
+                    </div>
+                </div>
+            </nav>
 
-            </table>
+            <div class="columns">
+                <div class="column is-12">
+                    <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
+                        <a class="pagination-previous"><i class="fas fa-angle-left"></i></a>
+                        <a class="pagination-next"><i class="fas fa-angle-right"></i></a>
+                        <ul class="pagination-list">
+                            <li v-for="(q, idx) in questionList">
+                                <a class="pagination-link"
+                                   v-text="idx + 1"
+                                   @click="switch_to(idx + 1)"
+                                   :class="pageBtnStyle(q.answer, q.marked)"
+                                ></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column is-1">
+                    <label class="label">编号</label>
+                </div>
+                <div class="column is-3">
+                    <pre v-text="trunk.code"></pre>
+                </div>
+                <div class="column is-1">
+                    <label class="label">等级</label>
+                </div>
+                <div class="column is-3">
+                    <pre v-text="trunk.level"></pre>
+                </div>
+                <div class="column is-1">
+                    <label class="label">来源</label>
+                </div>
+                <div class="column is-3">
+                    <pre v-text="trunk.source"></pre>
+                </div>
+            </div>
+            <div class="columns">
+                <div class="column">
+                    <div class="field" v-if="trunk.en_trunk.length > 0">
+                        <label class="label">英文题目</label>
+                        <div class="control">
+                            <pre v-text="trunk.en_trunk"></pre>
+                        </div>
+                    </div>
+                    <div class="field" v-if="trunk.cn_trunk.length > 0">
+                        <label class="label">中文题目</label>
+                        <div class="control">
+                            <pre v-text="trunk.cn_trunk"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--
+            <div class="columns" v-for="(opt, index) in options">
+                <div class="column is-1">
+                <span class="icon is-right">
+                    <i class="fas fa-check is-true" v-if="opt.is_true"></i>
+                    <i class="fas fa-times is-false" v-if="!opt.is_true"></i>
+                </span>
+                </div>
+                <div class="column is-1">
+                    <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+                </div>
+                <div class="column is-5">
+                    <pre v-text="opt.en_option"></pre>
+                </div>
+                <div class="column is-5">
+                    <pre v-text="opt.cn_option"></pre>
+                </div>
+            </div>
+            -->
         </div>
+
+        <div id="select_quiz" v-else>
+            <div class="columns">
+                <div class="column is-12">
+                    <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+                        <thead>
+                        <tr>
+                            <td colspan="5">
+                                <page-component :conf.sync="pageConf"></page-component>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                            </td>
+                            <td><a class="button is-small" title="查找" @click="search()">
+                                <i class="fas fa-search"></i>
+                            </a></td>
+                        </tr>
+                        <tr>
+                            <th>编号</th>
+                            <th>编码</th>
+                            <th>名称</th>
+                            <th>数量</th>
+                            <th>开始</th>
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            <td colspan="5">
+                                <page-component :conf.sync="pageConf"></page-component>
+                            </td>
+                        </tr>
+                        </tfoot>
+                        <tbody>
+                        <tr v-for="(item, idx) in data">
+                            <td>
+                                <a :href="`/quiz/view#` + item.entity_id"
+                                   target="_blank"
+                                   v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
+                                   :title="item.comment"></a>
+                            </td>
+                            <td>
+                                <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.code"
+                                   :title="item.comment"></a>
+                            </td>
+                            <td>
+                                <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.name"
+                                   :title="item.comment"></a>
+                            </td>
+                            <td>
+                                <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.count"
+                                   :title="item.comment"></a>
+                            </td>
+                            <td>
+                                <div class="buttons has-addons">
+                                    <a class="button is-small" title="开始测验" @click="start(item.entity_id)">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
     </div>
     {% endraw %}
 {% endblock %}
@@ -87,16 +183,40 @@
                 },
                 keyword: '',
                 kw: '',
+                questionList: [],
+                questionIdx: 1,
+                answer: [],
+                marked: false,
+                trunk: {
+                    code: 'code',
+                    level: 'level',
+                    source: 'source',
+                    en_trunk: 'en_trunk',
+                    cn_trunk: 'cn_trunk',
+                },
+                options: [],
             },
             mounted: function () {
-            },
-            computed: {
-                taking: function () {
-                    let quiz = getCookie('quiz');
-                    return !(quiz === null);
-                },
+                if (this.isTaking()) {
+                    this.switch_to(0);
+                }
             },
             methods: {
+                isTaking: function () {
+                    let quiz = getCookie('quiz');
+                    return quiz !== null;
+                },
+                pageBtnStyle: function (answer, marked) {
+                    if (marked && answer.length > 0) {
+                        return 'is-warning';
+                    } else if (marked && answer.length === 0) {
+                        return 'is-danger';
+                    } else if (!marked && answer.length > 0) {
+                        return 'is-success';
+                    } else {
+                        return '';
+                    }
+                },
                 listQuiz: function () {
                     axios({
                         method: 'POST',
@@ -120,7 +240,7 @@
 
                         }.bind(this)).catch(
                         function (error) {
-                            alert('请求服务失败，请检查日志');
+                            alert('请求服务失败，请检查日志。' + error);
                         }
                     );
                 },
@@ -130,20 +250,43 @@
                         url: '/quiz/take/api/' + quizId,
                     }).then(
                         function (response) {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result === true) {
+                                // 设置cookie完成
+                                if (this.isTaking()) {
+                                    window.location.reload();
+                                }
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志。' + error);
+                        }
+                    );
+                },
+                switch_to: function (switchIdx) {
+                    let postData = {
+                        idx: this.questionIdx,
+                        answer: this.answer,
+                        marked: this.marked,
+                    };
+                    axios({
+                        method: 'POST',
+                        url: '/quiz/take/api/' + switchIdx,
+                    }).then(
+                        function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
-                                console.debug(getCookie('quiz'));
-                                //let t = response.data;
-                                //this.pageConf.currentPage = t.page;
-                                //this.pageConf.totalItems = t.total;
-                                //this.pageConf.itemsPerPage = t.size;
-                                //this.data = t.data;
+                                console.debug(response.data);
+                                this.questionList = response.data['question_list'];
+                                this.trunk = response.data['trunk'];
+                                this.options = response.data['options'];
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }
 
                         }.bind(this)).catch(
                         function (error) {
-                            alert('请求服务失败，请检查日志');
+                            alert('请求服务失败，请检查日志。' + error);
                         }
                     );
                 },
