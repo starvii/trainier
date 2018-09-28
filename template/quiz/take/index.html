@@ -21,19 +21,29 @@
 
             <div class="columns">
                 <div class="column is-12">
+                    <div class="buttons">
+                        <a class="button"
+                           v-for="(q, idx) in questionList"
+                           v-text="idx+1"
+                           @click="switch_to(idx+1)"
+                           :class="[idx+1==questionIdx ? 'is-info' : {'is-success':!q.marked&&q.answer.length>0, 'is-focused':q.marked&&q.answer.length==0, 'is-success is-focused':q.marked&&q.answer.length>0}]"
+                        ></a>
+                    </div>
+                    <!--
                     <nav class="pagination is-rounded" role="navigation" aria-label="pagination">
                         <a class="pagination-previous"><i class="fas fa-angle-left"></i></a>
                         <a class="pagination-next"><i class="fas fa-angle-right"></i></a>
                         <ul class="pagination-list">
                             <li v-for="(q, idx) in questionList">
-                                <a class="pagination-link"
+                                <a class="pagination-link is-current"
                                    v-text="idx + 1"
                                    @click="switch_to(idx + 1)"
-                                   :class="pageBtnStyle(q.answer, q.marked)"
+                                   :class="pageBtnStyle(idx, q.answer, q.marked)"
                                 ></a>
                             </li>
                         </ul>
                     </nav>
+                    -->
                 </div>
             </div>
             <div class="columns">
@@ -206,17 +216,23 @@
                     let quiz = getCookie('quiz');
                     return quiz !== null;
                 },
-                pageBtnStyle: function (answer, marked) {
-                    if (marked && answer.length > 0) {
-                        return 'is-warning';
-                    } else if (marked && answer.length === 0) {
-                        return 'is-danger';
-                    } else if (!marked && answer.length > 0) {
-                        return 'is-success';
-                    } else {
-                        return '';
+                /*
+                pageBtnStyle: function (idx, answer, marked) {
+                    let ret = '';
+                    if (idx === this.questionIdx) {
+                        ret = 'is-info';
                     }
+                    if (marked && answer.length > 0) {
+                        ret = 'is-warning';
+                    } else if (marked && answer.length === 0) {
+                        ret = 'is-danger';
+                    } else if (!marked && answer.length > 0) {
+                        ret = 'is-success';
+                    }
+                    console.debug(ret);
+                    return ret;
                 },
+                */
                 listQuiz: function () {
                     axios({
                         method: 'POST',
@@ -265,6 +281,11 @@
                     );
                 },
                 switch_to: function (switchIdx) {
+                    if (switchIdx === 0) {
+                        this.questionIdx = 1;
+                    } else {
+                        this.questionIdx = switchIdx;
+                    }
                     let postData = {
                         idx: this.questionIdx,
                         answer: this.answer,
@@ -273,10 +294,10 @@
                     axios({
                         method: 'POST',
                         url: '/quiz/take/api/' + switchIdx,
+                        data: postData,
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
-                                console.debug(response.data);
                                 this.questionList = response.data['question_list'];
                                 this.trunk = response.data['trunk'];
                                 this.options = response.data['options'];
