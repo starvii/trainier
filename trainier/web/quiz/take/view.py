@@ -31,7 +31,7 @@ trunk_fields = {
     Trunk.entity_id,
     Trunk.code,
     Trunk.en_trunk,
-    Trunk.en_trunk,
+    Trunk.cn_trunk,
     Trunk.source,
     Trunk.level,
 }
@@ -53,6 +53,11 @@ pic_fields = {
 }
 
 
+class QuestionVO:
+    # TODO:
+    pass
+
+
 class API:
     @staticmethod
     @blueprint.route('/api/<entity_id>', methods=('GET',))
@@ -70,7 +75,7 @@ class API:
                 question: Dict = dict(
                     id=e,
                     marked=False,
-                    answer='',
+                    answer=[],
                     seed=-1,
                 )
                 if quiz.random_choice:
@@ -95,7 +100,7 @@ class API:
         :return:
         """
         idx: int = post_dict['idx'] - 1
-        answer: str = post_dict['answer']
+        answer: List[str] = post_dict['answer']
         marked: bool = post_dict['marked']
         question: Dict = quiz_dict['questions'][idx]
         question['answer'] = answer
@@ -112,7 +117,7 @@ class API:
         """
         # 读取新的数据
         question: Dict = quiz_dict['questions'][question_idx - 1]
-        qid = question['entity_id']
+        qid = question['id']
         trunk: Trunk = None
         options: List[Option] = None
         pics: List[Pic] = None
@@ -134,9 +139,9 @@ class API:
         # 加上之前保存的答题结果
         for option_dict in options_dict:
             option_dict['is_true'] = False
-        answer: str = question['answer'].strip().upper()
+        answer: List[str] = question['answer']
         for ch in answer:
-            idx: int = string.ascii_uppercase.find(ch)
+            idx: int = string.ascii_uppercase.find(ch.strip().upper())
             if idx < 0 or idx >= len(answer):
                 raise ValueError('something wrong in answer {} of {}'.format(answer, str(question)))
             options_dict[idx]['is_true'] = True
@@ -162,16 +167,21 @@ class API:
             cookie: str = request.cookies.get('quiz')
             cookie = unquote(cookie)
             quiz_dict: Dict = codec.dec_dict(cookie)
-            # 保存提交的结果
-            data: bytes = request.data
-            try:
-                post_dict: Dict = json.loads(data)
-                quiz_dict = API.__deal_submit(quiz_dict, post_dict)
-            except json.JSONDecodeError:
-                # 如果没有提交数据或提交有误，就不进行更新
-                pass
-            ret: Dict = API.__deal_switch(quiz_dict, question_idx)
-            ret['question_list'] = API.__list_status(quiz_dict)
+            if question_idx > 0:
+                # 保存提交的结果
+                data: bytes = request.data
+                try:
+                    post_dict: Dict = json.loads(data)
+                    quiz_dict = API.__deal_submit(quiz_dict, post_dict)
+                except json.JSONDecodeError:
+                    # 如果没有提交数据或提交有误，就不进行更新
+                    pass
+                ret: Dict = API.__deal_switch(quiz_dict, question_idx)
+                ret['question_list'] = API.__list_status(quiz_dict)
+            else:
+                # 第一次请求
+                ret: Dict = API.__deal_switch(quiz_dict, 1)
+                ret['question_list'] = API.__list_status(quiz_dict)
             enc_quiz: str = codec.enc_dict(quiz_dict)
 
             res: Response = make_response(json.dumps(ret).encode())
