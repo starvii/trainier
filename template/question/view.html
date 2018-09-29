@@ -1,6 +1,7 @@
 {% extends "base/skeleton.html" %}
 {% block container %}
     {% raw %}
+    <nav class="navbar"></nav>
     <div id="app">
         <div class="columns">
             <div class="column is-1">
@@ -72,6 +73,7 @@
 
         <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
     </div>
+    <footer class="footer has-background-white"></footer>
     {% endraw %}
 {% endblock %}
 {% block script %}
