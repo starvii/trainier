@@ -20,12 +20,26 @@ class QuestionService:
             trunk: Trunk = session.query(Trunk).filter(Trunk.entity_id == entity_id).one_or_none()
             if trunk is None:
                 return None, None, None
-            options: List[Option] = session.query(Option).filter(Option.trunk_id == entity_id).all()
-            pics: List[Pic] = session.query(Pic).filter(Pic.trunk_id == entity_id).all()
+            options: List[Option] = session.query(Option).filter(Option.trunk_id == entity_id).order_by(
+                Option.order_num.asc()).all()
+            pics: List[Pic] = session.query(Pic).filter(Pic.trunk_id == entity_id).order_by(
+                Pic.order_num.asc()).all()
             return trunk, options, pics
         except Exception as e:
             logger.error(e)
             return None, None, None
+        finally:
+            session.close()
+
+    @staticmethod
+    def select_options_by_trunk_id(trunk_id: str) -> List[Option]:
+        session: Session = Session()
+        try:
+            options: List[Option] = session.query(Option).filter(Option.trunk_id == trunk_id).order_by(
+                Option.order_num.asc()).all()
+            return options
+        except Exception as e:
+            logger.error(e)
         finally:
             session.close()
 
