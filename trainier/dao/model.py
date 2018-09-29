@@ -119,9 +119,9 @@ class Result(Base):
     db_id = Column(Integer, primary_key=True, autoincrement=True)
     entity_id = Column(String(24), unique=True, index=True, default='')
     quiz_id = Column(String(24), index=True, default='')
+    quiz_inst_id = Column(String(24), index=True, default='')
     trunk_id = Column(String(24), index=True, default='')
     answer = Column(TEXT, default='')
-    time = Column(DATETIME, default='')
 
 
 class User(Base):
