@@ -44,11 +44,14 @@
             <div class="column is-1">
                 <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
             </div>
-            <div class="column is-5">
+            <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
                 <pre v-text="opt.en_option"></pre>
             </div>
-            <div class="column is-5">
+            <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
                 <pre v-text="opt.cn_option"></pre>
+            </div>
+            <div class="column is-10" v-else>
+                <pre v-text="opt.x_option"></pre>
             </div>
         </div>
         <div class="field" v-if="trunk.analysis.length > 0">
@@ -78,6 +81,7 @@
 {% endblock %}
 {% block script %}
     {% raw %}
+    <script src="/js/common.js"></script>
     <script type="text/javascript">
         const app = new window.Vue({
             el: '#app',
@@ -115,6 +119,7 @@
                             if (response.status === 200 && response.statusText === 'OK') {
                                 this.trunk = response.data.trunk;
                                 this.options = response.data.options;
+                                mergeOptions(this.options);
                                 this.pics = response.data.pics;
                             } else {
                                 alert('请求失败，请检查日志');
