@@ -16,12 +16,14 @@ import string
 from flask import Blueprint, Response, Request, make_response, abort, render_template, request
 
 from trainier import Config
-from trainier.dao.model import Quiz, Trunk, Option, Pic
+from trainier.dao.model import Quiz, Trunk, Option, Pic, Result
 from trainier.util.labelify import labelify
 from trainier.util.logger import logger
 from trainier.util.sec_cookie import Codec
+from trainier.util.object_id import object_id
 from trainier.web.quiz.service import QuizService
 from trainier.web.question.service import QuestionService
+from trainier.web.quiz.take.service import TakeService
 
 blueprint: Blueprint = Blueprint('quiz_take', __name__, url_prefix='/quiz/take')
 
@@ -187,6 +189,63 @@ class API:
             res: Response = make_response(json.dumps(ret).encode())
             res.content_type = 'application/json; charset=utf-8'
             res.set_cookie('quiz', value=enc_quiz)
+            return res
+        except Exception as e:
+            logger.error(str(e))
+            abort(500)
+
+    @staticmethod
+    @blueprint.route('/api/', methods=('DELETE',))
+    def api_exit() -> Response:
+        try:
+            res: Response = make_response(json.dumps(dict(result=True)).encode())
+            res.delete_cookie('quiz')
+            res.content_type = 'application/json; charset=utf-8'
+            return res
+        except Exception as e:
+            logger.error(str(e))
+            abort(500)
+
+    @staticmethod
+    @blueprint.route('/api/', methods=('PUT',))
+    def api_submit() -> Response:
+        try:
+            cookie: str = request.cookies.get('quiz')
+            cookie = unquote(cookie)
+            quiz_dict: Dict = codec.dec_dict(cookie)
+            quiz_id: str = quiz_dict.get('entity_id')
+            random_choice: bool = quiz_dict.get('random_choice')
+            quiz_inst_id: str = object_id()
+            question_list: List[Dict] = quiz_dict['question_list']
+            result_list: List[Result] = list()
+            for question_dict in question_list:
+                trunk_id: str = question_dict.get(id)
+                result: Result = Result(
+                    entity_id=object_id(),
+                    quiz_id=quiz_id,
+                    quiz_inst_id=quiz_inst_id,
+                    trunk_id=trunk_id,
+                    answer=''
+                )
+                answer: List[str] or str = question_dict.get('answer')
+                options: List[Option] = QuestionService.select_options_by_trunk_id(trunk_id)
+                if random_choice:
+                    seed: int = question_dict.get('seed')
+                    random.seed(seed)
+                    random.shuffle(options)
+                answers: List[str] = list()
+                for ch in answer:
+                    ch: str = ch.strip().upper()
+                    idx: int = string.ascii_uppercase.find(ch)
+                    if idx > 0 and idx < len(answer):
+                        option: Option = options[idx]
+                        answers.append(option.entity_id)
+                result.answer = ','.join(answers)
+                result_list.append(result)
+            TakeService.save(result_list)
+            res: Response = make_response(json.dumps(dict(result=True)).encode())
+            res.delete_cookie('quiz')
+            res.content_type = 'application/json; charset=utf-8'
             return res
         except Exception as e:
             logger.error(str(e))
