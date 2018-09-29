@@ -216,10 +216,10 @@ class API:
             quiz_id: str = quiz_dict.get('entity_id')
             random_choice: bool = quiz_dict.get('random_choice')
             quiz_inst_id: str = object_id()
-            question_list: List[Dict] = quiz_dict['question_list']
+            question_list: List[Dict] = quiz_dict['questions']
             result_list: List[Result] = list()
             for question_dict in question_list:
-                trunk_id: str = question_dict.get(id)
+                trunk_id: str = question_dict.get('id')
                 result: Result = Result(
                     entity_id=object_id(),
                     quiz_id=quiz_id,
@@ -237,7 +237,7 @@ class API:
                 for ch in answer:
                     ch: str = ch.strip().upper()
                     idx: int = string.ascii_uppercase.find(ch)
-                    if idx > 0 and idx < len(answer):
+                    if idx > 0 and idx < len(options):
                         option: Option = options[idx]
                         answers.append(option.entity_id)
                 result.answer = ','.join(answers)
