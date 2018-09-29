@@ -74,18 +74,22 @@
             </div>
             <label v-for="(opt, index) in options" :for="`ABCDEFGHIJKL`[index]">
                 <div class="columns">
-                    <div class="column is-2">
+                    <div class="column is-1">
                         <input :id="`ABCDEFGHIJKL`[index]" type="checkbox" name="answer" :value="`ABCDEFGHIJKL`[index]"
                                v-model="answer" v-if="opt.multi_choice">
                         <input :id="`ABCDEFGHIJKL`[index]" type="radio" name="answer" :value="`ABCDEFGHIJKL`[index]"
                                v-model="answer" v-else>
                         <span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
                     </div>
-                    <div class="column is-5">
+                    <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
                         <pre v-text="opt.en_option"></pre>
                     </div>
-                    <div class="column is-5">
+                    <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
                         <pre v-text="opt.cn_option"></pre>
+                    </div>
+                    <div class="column is-1" v-if="opt.en_option.length>0&&opt.cn_option.length>0">&nbsp;</div>
+                    <div class="column is-11" v-else>
+                        <pre v-text="opt.x_option"></pre>
                     </div>
                 </div>
             </label>
@@ -287,6 +291,7 @@
                                 this.questionList = response.data['question_list'];
                                 this.trunk = response.data['trunk'];
                                 this.options = response.data['options'];
+                                mergeOptions(this.options);
                                 this.answer = response.data['question_list'][this._switchIdx - 1]['answer'];
                                 this.marked = response.data['question_list'][this._switchIdx - 1]['marked'];
                                 this.questionIdx = this._switchIdx;
@@ -343,11 +348,12 @@
                         }
                     }
                     let r = confirm(prefix + '确实要提交吗？');
-                    if (r) {
-                        r = confirm('再次确认，确实要提交吗？');
-                        if (r) {
-                            // delete
-                        }
+                    if (!r) {
+                        return;
+                    }
+                    r = confirm(prefix + '再次确认，确实要提交吗？');
+                    if (!r) {
+                        return;
                     }
                     axios({
                         method: 'PUT',
