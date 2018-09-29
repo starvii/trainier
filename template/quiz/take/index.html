@@ -11,8 +11,8 @@
                     <div class="navbar-end">
                         <div class="navbar-item">
                             <div class="buttons">
-                                <a class="button">交卷</a>
-                                <a class="button">退出</a>
+                                <a class="button" @click="submit()">交卷</a>
+                                <a class="button" @click="exit()">退出</a>
                             </div>
                         </div>
                     </div>
@@ -284,13 +284,10 @@
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
-                                //console.debug(response.data);
                                 this.questionList = response.data['question_list'];
                                 this.trunk = response.data['trunk'];
                                 this.options = response.data['options'];
-                                //alert(response.data['question_list'][this._switchIdx - 1]['answer']);
                                 this.answer = response.data['question_list'][this._switchIdx - 1]['answer'];
-                                //alert(this.answer);
                                 this.marked = response.data['question_list'][this._switchIdx - 1]['marked'];
                                 this.questionIdx = this._switchIdx;
                             } else {
@@ -301,6 +298,25 @@
                             alert('请求服务失败，请检查日志。' + error);
                         }
                     );
+                },
+                exit: function () {
+                    let r = confirm('退出的话会导致该次测验结果丢失。确实要退出吗？');
+                    if (r) {
+                        r = confirm('再次确认，确实要退出吗？');
+                        if (r) {
+                            // delete
+                        }
+                    }
+                },
+                submit: function () {
+                    // TODO: 检查未完成题目、检查被标记题目
+                    let r = confirm('确实要提交吗？');
+                    if (r) {
+                        r = confirm('再次确认，确实要提交吗？');
+                        if (r) {
+                            // delete
+                        }
+                    }
                 },
             },
         });
