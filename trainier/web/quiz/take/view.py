@@ -210,6 +210,17 @@ class API:
     @blueprint.route('/api/', methods=('PUT',))
     def api_submit() -> Response:
         try:
+            data: bytes = request.data
+            try:
+                post_dict: Dict = json.loads(data)
+                answers: List[List or str] = [q.get('answer') for q in post_dict.get('questions')]
+                print(answers)
+                # 如果cookie中没有，则覆盖之？
+                # 实际上应该完全覆盖？
+            except json.JSONDecodeError:
+                # 如果没有提交数据或提交有误，就不进行更新
+                pass
+
             cookie: str = request.cookies.get('quiz')
             cookie = unquote(cookie)
             quiz_dict: Dict = codec.dec_dict(cookie)
@@ -237,7 +248,7 @@ class API:
                 for ch in answer:
                     ch: str = ch.strip().upper()
                     idx: int = string.ascii_uppercase.find(ch)
-                    if idx > 0 and idx < len(options):
+                    if idx >= 0 and idx < len(options):
                         option: Option = options[idx]
                         answers.append(option.entity_id)
                 result.answer = ','.join(answers)
