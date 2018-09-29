@@ -26,7 +26,7 @@
                            v-for="(q, idx) in questionList"
                            v-text="idx+1"
                            @click="switch_to(idx+1)"
-                           :class="[idx+1==questionIdx ? 'is-info' : {'is-success':!q.marked&&q.answer.length>0, 'is-focused':q.marked&&q.answer.length==0, 'is-success is-focused':q.marked&&q.answer.length>0}]"
+                           :class="[idx+1==questionIdx ? 'is-info' : {'is-success':!q.marked&&q.answer.length>0, 'is-danger':q.marked&&q.answer.length==0, 'is-warning':q.marked&&q.answer.length>0}]"
                         ></a>
                     </div>
                 </div>
@@ -301,22 +301,70 @@
                 },
                 exit: function () {
                     let r = confirm('退出的话会导致该次测验结果丢失。确实要退出吗？');
-                    if (r) {
-                        r = confirm('再次确认，确实要退出吗？');
-                        if (r) {
-                            // delete
-                        }
+                    if (!r) {
+                        return;
                     }
+                    r = confirm('再次确认，确实要退出吗？');
+                    if (!r) {
+                        return;
+                    }
+                    axios({
+                        method: 'DELETE',
+                        url: '/quiz/take/api/',
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result === true) {
+                                alert('成功退出。');
+                                window.location.reload();
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志。' + error);
+                        }
+                    );
                 },
                 submit: function () {
-                    // TODO: 检查未完成题目、检查被标记题目
-                    let r = confirm('确实要提交吗？');
+                    // 检查未完成题目、检查被标记题目
+                    let prefix = '';
+                    for (let q of this.questionList) {
+                        if (q.answer.length === 0) {
+                            prefix = '还有题目未完成。';
+                            break;
+                        }
+                    }
+                    if (prefix.length === 0) {
+                        for (let q of this.questionList) {
+                            if (q.marked) {
+                                prefix = '还有题目被标记。';
+                                break;
+                            }
+                        }
+                    }
+                    let r = confirm(prefix + '确实要提交吗？');
                     if (r) {
                         r = confirm('再次确认，确实要提交吗？');
                         if (r) {
                             // delete
                         }
                     }
+                    axios({
+                        method: 'PUT',
+                        url: '/quiz/take/api/',
+                    }).then(
+                        function (response) {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result === true) {
+                                alert('成功退出。');
+                                window.location.reload();
+                            } else {
+                                alert('请求服务失败，请检查日志');
+                            }
+                        }.bind(this)).catch(
+                        function (error) {
+                            alert('请求服务失败，请检查日志。' + error);
+                        }
+                    );
                 },
             },
         });
