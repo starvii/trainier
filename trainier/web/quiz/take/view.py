@@ -8,21 +8,21 @@
 """
 
 import json
-from typing import Dict, List, Set
-from urllib.parse import quote, unquote
 import random
 import string
+from typing import Dict, List
+from urllib.parse import quote, unquote
 
-from flask import Blueprint, Response, Request, make_response, abort, render_template, request
+from flask import Blueprint, Response, make_response, abort, render_template, request
 
 from trainier import Config
 from trainier.dao.model import Quiz, Trunk, Option, Pic, Result
 from trainier.util.labelify import labelify
 from trainier.util.logger import logger
-from trainier.util.sec_cookie import Codec
 from trainier.util.object_id import object_id
-from trainier.web.quiz.service import QuizService
+from trainier.util.sec_cookie import Codec
 from trainier.web.question.service import QuestionService
+from trainier.web.quiz.service import QuizService
 from trainier.web.quiz.take.service import TakeService
 
 blueprint: Blueprint = Blueprint('quiz_take', __name__, url_prefix='/quiz/take')
@@ -62,13 +62,19 @@ class QuestionVO:
 
 class API:
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('GET',))
-    def api_take_start(entity_id: str) -> Response:
+    @blueprint.route('/api/<quiz_id>', methods=('GET',))
+    def api_take_start(quiz_id: str) -> Response:
+        """
+        初始化，读取数据生成cookie
+        :param quiz_id:
+        :return:
+        """
         try:
-            quiz: Quiz = QuizService.select_quiz_by_id(entity_id)
+            quiz: Quiz = QuizService.select_quiz_by_id(quiz_id)
             if quiz is None:
                 abort(404)
             quiz_dict: Dict = labelify(quiz)
+            quiz_dict['quiz_inst_id'] = object_id()
             question_id_list: List[str] = [_.strip() for _ in quiz.questions.split(',') if len(_.strip()) > 0]
             if quiz.random_trunk:
                 random.shuffle(question_id_list)
@@ -83,7 +89,6 @@ class API:
                 if quiz.random_choice:
                     question['seed'] = random.randint(0, 65535)
                 quiz_dict['questions'].append(question)
-
             c: str = quote(codec.enc_dict(quiz_dict))
             res: Response = make_response(json.dumps(dict(result=True)).encode())
             res.content_type = 'application/json; charset=utf-8'
@@ -101,25 +106,25 @@ class API:
         :param post_dict:
         :return:
         """
-        idx: int = post_dict['idx'] - 1
+        index: int = post_dict['index'] - 1
         answer: List[str] or str = post_dict['answer']
         marked: bool = post_dict['marked']
-        question: Dict = quiz_dict['questions'][idx]
+        question: Dict = quiz_dict['questions'][index]
         question['answer'] = answer
         question['marked'] = marked
         return quiz_dict
 
     @staticmethod
-    def __deal_switch(quiz_dict: Dict, question_idx: int) -> Dict:
+    def __deal_switch(quiz_dict: Dict, switch_to_index: int) -> Dict:
         """
         根据 question_idx 从数据库内读取题目数据
         :param quiz_dict:
-        :param question_idx:
+        :param switch_to_index:
         :return:
         """
         # 读取新的数据
-        question: Dict = quiz_dict['questions'][question_idx - 1]
-        qid = question['id']
+        question: Dict = quiz_dict['questions'][switch_to_index - 1]
+        qid: str = question['id']
         trunk: Trunk = None
         options: List[Option] = None
         pics: List[Pic] = None
@@ -158,18 +163,18 @@ class API:
     @staticmethod
     def __list_status(quiz_dict: Dict) -> List[Dict]:
         # 题目列表
-        question_list: List[Dict] = [dict(marked=question['marked'], answer=question['answer']) for question in
-                                     quiz_dict['questions']]
-        return question_list
+        questions: List[Dict] = [dict(marked=question['marked'], answer=question['answer']) for question in
+                                 quiz_dict['questions']]
+        return questions
 
     @staticmethod
-    @blueprint.route('/api/<int:question_idx>', methods=('POST',))
-    def api_take_submit_switch(question_idx: int) -> Response:
+    @blueprint.route('/api/<int:switch_to_index>', methods=('POST',))
+    def api_take_submit_switch(switch_to_index: int) -> Response:
         try:
             cookie: str = request.cookies.get('quiz')
             cookie = unquote(cookie)
             quiz_dict: Dict = codec.dec_dict(cookie)
-            if question_idx > 0:
+            if switch_to_index > 0:
                 # 保存提交的结果
                 data: bytes = request.data
                 try:
@@ -178,12 +183,12 @@ class API:
                 except json.JSONDecodeError:
                     # 如果没有提交数据或提交有误，就不进行更新
                     pass
-                ret: Dict = API.__deal_switch(quiz_dict, question_idx)
-                ret['question_list'] = API.__list_status(quiz_dict)
+                ret: Dict = API.__deal_switch(quiz_dict, switch_to_index)
+                ret['questions'] = API.__list_status(quiz_dict)
             else:
                 # 第一次请求
                 ret: Dict = API.__deal_switch(quiz_dict, 1)
-                ret['question_list'] = API.__list_status(quiz_dict)
+                ret['questions'] = API.__list_status(quiz_dict)
             enc_quiz: str = codec.enc_dict(quiz_dict)
 
             res: Response = make_response(json.dumps(ret).encode())
@@ -210,26 +215,22 @@ class API:
     @blueprint.route('/api/', methods=('PUT',))
     def api_submit() -> Response:
         try:
-            data: bytes = request.data
-            try:
-                post_dict: Dict = json.loads(data)
-                answers: List[List or str] = [q.get('answer') for q in post_dict.get('questions')]
-                print(answers)
-                # 如果cookie中没有，则覆盖之？
-                # 实际上应该完全覆盖？
-            except json.JSONDecodeError:
-                # 如果没有提交数据或提交有误，就不进行更新
-                pass
-
             cookie: str = request.cookies.get('quiz')
             cookie = unquote(cookie)
             quiz_dict: Dict = codec.dec_dict(cookie)
+            data: bytes = request.data
+            try:
+                post_dict: Dict = json.loads(data)
+                quiz_dict = API.__deal_submit(quiz_dict, post_dict)
+            except json.JSONDecodeError:
+                # 如果没有提交数据或提交有误，就不进行更新
+                pass
             quiz_id: str = quiz_dict.get('entity_id')
             random_choice: bool = quiz_dict.get('random_choice')
-            quiz_inst_id: str = object_id()
-            question_list: List[Dict] = quiz_dict['questions']
-            result_list: List[Result] = list()
-            for question_dict in question_list:
+            quiz_inst_id: str = quiz_dict.get('quiz_inst_id')
+            questions: List[Dict] = quiz_dict['questions']
+            results: List[Result] = list()
+            for question_dict in questions:
                 trunk_id: str = question_dict.get('id')
                 result: Result = Result(
                     entity_id=object_id(),
@@ -252,8 +253,8 @@ class API:
                         option: Option = options[idx]
                         answers.append(option.entity_id)
                 result.answer = ','.join(answers)
-                result_list.append(result)
-            TakeService.save(result_list)
+                results.append(result)
+            TakeService.save(results)
             res: Response = make_response(json.dumps(dict(result=True)).encode())
             res.delete_cookie('quiz')
             res.content_type = 'application/json; charset=utf-8'
