@@ -6,7 +6,7 @@
             <nav class="navbar">
                 <div class="navbar-menu">
                     <div class="navbar-item is-expanded">
-                        <progress class="progress is-small" value="15" max="100">15%</progress>
+                        <progress class="progress is-small" :value="15" max="100" v-text="">15%</progress>
                     </div>
                     <div class="navbar-end">
                         <div class="navbar-item">
@@ -23,10 +23,10 @@
                 <div class="column is-12">
                     <div class="buttons">
                         <a class="button"
-                           v-for="(q, idx) in questionList"
+                           v-for="(q, idx) in questions"
                            v-text="idx+1"
                            @click="switch_to(idx+1)"
-                           :class="[idx+1==currentIdx ? 'is-info' : {'is-success':!q.marked&&q.answer.length>0, 'is-danger':q.marked&&q.answer.length==0, 'is-warning':q.marked&&q.answer.length>0}]"
+                           :class="[idx+1==currentIndex?'is-info':{'is-success':!q.marked&&q.answer.length>0,'is-danger':q.marked&&q.answer.length==0,'is-warning':q.marked&&q.answer.length>0}]"
                         ></a>
                     </div>
                 </div>
@@ -52,7 +52,7 @@
                 </div>
                 <div class="column is-1">
                     <label class="label">标记
-                        <input type="checkbox" v-model="questionList[currentIdx-1].marked">
+                        <input type="checkbox" v-model="questions[currentIndex-1].marked" @change="test($event)">
                     </label>
                 </div>
             </div>
@@ -76,9 +76,9 @@
                 <div class="columns">
                     <div class="column is-1">
                         <input :id="`ABCDEFGHIJKL`[index]" type="checkbox" name="answer" :value="`ABCDEFGHIJKL`[index]"
-                               v-model="questionList[currentIdx-1].answer" v-if="opt.multi_choice">
+                               v-model="questions[currentIndex-1].answer" v-if="opt.multi_choice">
                         <input :id="`ABCDEFGHIJKL`[index]" type="radio" name="answer" :value="`ABCDEFGHIJKL`[index]"
-                               v-model="questionList[currentIdx-1].answer" v-else>
+                               v-model="questions[currentIndex-1].answer" v-else>
                         <span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
                     </div>
                     <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
@@ -96,13 +96,13 @@
             <div class="level">
                 <div class="level-left">
                     <div class="level-item">
-                        <a class="button" v-bind="{'disabled':currentIdx<=1}" @click="switch_to(currentIdx-1)">上一题</a>
+                        <a class="button" v-bind="{'disabled':currentIndex<=1}" @click="switch_to(currentIndex-1)">上一题</a>
                     </div>
                 </div>
                 <div class="level-right">
                     <div class="level-item">
-                        <a class="button" v-bind="{'disabled':currentIdx>=questionList.length}"
-                           @click="switch_to(currentIdx+1)">下一题</a>
+                        <a class="button" v-bind="{'disabled':currentIndex>=questions.length}"
+                           @click="switch_to(currentIndex+1)">下一题</a>
                     </div>
                 </div>
             </div>
@@ -197,15 +197,13 @@
                 },
                 keyword: '',
                 kw: '',
-                questionList: [
+                questions: [
                     {
                         answer:'',
                         marked:false,
                     },
                 ],
-                currentIdx: 1,
-                //answer: [],
-                //marked: false,
+                currentIndex: 1,
                 trunk: {
                     code: 'code',
                     level: 'level',
@@ -214,6 +212,7 @@
                     cn_trunk: 'cn_trunk',
                 },
                 options: [],
+
             },
             mounted: function () {
                 if (this.isTaking()) {
@@ -221,6 +220,9 @@
                 }
             },
             methods: {
+                test: function (event) {
+                    console.debug(event.currentTarget);
+                },
                 isTaking: function () {
                     let quiz = getCookie('quiz');
                     return quiz !== null;
@@ -275,32 +277,28 @@
                 switch_to: function (switchIdx) {
                     if (switchIdx < 1) {
                         return;
-                        //this._switchIdx = 1;
-                    } else if (switchIdx > this.questionList.length) {
+                    } else if (switchIdx > this.questions.length) {
                         return;
-                        //this._switchIdx = this.questionList.length;
                     } else {
                         this._switchIdx = switchIdx;
                     }
                     let postData = {
-                        idx: this.currentIdx,
-                        answer: this.questionList[this.currentIdx - 1].answer,
-                        marked: this.questionList[this.currentIdx - 1].marked,
+                        index: this.currentIndex,
+                        answer: this.questions[this.currentIndex - 1].answer,
+                        marked: this.questions[this.currentIndex - 1].marked,
                     };
                     axios({
                         method: 'POST',
-                        url: '/quiz/take/api/' + switchIdx,
+                        url: '/quiz/take/api/' + this._switchIdx,
                         data: postData,
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
-                                this.questionList = response.data['question_list'];
+                                this.questions = response.data['questions'];
                                 this.trunk = response.data['trunk'];
                                 this.options = response.data['options'];
                                 mergeOptions(this.options);
-                                this.answer = response.data['question_list'][this._switchIdx - 1]['answer'];
-                                this.marked = response.data['question_list'][this._switchIdx - 1]['marked'];
-                                this.currentIdx = this._switchIdx;
+                                this.currentIndex = this._switchIdx;
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }
@@ -339,14 +337,14 @@
                 submit: function () {
                     // 检查未完成题目、检查被标记题目
                     let prefix = '';
-                    for (let q of this.questionList) {
+                    for (let q of this.questions) {
                         if (q.answer.length === 0) {
                             prefix = '还有题目未完成。';
                             break;
                         }
                     }
                     if (prefix.length === 0) {
-                        for (let q of this.questionList) {
+                        for (let q of this.questions) {
                             if (q.marked) {
                                 prefix = '还有题目被标记。';
                                 break;
@@ -362,8 +360,10 @@
                         return;
                     }
                     let data = {
-                        questions: this.questionList,
-                    };
+                        index: this.currentIndex,
+                        answer: this.questions[this.currentIndex - 1].answer,
+                        marked: this.questions[this.currentIndex - 1].marked,
+                    }; // 最后还要提交一次结果
                     axios({
                         method: 'PUT',
                         url: '/quiz/take/api/',
