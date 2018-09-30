@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import json
 import secrets
+import zlib
 from typing import Dict
 
 from trainier.util import rc4
@@ -40,12 +41,14 @@ class Codec:
 
     def enc_dict(self, _dict: Dict) -> str:
         j: bytes = json.dumps(_dict, separators=(',', ':')).encode()
-        c: bytes = _enc(self.secret_key, j)
+        z: bytes = zlib.compress(j, zlib.Z_BEST_COMPRESSION)
+        c: bytes = _enc(self.secret_key, z)
         b: bytes = base64.urlsafe_b64encode(c)
         return b.decode()
 
     def dec_dict(self, cookie: str) -> Dict:
         c: bytes = base64.urlsafe_b64decode(cookie.encode())
-        j: bytes = _dec(self.secret_key, c)
+        z: bytes = _dec(self.secret_key, c)
+        j: bytes = zlib.decompress(z)
         d: Dict = json.loads(j)
         return d
