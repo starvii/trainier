@@ -52,7 +52,7 @@
                 </div>
                 <div class="column is-1">
                     <label class="label">标记
-                        <input type="checkbox" v-model="questions[currentIndex-1].marked" @change="test($event)">
+                        <input type="checkbox" v-model="questions[currentIndex-1].marked">
                     </label>
                 </div>
             </div>
@@ -220,9 +220,6 @@
                 }
             },
             methods: {
-                test: function (event) {
-                    console.debug(event.currentTarget);
-                },
                 isTaking: function () {
                     let quiz = getCookie('quiz');
                     return quiz !== null;
