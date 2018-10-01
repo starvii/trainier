@@ -73,7 +73,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>/', methods=('GET',))
+    @blueprint.route('/api/<entity_id>', methods=('GET',))
     def read(entity_id: str) -> Response:
         """
         GET /api
@@ -120,7 +120,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>/', methods=('PUT',))
+    @blueprint.route('/api/<entity_id>', methods=('PUT',))
     def modify(entity_id: str) -> Response or None:
         """
         PUT /api/<entity_id>
@@ -150,7 +150,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>/', methods=('DELETE',))
+    @blueprint.route('/api/<entity_id>', methods=('DELETE',))
     def remove(entity_id: str) -> Response:
         """
         DELETE /api/<entity_id>
