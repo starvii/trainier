@@ -26,7 +26,7 @@ function mergeOptions(options) {
             option.x_option = option.en_option;
         } else if (option.en_option.length === 0 && option.cn_option.length > 0) {
             option.x_option = option.cn_option;
-        } else if (enOption.length === 0 && cnOption.length === 0) {
+        } else if (option.en_option.length === 0 && cnOption.length === 0) {
             option.x_option = '';
         }
     }
