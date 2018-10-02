@@ -19,7 +19,8 @@ class Trunk(Base):
     source = Column(TEXT, index=True, default='')
     level = Column(Integer, default=0)
     comment = Column(TEXT, default='')
-    parent = Column(String(24), default='')
+    order_num = Column(Integer, default=0)
+    parent = Column(String(24), default='')  # 为 '' 时表示单项题目， 'root'时表示根题目节点， 其下的子题目该项为父题目的 ID
 
     def __repr__(self) -> str:
         super().__repr__()
