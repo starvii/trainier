@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import string
-from typing import List
+from typing import List, Set
 
 from sqlalchemy.sql import or_
 
@@ -12,27 +11,58 @@ from trainier.util.logger import logger
 from trainier.util.object_id import object_id
 
 
+ROOT_NODE = 'root'
+
+
 class QuestionService:
     @staticmethod
-    def select_trunk_options_pics_by_id(entity_id: str) -> (Trunk, List[Option], List[Pic]):
+    def select_trunk_by_id(entity_id: str) -> Trunk or None:
+        """
+        options, pic 在 trunk._options trunk._pics 中
+        :param entity_id:
+        :return:
+        """
         session: Session = Session()
         try:
             trunk: Trunk = session.query(Trunk).filter(Trunk.entity_id == entity_id).one_or_none()
             if trunk is None:
-                return None, None, None
-            options: List[Option] = session.query(Option).filter(Option.trunk_id == entity_id).order_by(
-                Option.order_num.asc()).all()
-            pics: List[Pic] = session.query(Pic).filter(Pic.trunk_id == entity_id).order_by(
-                Pic.order_num.asc()).all()
-            return trunk, options, pics
+                return None
+            trunks: List[Trunk] = [trunk]
+            if trunk.parent == ROOT_NODE:
+                queue: List[Trunk] = [trunk]
+                while len(queue) > 0:
+                    trunk_parent: Trunk = queue.pop(0)
+                    trunk_children: List[Trunk] = session.query(Trunk).filter(
+                        Trunk.parent == trunk_parent.entity_id).order_by(
+                        Trunk.order_num.asc()).all()
+                    if len(trunk_children) > 0:
+                        trunk_parent.__setattr__('_trunks', trunk_children)
+                        for trunk in trunk_children:
+                            if trunk.parent == ROOT_NODE:
+                                queue.append(trunk)
+            for trunk in trunks:
+                if trunk.parent != ROOT_NODE:
+                    options: List[Option] = session.query(Option).filter(
+                        Option.trunk_id == trunk.entity_id).order_by(
+                        Option.order_num.asc()).all()
+                    trunk.__setattr__('_options', options)
+                trunk.__dict__['_pics']: List[Pic] = session.query(Pic).filter(
+                    Pic.trunk_id == trunk.entity_id).order_by(
+                    Pic.order_num.asc()).all()
+            return trunks[0]
         except Exception as e:
             logger.error(e)
-            return None, None, None
+            return None
         finally:
             session.close()
 
     @staticmethod
     def select_options_by_trunk_id(trunk_id: str) -> List[Option]:
+        """
+        供保存测验结果时使用
+        :param trunk_id:
+        :return:
+        """
         session: Session = Session()
         try:
             options: List[Option] = session.query(Option).filter(Option.trunk_id == trunk_id).order_by(
@@ -46,7 +76,6 @@ class QuestionService:
     @staticmethod
     def select_trunks(page: int = 1, size: int = 10, keyword: str = '', ids: List[str] = None) -> (List[Trunk], int):
         """
-
         :param keyword:
         :param page:
         :param size:
@@ -55,37 +84,36 @@ class QuestionService:
         """
         session: Session = Session()
         try:
+            q = session.query(Trunk).filter(or_(Trunk.parent.is_(None), Trunk.parent == '', Trunk.parent == ROOT_NODE))
             if keyword is not None and len(keyword) > 0:
                 k: str = '%' + keyword + '%'
+                # 由于新加了组合题目，此处处理有点麻烦，暂时禁用从选项、图片查询功能
                 # 查询符合条件的option
-                lst: List[Option] = session.query(Option).filter(or_(
-                    Option.en_option.like(k),
-                    Option.cn_option.like(k)
-                )).all()
-                entity_ids = set([o.trunk_id for o in lst])
-                # 查询符合条件的pic
-                lst: List[Pic] = session.query(Pic).filter(or_(
-                    Pic.name.like(k),
-                    Pic.source.like(k)
-                )).all()
-                entity_ids = entity_ids.union(set([o.trunk_id for o in lst]))
-
-                q = session.query(Trunk).filter(or_(
+                # lst: List[Option] = session.query(Option).filter(or_(
+                #     Option.en_option.like(k),
+                #     Option.cn_option.like(k)
+                # )).all()
+                # entity_ids = set([o.trunk_id for o in lst])
+                # # 查询符合条件的pic
+                # lst: List[Pic] = session.query(Pic).filter(or_(
+                #     Pic.name.like(k),
+                #     Pic.source.like(k)
+                # )).all()
+                # entity_ids = entity_ids.union(set([o.trunk_id for o in lst]))
+                q = q.filter(or_(
                     Trunk.code.like(k),
                     Trunk.en_trunk.like(k),
                     Trunk.cn_trunk.like(k),
                     Trunk.analysis.like(k),
                     Trunk.source.like(k),
                     Trunk.comment.like(k),
-                    Trunk.entity_id.in_(entity_ids)
+                    # Trunk.entity_id.in_(entity_ids)
                 ))
-            else:
-                q = session.query(Trunk)
             if ids is not None:
                 q = q.filter(Trunk.entity_id.in_(ids))
             c: int = q.count()
 
-            l: List[Trunk] = q.offset((page - 1) * size).limit(size).all()
+            l: List[Trunk] = q.order_by(Trunk.order_num.asc()).offset((page - 1) * size).limit(size).all()
             return l, c
         except Exception as e:
             logger.error(e)
@@ -94,55 +122,69 @@ class QuestionService:
             session.close()
 
     @staticmethod
-    def save(trunk: Trunk, options: List[Option], pics: List[Pic] = None) -> None:
-        session: Session = Session()
-        try:
-            if trunk.entity_id is None or len(trunk.entity_id.strip()) == 0:
-                trunk_id = object_id()
-                trunk.entity_id = trunk_id
-                session.add(trunk)
-                if options is not None and len(options) > 0:
-                    for i, option in enumerate(options):
-                        option.entity_id = object_id()
-                        option.trunk_id = trunk_id
-                        option.order_num = i
-                        if trunk.code is not None and len(trunk.code.strip()) > 0:
-                            option.code = trunk.code.strip() + '-' + string.ascii_uppercase[i]
-                    session.add_all(options)
-                if pics is not None and len(pics) > 0:
-                    for i, pic in enumerate(pics):
-                        pic.entity_id = object_id()
-                        pic.trunk_id = trunk_id
-                        pic.order_num = i
-                        if trunk.code is not None and len(trunk.code.strip()) > 0:
-                            pic.code = trunk.code.strip() + '-' + str(i)
-                    session.add_all(options)
+    def __save_trunk(session: Session, trunk: Trunk):
+        if trunk.entity_id is None or len(trunk.entity_id.strip()) == 0:
+            trunk_id = object_id()
+            trunk.entity_id = trunk_id
+            session.add(trunk)
+        else:
+            session.merge(trunk)
+
+    @staticmethod
+    def __save_options(session: Session, options: List[Option], trunk_id: str):
+        """
+        trunk新增时，删除所有option后再插入
+        trunk修改时，修改已有的option，如果某option在数据库中存在，而在提交中不存在，则删除
+        :param session:
+        :param options:
+        :return:
+        """
+        options_db: List[Option] = session.query(Option).filter(Option.trunk_id == trunk_id).all()
+        exist_db_ids: Set[str] = set([i.entity_id for i in options_db])
+        write_db_ids: Set[str] = set()
+        for option in options:
+            if option.entity_id is None or len(option.entity_id.strip()) == 0:
+                option.entity_id = object_id()
+                session.add(option)
             else:
-                trunk_id = trunk.entity_id
-                session.merge(trunk)
-                # assert len(options) >= 4
-                if options is not None and len(options) > 0:
-                    for i, option in enumerate(options):
-                        option.trunk_id = trunk_id
-                        option.order_num = i
-                        if trunk.code is not None and len(trunk.code.strip()) > 0:
-                            option.code = trunk.code.strip() + '-' + string.ascii_uppercase[i]
-                        if option.entity_id is None or len(option.entity_id.strip()) == 0:
-                            option.entity_id = object_id()
-                            session.add(option)
-                        else:
-                            session.merge(option)
-                if pics is not None and len(pics) > 0:
-                    for i, pic in enumerate(pics):
-                        pic.trunk_id = trunk_id
-                        pic.order_num = i
-                        if trunk.code is not None and len(trunk.code.strip()) > 0:
-                            pic.code = trunk.code.strip() + '-' + str(i)
-                        if pic.entity_id is None or len(pic.entity_id.strip()) == 0:
-                            pic.entity_id = object_id()
-                            session.add(pic)
-                        else:
-                            session.merge(pic)
+                session.merge(option)
+            write_db_ids.add(option.entity_id)
+        delete_db_ids: Set[str] = exist_db_ids - write_db_ids
+        session.query(Option).filter(Option.entity_id.in_(delete_db_ids)).delete()
+
+    @staticmethod
+    def __save_pics(session: Session, pics: List[Pic], trunk_id: str):
+        pics_db: List[Option] = session.query(Pic).filter(Pic.trunk_id == trunk_id).all()
+        exist_db_ids: Set[str] = set([i.entity_id for i in pics_db])
+        write_db_ids: Set[str] = set()
+        for pic in pics:
+            if pic.entity_id is None or len(pic.entity_id.strip()) == 0:
+                pic.entity_id = object_id()
+                session.add(pic)
+            else:
+                session.merge(pic)
+            write_db_ids.add(pic.entity_id)
+        delete_db_ids: Set[str] = exist_db_ids - write_db_ids
+        session.query(Pic).filter(Pic.entity_id.in_(delete_db_ids)).delete()
+
+    @staticmethod
+    def save(trunk: Trunk) -> None:
+        session: Session = Session()
+        queue: List[Trunk] = [trunk]
+        try:
+            while len(queue) > 0:
+                trunk_cur: Trunk = queue.pop(0)
+                QuestionService.__save_trunk(session, trunk_cur)  # 获取保存动作
+                trunk_children: List[Trunk] = trunk.__dict__.get('_trunks')
+                pics: List[Pic] = trunk_cur.__dict__.get('_pics')
+                QuestionService.__save_pics(session, pics, trunk_cur.entity_id)
+                if trunk_children is not None:
+                    trunk_cur.parent = ROOT_NODE
+                    for trunk_child in trunk_children:
+                        trunk_child.parent = trunk_cur.entity_id
+                else:  # leaf node
+                    options: List[Option] = trunk_cur.__dict__.get('_options')
+                    QuestionService.__save_options(session, options, trunk_cur.entity_id)
             session.commit()
         except Exception as e:
             session.rollback()
