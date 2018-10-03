@@ -11,18 +11,26 @@ from flask import Blueprint, Response, request, make_response, abort, render_tem
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from trainier.util.logger import logger
 from trainier.dao.model import Quiz
-from trainier.util.labelify import dict_to_entity, list_to_entities, labelify, sub
+from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
 from trainier.web.quiz.service import QuizService
 from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie
 
 blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
 
-quiz_fields: Set[str] = sub(Quiz(), {Quiz.db_id})
+quiz_fields = {
+    Quiz.entity_id,
+    Quiz.code,
+    Quiz.name,
+    Quiz.questions,
+    Quiz.random_choice,
+    Quiz.random_trunk,
+    Quiz.comment,
+}
 
 
 class API:
     @staticmethod
-    @blueprint.route('/api/', methods=('POST',))
+    @blueprint.route('/api/', methods={'POST'})
     def api_quiz_index() -> Response:
         try:
             data: bytes = request.data
@@ -65,7 +73,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('GET',))
+    @blueprint.route('/api/<entity_id>', methods={'GET'})
     def api_quiz_get(entity_id: str) -> Response:
         q: Quiz = QuizService.select_quiz_by_id(entity_id)
         if q is not None:
@@ -79,7 +87,7 @@ class API:
             abort(404)
 
     @staticmethod
-    @blueprint.route('/api/', methods=('PUT',))
+    @blueprint.route('/api/', methods={'PUT'})
     def api_quiz_create() -> Response:
         try:
             data: bytes = request.data
@@ -101,7 +109,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('PUT',))
+    @blueprint.route('/api/<entity_id>', methods={'PUT'})
     def api_quiz_modify(entity_id: str) -> Response:
         try:
             data: bytes = request.data
@@ -125,7 +133,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/<entity_id>', methods=('DELETE',))
+    @blueprint.route('/api/<entity_id>', methods={'DELETE'})
     def api_quiz_remove(entity_id: str) -> Response:
         """
         DELETE /api/<entity_id>
