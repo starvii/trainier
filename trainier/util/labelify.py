@@ -26,9 +26,15 @@ def __deal_fields(fields: Set[str or InstrumentedAttribute]) -> Set[str]:
 
 
 def sub(obj: object, fields: Set[str or InstrumentedAttribute]) -> Set[str] or None:
-    fs: Set[str] = set([_ for _ in obj.__dict__.keys() if not _.startswith('_')])
+    if obj is None:
+        return None
+    if obj._sa_class_manager is None:
+        return None
+    if obj._sa_class_manager._all_key_set is None:
+        return None
+    fs: Set[str] = obj._sa_class_manager._all_key_set
     sub_fs = __deal_fields(fields)
-    return fs.difference(sub_fs)
+    return fs - sub_fs
 
 
 def labelify(obj: object, fields: Set[str or InstrumentedAttribute] = None) -> Dict or List[Dict] or None:
