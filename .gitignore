@@ -1,5 +1,6 @@
 #mine
 /database
+/upload
 !/database/init-db.sqlite
 /script
 /.idea
@@ -109,3 +110,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
