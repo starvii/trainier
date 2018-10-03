@@ -32,15 +32,18 @@ class RegexConverter(BaseConverter):
 
 def bind_views() -> None:
     app = get_flask_app()
-    import web.question.view
-    logger.info('%s loaded.', web.question.view)
-    app.register_blueprint(web.question.view.blueprint)
-    import web.quiz.view
-    logger.info('%s loaded.', web.quiz.view)
-    app.register_blueprint(web.quiz.view.blueprint)
-    import web.quiz.take.view
-    logger.info('%s loaded.', web.quiz.take.view)
-    app.register_blueprint(web.quiz.take.view.blueprint)
+    import trainier.web.upload
+    logger.info('%s loaded.', trainier.web.upload)
+    app.register_blueprint(trainier.web.upload.blueprint)
+    import trainier.web.question.view
+    logger.info('%s loaded.', trainier.web.question.view)
+    app.register_blueprint(trainier.web.question.view.blueprint)
+    import trainier.web.quiz.view
+    logger.info('%s loaded.', trainier.web.quiz.view)
+    app.register_blueprint(trainier.web.quiz.view.blueprint)
+    import trainier.web.quiz.take.view
+    logger.info('%s loaded.', trainier.web.quiz.take.view)
+    app.register_blueprint(trainier.web.quiz.take.view.blueprint)
 
 
 def main() -> None:
