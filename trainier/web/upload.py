@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import base64
 import json
 import uuid
 from pathlib import Path
 from typing import Dict
 
-from flask import Blueprint, send_from_directory, request, Response, make_response
+from flask import Blueprint, send_from_directory, request, Request, Response, make_response
 
 from trainier import Config
 
@@ -27,10 +28,10 @@ def uploaded_file(filename):
 
 
 @blueprint.route('/', methods={'POST'})
-def upload_file() -> Response:
+def upload_file(req: Request or None = None) -> Response:
     res: Response = make_response()
     res.content_type = 'application/json; charset=utf-8'
-    file = request.files['file']
+    file = request.files['file'] if req is None else req.files['file']
     if file:
         ext: str = allowed_file(file.filename)
         if len(ext) > 0:
