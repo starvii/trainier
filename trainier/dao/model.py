@@ -25,6 +25,7 @@ class Trunk(Base):
     def __repr__(self) -> str:
         super().__repr__()
         return '''{{
+db_id="{}",
 entity_id="{}",
 code="{}",
 en_trunk="{}",
@@ -33,8 +34,10 @@ analysis="{}",
 source="{}",
 level="{}",
 comment="{}",
-}}
-'''.format(
+order_num="{}",
+parent="{}",
+}}'''.format(
+            self.db_id,
             self.entity_id,
             self.code,
             self.en_trunk,
@@ -42,7 +45,9 @@ comment="{}",
             self.analysis,
             self.source,
             self.level,
-            self.comment
+            self.comment,
+            self.order_num,
+            self.parent,
         )
 
 
@@ -63,16 +68,17 @@ class Option(Base):
     def __repr__(self) -> str:
         super().__repr__()
         return '''{{
-entityId="{}",
+db_id="{}",
+entity_id="{}",
 code="{}",
-trunkId="{}",
-enOption="{}",
-cnOption="{}",
-isTrue="{}",
-orderNum="{}",
+trunk_id="{}",
+en_option="{}",
+cn_option="{}",
+is_true="{}",
+order_num="{}",
 comment="{}",
-}}
-'''.format(
+}}'''.format(
+            self.db_id,
             self.entity_id,
             self.code,
             self.trunk_id,
@@ -98,6 +104,30 @@ class Pic(Base):
     order_num = Column(Integer, default=0)
     comment = Column(TEXT, default='')
 
+    def __repr__(self) -> str:
+        super().__repr__()
+        return '''{{
+db_id="{}",
+entity_id="{}",
+trunk_id="{}",
+code="{}",
+name="{}",
+data="{}",
+source="{}",
+order_num="{}",
+comment="{}"
+}}'''.format(
+            self.db_id,
+            self.entity_id,
+            self.trunk_id,
+            self.code,
+            self.name,
+            self.data,
+            self.source,
+            self.order_num,
+            self.comment
+        )
+
 
 class Quiz(Base):
     __tablename__ = 'quiz'
@@ -111,6 +141,28 @@ class Quiz(Base):
     random_trunk = Column(Integer, default=0)
     random_choice = Column(Integer, default=0)
     comment = Column(TEXT, default='')
+
+    def __repr__(self) -> str:
+        super().__repr__()
+        return '''{{
+db_id="{}",
+entity_id="{}",
+code="{}",
+name="{}",
+questions="{}",
+random_trunk="{}",
+random_choice="{}",
+comment="{}"
+}}'''.format(
+            self.db_id,
+            self.entity_id,
+            self.code,
+            self.name,
+            self.questions,
+            self.random_trunk,
+            self.random_choice,
+            self.comment
+        )
 
 
 class Result(Base):
