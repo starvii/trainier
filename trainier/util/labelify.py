@@ -95,8 +95,9 @@ def dict_to_entity(_dict: Dict, target: object, fields: Set[str or InstrumentedA
     return target
 
 
-def list_to_entities(_list: List[Dict], sample: object, fields: Set[str or InstrumentedAttribute] = None) -> List[
-                                                                                                                 object] or None:
+def list_to_entities(_list: List[Dict],
+                     sample: object,
+                     fields: Set[str or InstrumentedAttribute] = None) -> List[object] or None:
     if _list is None or len(_list) == 0:
         return None
     if sample is None:
