@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+from typing import Set
 from pathlib import Path
 
 from flask import Flask
@@ -19,6 +20,9 @@ class _ConfigBase:
     SQLALCHEMY_COMMIT_ON_TEARDOWN: bool = True
     DEBUG: bool = True
     SQLALCHEMY_DATABASE_URI: str = str(Path(APP_PATH) / Path('database/dev-db.sqlite'))
+    ALLOWED_EXTENSIONS: Set[str] = {'png', 'jpg', 'jpeg', 'gif'}
+    UPLOAD_FOLDER: str = str(Path(APP_PATH) / Path('upload'))
+    MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024
 
 
 class DevelopmentConfig(_ConfigBase):
