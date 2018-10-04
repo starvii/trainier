@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <link rel="stylesheet" href="/bulma/bulma.min.css">
+    <link rel="stylesheet" href="/fontawesome/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container">
+    <textarea title="test" id="test" class="textarea"></textarea>
+    <div id="editor">
+        &lt;p&gt;Here goes the initial content of the editor.&lt;/p&gt;
+    </div>
+</div>
+
+<script src="/vue/vue.js" type="text/javascript"></script>
+<script src="/axios/axios.js" type="text/javascript"></script>
+<script src="/ckeditor/ckeditor.js" type="text/javascript"></script>
+<script type="text/javascript">
+    // class UploadAdapter {
+    //     constructor(loader) {
+    //         this.loader = loader;
+    //     }
+    //     upload() {
+    //         return new Promise((resolve, reject) => {
+    //         const data = new FormData();
+    //         data.append('upload', this.loader.file);
+    //         data.append('allowSize', 10);//允许图片上传的大小/兆
+    //         $.ajax({
+    //             url: '/QingXiao/Article/uploadArticleImage4',
+    //             type: 'POST',
+    //             data: data,
+    //             dataType: 'json',
+    //             processData: false,
+    //             contentType: false,
+    //             success: function (data) {
+    //                 if (data.res) {
+    //                     resolve({
+    //                         default: data.url
+    //                     });
+    //                 } else {
+    //                     reject(data.msg);
+    //                 }
+    //
+    //             }
+    //         });
+    //
+    //     });
+    //     }
+    //     abort() {
+    //     }
+    // }
+
+    let editorInst = null;
+    InlineEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: ['imageUpload'],
+            //filebrowserImageUploadUrl: '/'
+            //toolbar: ['image', '|', 'imageTextAlternative', '|', 'imageStyle:alignLeft', 'imageStyle:full', 'imageStyle:alignRight'],
+            //isReadOnly: true,
+            ckfinder: {
+                uploadUrl: '/upload/',
+            },
+        })
+        .then(editor => {
+            editorInst = editor;
+            console.log(editor);
+        })
+        .catch(error => {
+            console.error(error);
+        });
+</script>
+</body>
+</html>
