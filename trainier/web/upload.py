@@ -31,7 +31,7 @@ def uploaded_file(filename):
 def upload_file(req: Request or None = None) -> Response:
     res: Response = make_response()
     res.content_type = 'application/json; charset=utf-8'
-    file = request.files['file'] if req is None else req.files['file']
+    file = request.files['upload'] if req is None else req.files['upload']
     if file:
         ext: str = allowed_file(file.filename)
         if len(ext) > 0:
@@ -39,11 +39,11 @@ def upload_file(req: Request or None = None) -> Response:
             path: str = str(Path(Config.default.UPLOAD_FOLDER) / Path(filename))
             file.save(path)
             file_url = '/upload/' + filename
-            dct: Dict = dict(result=True, url=file_url)
+            dct: Dict = dict(uploaded=True, url=file_url)
         else:
-            dct: Dict = dict(result=False, error='forbidden extensions')
+            dct: Dict = dict(uploaded=False, error=dict(message='forbidden extensions'))
     else:
-        dct: Dict = dict(result=False, error='no file')
+        dct: Dict = dict(uploaded=False, error=dict(message='no file'))
     res.data = json.dumps(dct).encode()
     return res
 
@@ -51,11 +51,17 @@ def upload_file(req: Request or None = None) -> Response:
 @blueprint.route('/test/', methods={'GET'})
 def test() -> str:
     return '''
-    <!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
     <title>Upload File</title>
+</head>
+<body>
     <h1>图片上传</h1>
     <form method="post" enctype="multipart/form-data" action="/upload/">
-         <input type=file name=file>
-         <input type=submit value=上传>
+         <input type="file" name="upload">
+         <input type="submit" value="上传">
     </form>
-    '''
+</body>
+</html>
+'''
