@@ -67,10 +67,7 @@
                     <label class="label">英文题目</label>
                     <div class="control">
                         <div id="trunk-parent-en"></div>
-                        <!--
-                        <textarea rows="5" class="textarea is-small" placeholder="English Trunk"
-                                  v-model="trunk.en_trunk"></textarea>
-                        -->
+                        {# CKEditor #}
                     </div>
                 </div>
             </div>
@@ -81,59 +78,13 @@
                     <label class="label">中文题目</label>
                     <div class="control">
                         <div id="trunk-parent-cn"></div>
-                        <!--
-                        <textarea rows="3" class="textarea is-small" placeholder="Chinese Trunk"
-                                  v-model="trunk.cn_trunk"></textarea>
-                        -->
+                        {# CKEditor #}
                     </div>
                 </div>
             </div>
         </div>
 
         <options-component :options.sync="trunk.options" v-if="!hasTrunkChild"></options-component>
-        <!--
-        <div class="columns" id="trunk-parent-options" v-if="!hasTrunkChild">
-            <div class="column is-12">
-
-
-                <div class="columns" v-for="(opt, index) in trunk.options" @dblclick="changeAnswer(index)">
-                    <div class="column is-1">
-                        <span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-                    </div>
-                    <div class="column is-5">
-                        <p class="control has-icons-right">
-                            <input class="input is-small" type="text" placeholder="English Option"
-                                   v-model="opt.en_option"
-                                   :class="[opt.is_true ? 'is-success' : 'is-danger']">
-                            <span class="icon is-small is-right">
-                                <i class="fas fa-check" v-if="opt.is_true"></i>
-                                <i class="fas fa-times" v-if="!opt.is_true"></i>
-                            </span>
-                        </p>
-                    </div>
-                    <div class="column is-5">
-                        <p class="control has-icons-right">
-                            <input class="input is-small" type="text" placeholder="Chinese Option"
-                                   v-model="opt.cn_option"
-                                   :class="[opt.is_true ? 'is-success' : 'is-danger']">
-                            <span class="icon is-small is-right">
-                                <i class="fas fa-check" v-if="opt.is_true"></i>
-                                <i class="fas fa-times" v-if="!opt.is_true"></i>
-                            </span>
-                        </p>
-                    </div>
-                    <div class="column is-1">
-                        <div class="buttons has-addons">
-                            <span class="button is-small" @click="insertOption(index)"><i
-                                    class="fas fa-plus"></i></span>
-                            <span class="button is-small" @click="removeOption(index)"><i
-                                    class="fas fa-minus"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        -->
 
         <div class="columns" v-if="!hasTrunkChild">
             <div class="column">
@@ -147,7 +98,7 @@
             </div>
         </div>
         <div class="columns">
-            <div class="column">
+            <div class="column is-12">
                 <div class="field">
                     <div class="field-body">
                         <div class="field">
@@ -167,52 +118,17 @@
             </div>
         </div>
 
-        <div class="columns" id="trunk-children" v-if="hasTrunkChild">
-            <div class="column is-12">
-                <div class="level">
-                    <div class="level-left">
-                        <div class="level-item">
-                            <div class="subtitle">第1题</div>
-                        </div>
-                    </div>
-                    <div class="level-right">
-                        <div class="level-item">
-                            <a class="button is-link is-success" @click="">添加</a>
-                        </div>
-                        <div class="level-item">
-                            <a class="button is-link is-success" @click="">删除</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="columns">
-                    <div class="column is-12">
-                        <div>sub_en_trunk</div>
-                    </div>
-                </div>
-                <div class="columns">
-                    <div class="column is-12">
-                        <div>sub_cn_trunk</div>
-                    </div>
-                </div>
-                <div class="columns">
-                    <div class="column is-12">
-                        <div>options</div>
-                    </div>
-                </div>
-                <div class="columns">
-                    <div class="column is-12">
-                        <div>analysis, comment</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <trunks-component :trunks.sync="trunk.trunks" v-if="hasTrunkChild"></trunks-component>
+
     </div>
     <footer class="footer has-background-white"></footer>
 {% endblock %}
 {% block script %}
     {% raw %}
-    <script type="text/javascript" src="/ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
     <script type="text/javascript" src="/js/options.js"></script>
+    <script type="text/javascript" src="/js/subtrunk.js"></script>
+    <script type="text/javascript" src="/js/subtrunks.js"></script>
     <script type="text/javascript">
         const app = new window.Vue({
             el: '#app',
@@ -281,7 +197,7 @@
             },
             methods: {
                 init: function () {
-                    InlineEditor
+                    ClassicEditor
                         .create(document.querySelector('#trunk-parent-en'), {
                             toolbar: ['imageUpload'],
                             ckfinder: {
@@ -294,7 +210,7 @@
                         .catch(error => {
                             alert(error);
                         });
-                    InlineEditor
+                    ClassicEditor
                         .create(document.querySelector('#trunk-parent-cn'), {
                             toolbar: ['imageUpload'],
                             ckfinder: {
@@ -333,22 +249,6 @@
                         }
                     );
                 },
-                insertOption: function (idx) {
-                    if (this.options.length < 12) {
-                        this.options.splice(idx + 1, 0, {
-                            entity_id: '',
-                            trunk_id: '',
-                            en_option: '',
-                            cn_option: '',
-                            is_true: false,
-                        });
-                    }
-                },
-                removeOption: function (idx) {
-                    if (this.options.length > 1) {
-                        this.options.splice(idx, 1);
-                    }
-                },
                 save: function () {
                     axios({
                         url: '/question/api/' + this.encodedTrunkId,
@@ -371,11 +271,10 @@
                         }
                     );
                 },
-                changeAnswer: function (index) {
-                    this.options[index].is_true = !app.options[index].is_true;
-                },
                 hasTrunkChildChange: function () {
-                    //alert(this.hasTrunkChild);
+                    if (this.hasTrunkChild && typeof this.trunk.trunks === 'undefined') {
+                        this.trunk.trunks = [{}];
+                    }
                 },
             },
         });

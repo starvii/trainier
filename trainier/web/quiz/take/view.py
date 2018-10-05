@@ -62,7 +62,7 @@ class QuestionVO:
 
 class API:
     @staticmethod
-    @blueprint.route('/api/<quiz_id>', methods=('GET',))
+    @blueprint.route('/api/<quiz_id>', methods={'GET'})
     def api_take_start(quiz_id: str) -> Response:
         """
         初始化，读取数据生成cookie
@@ -128,7 +128,7 @@ class API:
         trunk: Trunk = None
         options: List[Option] = None
         pics: List[Pic] = None
-        trunk, options, pics = QuestionService.select_trunk_options_pics_by_id(qid)
+        trunk, options, pics = QuestionService.select_trunks_options_pics_by_id(qid)
         # 判断是单选还是多选
         if trunk is None:
             raise ValueError('cannot select trunk by id:' + qid)
@@ -168,7 +168,7 @@ class API:
         return questions
 
     @staticmethod
-    @blueprint.route('/api/<int:switch_to_index>', methods=('POST',))
+    @blueprint.route('/api/<int:switch_to_index>', methods={'POST'})
     def api_take_submit_switch(switch_to_index: int) -> Response:
         try:
             cookie: str = request.cookies.get('quiz')
@@ -200,7 +200,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/', methods=('DELETE',))
+    @blueprint.route('/api/', methods={'DELETE'})
     def api_exit() -> Response:
         try:
             res: Response = make_response(json.dumps(dict(result=True)).encode())
@@ -212,7 +212,7 @@ class API:
             abort(500)
 
     @staticmethod
-    @blueprint.route('/api/', methods=('PUT',))
+    @blueprint.route('/api/', methods={'PUT'})
     def api_submit() -> Response:
         try:
             cookie: str = request.cookies.get('quiz')
@@ -266,7 +266,7 @@ class API:
 
 class View:
     @staticmethod
-    @blueprint.route('/', methods=('GET',))
+    @blueprint.route('/', methods={'GET'})
     def view_index() -> str:
         return render_template('quiz/take/index.html')
 

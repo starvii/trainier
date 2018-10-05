@@ -1,6 +1,4 @@
 User-agent: *
 Disallow: /css/
-Disallow: /images/
-Disallow: /content/
-Disallow: /ui/
 Disallow: /js/
+Disallow: /upload/

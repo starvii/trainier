@@ -15,8 +15,9 @@ blueprint: Blueprint = Blueprint('upload', __name__, url_prefix='/upload')
 
 
 def allowed_file(filename: str) -> str:
-    if '.' in filename:
-        ext: str = filename.rsplit('.', 1)[1]
+    fn: str = filename.strip()
+    if '.' in fn:
+        ext: str = fn.rsplit('.', 1)[1].lower()
         if ext in Config.default.ALLOWED_EXTENSIONS:
             return ext
     return ''
