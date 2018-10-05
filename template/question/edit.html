@@ -1,24 +1,62 @@
+{#
+    single trunk:
+        code, level
+        en_trunk
+        cn_trunk
+        (options)
+        (analysis)
+        source, comment
+
+    parent trunk:
+        code, level
+        en_trunk
+        cn_trunk
+        source, comment
+    child trunk:
+        en_trunk
+        cn_trunk
+        options
+        analysis
+        comment
+#}
+
 {% extends "base/skeleton.html" %}
 {% block container %}
-    {% raw %}
     <nav class="navbar"></nav>
     <div id="app">
         <div class="columns">
-            <div class="column">
+            <div class="column is-4">
                 <div class="field">
-                    <div class="field-body">
-                        <div class="field">
-                            <label class="label">编号</label>
-                            <p class="control is-expanded">
-                                <input class="input is-small" placeholder="编码" v-model="trunk.code">
-                            </p>
-                        </div>
-                        <div class="field">
-                            <label class="label">等级</label>
-                            <p class="control is-expanded">
-                                <input class="input is-small" placeholder="等级" v-model="trunk.level">
-                            </p>
-                        </div>
+                    <label class="label" for="trunk_code">编号</label>
+                    <div class="control">
+                        <input id="trunk_code" type="text" class="input" v-model="trunk.code">
+                    </div>
+                </div>
+            </div>
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label" for="trunk_level">等级</label>
+                    <div class="control">
+                        <input id="trunk_level" type="text" class="input" v-model="trunk.level">
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="field">
+                    <label class="label">包含子题</label>
+                    <div class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" v-model="hasTrunkChild" @change="hasTrunkChildChange()">
+                            如果主题干下有数个子题<br/>　请勾选此处
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-1">
+                <div class="field">
+                    <label class="label">&nbsp;</label>
+                    <div class="control">
+                        <a class="button is-link is-success is-pulled-right" @click="save()">保存</a>
                     </div>
                 </div>
             </div>
@@ -28,8 +66,11 @@
                 <div class="field">
                     <label class="label">英文题目</label>
                     <div class="control">
+                        <div id="trunk-parent-en"></div>
+                        <!--
                         <textarea rows="5" class="textarea is-small" placeholder="English Trunk"
                                   v-model="trunk.en_trunk"></textarea>
+                        -->
                     </div>
                 </div>
             </div>
@@ -39,44 +80,62 @@
                 <div class="field">
                     <label class="label">中文题目</label>
                     <div class="control">
+                        <div id="trunk-parent-cn"></div>
+                        <!--
                         <textarea rows="3" class="textarea is-small" placeholder="Chinese Trunk"
                                   v-model="trunk.cn_trunk"></textarea>
+                        -->
                     </div>
                 </div>
             </div>
         </div>
-        <div class="columns" v-for="(opt, index) in options" @dblclick="changeAnswer(index)">
-            <div class="column is-1">
-                <span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-            </div>
-            <div class="column is-5">
-                <p class="control has-icons-right">
-                    <input class="input is-small" type="text" placeholder="English Option" v-model="opt.en_option"
-                           :class="[opt.is_true ? 'is-success' : 'is-danger']">
-                    <span class="icon is-small is-right">
-                        <i class="fas fa-check" v-if="opt.is_true"></i>
-                        <i class="fas fa-times" v-if="!opt.is_true"></i>
-                    </span>
-                </p>
-            </div>
-            <div class="column is-5">
-                <p class="control has-icons-right">
-                    <input class="input is-small" type="text" placeholder="Chinese Option" v-model="opt.cn_option"
-                           :class="[opt.is_true ? 'is-success' : 'is-danger']">
-                    <span class="icon is-small is-right">
-                        <i class="fas fa-check" v-if="opt.is_true"></i>
-                        <i class="fas fa-times" v-if="!opt.is_true"></i>
-                    </span>
-                </p>
-            </div>
-            <div class="column is-1">
-                <div class="buttons has-addons">
-                    <span class="button is-small" @click="insertOption(index)"><i class="fas fa-plus"></i></span>
-                    <span class="button is-small" @click="removeOption(index)"><i class="fas fa-minus"></i></span>
+
+        <options-component :options.sync="trunk.options" v-if="!hasTrunkChild"></options-component>
+        <!--
+        <div class="columns" id="trunk-parent-options" v-if="!hasTrunkChild">
+            <div class="column is-12">
+
+
+                <div class="columns" v-for="(opt, index) in trunk.options" @dblclick="changeAnswer(index)">
+                    <div class="column is-1">
+                        <span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+                    </div>
+                    <div class="column is-5">
+                        <p class="control has-icons-right">
+                            <input class="input is-small" type="text" placeholder="English Option"
+                                   v-model="opt.en_option"
+                                   :class="[opt.is_true ? 'is-success' : 'is-danger']">
+                            <span class="icon is-small is-right">
+                                <i class="fas fa-check" v-if="opt.is_true"></i>
+                                <i class="fas fa-times" v-if="!opt.is_true"></i>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="column is-5">
+                        <p class="control has-icons-right">
+                            <input class="input is-small" type="text" placeholder="Chinese Option"
+                                   v-model="opt.cn_option"
+                                   :class="[opt.is_true ? 'is-success' : 'is-danger']">
+                            <span class="icon is-small is-right">
+                                <i class="fas fa-check" v-if="opt.is_true"></i>
+                                <i class="fas fa-times" v-if="!opt.is_true"></i>
+                            </span>
+                        </p>
+                    </div>
+                    <div class="column is-1">
+                        <div class="buttons has-addons">
+                            <span class="button is-small" @click="insertOption(index)"><i
+                                    class="fas fa-plus"></i></span>
+                            <span class="button is-small" @click="removeOption(index)"><i
+                                    class="fas fa-minus"></i></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="columns">
+        -->
+
+        <div class="columns" v-if="!hasTrunkChild">
             <div class="column">
                 <div class="field">
                     <label class="label">详解</label>
@@ -107,18 +166,61 @@
                 </div>
             </div>
         </div>
-        <a class="button is-link is-success is-pulled-right" @click="save()">保存</a>
+
+        <div class="columns" id="trunk-children" v-if="hasTrunkChild">
+            <div class="column is-12">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="subtitle">第1题</div>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <a class="button is-link is-success" @click="">添加</a>
+                        </div>
+                        <div class="level-item">
+                            <a class="button is-link is-success" @click="">删除</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-12">
+                        <div>sub_en_trunk</div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-12">
+                        <div>sub_cn_trunk</div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-12">
+                        <div>options</div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-12">
+                        <div>analysis, comment</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <footer class="footer has-background-white"></footer>
-    {% endraw %}
 {% endblock %}
 {% block script %}
     {% raw %}
+    <script type="text/javascript" src="/ckeditor/ckeditor.js"></script>
+    <script type="text/javascript" src="/js/options.js"></script>
     <script type="text/javascript">
         const app = new window.Vue({
             el: '#app',
             data: {
-
+                hasTrunkChild: false,
+                trunkParentEnEditor: null,
+                trunkParentCnEditor: null,
+                trunkChildEditors: {},
                 encodedTrunkId: '',
                 trunk: {
                     entity_id: '',
@@ -128,48 +230,48 @@
                     comment: '',
                     analysis: '',
                     source: '',
+                    options: [
+                        {
+                            entity_id: '',
+                            trunk_id: '',
+                            en_option: '',
+                            cn_option: '',
+                            is_true: false,
+                            order_num: 0,
+                            comment: '',
+                        },
+                        {
+                            entity_id: '',
+                            trunk_id: '',
+                            en_option: '',
+                            cn_option: '',
+                            is_true: false,
+                            order_num: 0,
+                            comment: '',
+                        },
+                        {
+                            entity_id: '',
+                            trunk_id: '',
+                            en_option: '',
+                            cn_option: '',
+                            is_true: false,
+                            order_num: 0,
+                            comment: '',
+                        },
+                        {
+                            entity_id: '',
+                            trunk_id: '',
+                            en_option: '',
+                            cn_option: '',
+                            is_true: false,
+                            order_num: 0,
+                            comment: '',
+                        },
+                    ],
                 },
-                options: [
-                    {
-                        entity_id: '',
-                        trunk_id: '',
-                        en_option: '',
-                        cn_option: '',
-                        is_true: false,
-                        order_num: 0,
-                        comment: '',
-                    },
-                    {
-                        entity_id: '',
-                        trunk_id: '',
-                        en_option: '',
-                        cn_option: '',
-                        is_true: false,
-                        order_num: 0,
-                        comment: '',
-                    },
-                    {
-                        entity_id: '',
-                        trunk_id: '',
-                        en_option: '',
-                        cn_option: '',
-                        is_true: false,
-                        order_num: 0,
-                        comment: '',
-                    },
-                    {
-                        entity_id: '',
-                        trunk_id: '',
-                        en_option: '',
-                        cn_option: '',
-                        is_true: false,
-                        order_num: 0,
-                        comment: '',
-                    },
-                ],
-                pics: [],
             },
             mounted: function () {
+                this.init();
                 let hsh = location.hash.trim();
                 if (hsh[0] === '#') {
                     hsh = hsh.substring(1);
@@ -178,6 +280,34 @@
                 }
             },
             methods: {
+                init: function () {
+                    InlineEditor
+                        .create(document.querySelector('#trunk-parent-en'), {
+                            toolbar: ['imageUpload'],
+                            ckfinder: {
+                                uploadUrl: '/upload/',
+                            },
+                        })
+                        .then(editor => {
+                            this.trunkParentEnEditor = editor;
+                        })
+                        .catch(error => {
+                            alert(error);
+                        });
+                    InlineEditor
+                        .create(document.querySelector('#trunk-parent-cn'), {
+                            toolbar: ['imageUpload'],
+                            ckfinder: {
+                                uploadUrl: '/upload/',
+                            },
+                        })
+                        .then(editor => {
+                            this.trunkParentCnEditor = editor;
+                        })
+                        .catch(error => {
+                            alert(error);
+                        });
+                },
                 load: function () {
                     axios({
                         url: '/question/api/' + this.encodedTrunkId,
@@ -186,8 +316,13 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 this.trunk = response.data.trunk;
-                                this.options = response.data.options;
-                                this.pics = response.data.pics;
+                                this.trunkParentEnEditor.setData(this.trunk.en_trunk);
+                                this.trunkParentCnEditor.setData(this.trunk.cn_trunk);
+                                if (this.hasTrunkChild) {
+
+                                } else {
+
+                                }
                             } else {
                                 alert('请求失败，请检查日志');
                             }
@@ -238,6 +373,9 @@
                 },
                 changeAnswer: function (index) {
                     this.options[index].is_true = !app.options[index].is_true;
+                },
+                hasTrunkChildChange: function () {
+                    //alert(this.hasTrunkChild);
                 },
             },
         });
