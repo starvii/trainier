@@ -68,6 +68,7 @@
                     <div class="control">
                         <div id="trunk-parent-en"></div>
                         {# CKEditor #}
+
                     </div>
                 </div>
             </div>
@@ -126,10 +127,18 @@
 {% block script %}
     {% raw %}
     <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
+    <script type="text/javascript" src="/ckeditor/vue-ckeditor5.js"></script>
     <script type="text/javascript" src="/js/options.js"></script>
     <script type="text/javascript" src="/js/subtrunk.js"></script>
     <script type="text/javascript" src="/js/subtrunks.js"></script>
     <script type="text/javascript">
+        window.Vue.use(VueCkeditor.plugin, {
+            editors: {
+                classic: ClassicEditor,
+                //balloon: BalloonEditor
+              },
+              name: 'ckeditor'
+        });
         const app = new window.Vue({
             el: '#app',
             data: {
