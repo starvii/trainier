@@ -66,9 +66,7 @@
                 <div class="field">
                     <label class="label">英文题目</label>
                     <div class="control">
-                        <div id="trunk-parent-en"></div>
-                        {# CKEditor #}
-
+                        <ckeditor type="classic" v-model="trunk.en_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
                     </div>
                 </div>
             </div>
@@ -78,8 +76,7 @@
                 <div class="field">
                     <label class="label">中文题目</label>
                     <div class="control">
-                        <div id="trunk-parent-cn"></div>
-                        {# CKEditor #}
+                        <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
                     </div>
                 </div>
             </div>
@@ -119,13 +116,14 @@
             </div>
         </div>
 
-        <trunks-component :trunks.sync="trunk.trunks" v-if="hasTrunkChild"></trunks-component>
+        <trunks-component :trunks.sync="trunk_children" v-if="hasTrunkChild"></trunks-component>
 
     </div>
     <footer class="footer has-background-white"></footer>
 {% endblock %}
 {% block script %}
     {% raw %}
+    <script type="text/javascript" src="/js/common.js"></script>
     <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
     <script type="text/javascript" src="/ckeditor/vue-ckeditor5.js"></script>
     <script type="text/javascript" src="/js/options.js"></script>
@@ -143,60 +141,13 @@
             el: '#app',
             data: {
                 hasTrunkChild: false,
-                trunkParentEnEditor: null,
-                trunkParentCnEditor: null,
-                trunkChildEditors: {},
                 encodedTrunkId: '',
-                trunk: {
-                    entity_id: '',
-                    en_trunk: '',
-                    cn_trunk: '',
-                    level: 0,
-                    comment: '',
-                    analysis: '',
-                    source: '',
-                    options: [
-                        {
-                            entity_id: '',
-                            trunk_id: '',
-                            en_option: '',
-                            cn_option: '',
-                            is_true: false,
-                            order_num: 0,
-                            comment: '',
-                        },
-                        {
-                            entity_id: '',
-                            trunk_id: '',
-                            en_option: '',
-                            cn_option: '',
-                            is_true: false,
-                            order_num: 0,
-                            comment: '',
-                        },
-                        {
-                            entity_id: '',
-                            trunk_id: '',
-                            en_option: '',
-                            cn_option: '',
-                            is_true: false,
-                            order_num: 0,
-                            comment: '',
-                        },
-                        {
-                            entity_id: '',
-                            trunk_id: '',
-                            en_option: '',
-                            cn_option: '',
-                            is_true: false,
-                            order_num: 0,
-                            comment: '',
-                        },
-                    ],
-                },
+                trunk: newTrunk(),
+                trunk_children: [newTrunk()],
+                config: ckeditorConfig,
+                uploadAdapter: CkeditorUploadAdapter,
             },
             mounted: function () {
-                this.init();
                 let hsh = location.hash.trim();
                 if (hsh[0] === '#') {
                     hsh = hsh.substring(1);
@@ -205,34 +156,6 @@
                 }
             },
             methods: {
-                init: function () {
-                    ClassicEditor
-                        .create(document.querySelector('#trunk-parent-en'), {
-                            toolbar: ['imageUpload'],
-                            ckfinder: {
-                                uploadUrl: '/upload/',
-                            },
-                        })
-                        .then(editor => {
-                            this.trunkParentEnEditor = editor;
-                        })
-                        .catch(error => {
-                            alert(error);
-                        });
-                    ClassicEditor
-                        .create(document.querySelector('#trunk-parent-cn'), {
-                            toolbar: ['imageUpload'],
-                            ckfinder: {
-                                uploadUrl: '/upload/',
-                            },
-                        })
-                        .then(editor => {
-                            this.trunkParentCnEditor = editor;
-                        })
-                        .catch(error => {
-                            alert(error);
-                        });
-                },
                 load: function () {
                     axios({
                         url: '/question/api/' + this.encodedTrunkId,
@@ -281,9 +204,7 @@
                     );
                 },
                 hasTrunkChildChange: function () {
-                    if (this.hasTrunkChild && typeof this.trunk.trunks === 'undefined') {
-                        this.trunk.trunks = [{}];
-                    }
+
                 },
             },
         });
