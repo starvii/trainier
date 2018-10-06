@@ -46,7 +46,7 @@
                     <label class="label">包含子题</label>
                     <div class="control">
                         <label class="checkbox">
-                            <input type="checkbox" v-model="hasTrunkChild" @change="hasTrunkChildChange()">
+                            <input type="checkbox" v-model="hasTrunkChild">
                             如果主题干下有数个子题<br/>　请勾选此处
                         </label>
                     </div>
@@ -116,7 +116,7 @@
             </div>
         </div>
 
-        <trunks-component :trunks.sync="trunk_children" v-if="hasTrunkChild"></trunks-component>
+        <trunks-component :trunks.sync="trunkChildren" v-if="hasTrunkChild"></trunks-component>
 
     </div>
     <footer class="footer has-background-white"></footer>
@@ -143,7 +143,7 @@
                 hasTrunkChild: false,
                 encodedTrunkId: '',
                 trunk: newTrunk(),
-                trunk_children: [newTrunk()],
+                trunkChildren: [newTrunk()],
                 config: ckeditorConfig,
                 uploadAdapter: CkeditorUploadAdapter,
             },
@@ -164,12 +164,11 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 this.trunk = response.data.trunk;
-                                this.trunkParentEnEditor.setData(this.trunk.en_trunk);
-                                this.trunkParentCnEditor.setData(this.trunk.cn_trunk);
-                                if (this.hasTrunkChild) {
-
+                                if (typeof this.trunk.trunks === 'undefined') {
+                                    this.hasTrunkChild = false;
                                 } else {
-
+                                    this.hasTrunkChild = true;
+                                    this.trunkChildren = this.trunk.trunks;
                                 }
                             } else {
                                 alert('请求失败，请检查日志');
@@ -182,13 +181,51 @@
                     );
                 },
                 save: function () {
+                    let trunk = null;
+                    if (this.hasTrunkChild) {
+                        let parentCode = this.trunk.code;
+                        let trunkChildren = [];
+                        for (let i = 0; i < this.trunkChildren.length; i++) {
+                            let t = this.trunkChildren[i];
+                            let trunkChild = {
+                                entity_id: t.entity_id,
+                                code: `${parentCode}-${i + 1}`,
+                                en_trunk: t.en_trunk,
+                                cn_trunk: t.cn_trunk,
+                                analysis: t.analysis,
+                                comment: t. comment,
+                                options: t.options,
+                            };
+                            trunkChildren.push(trunkChild);
+                        }
+                        trunk = {
+                            entity_id: this.trunk.entity_id,
+                            code: this.trunk.code,
+                            en_trunk: this.trunk.en_trunk,
+                            cn_trunk: this.trunk.cn_trunk,
+                            level: this.trunk.level,
+                            comment: this.trunk.comment,
+                            trunks: trunkChildren,
+                        };
+                    } else {
+                        trunk = {
+                            entity_id: this.trunk.entity_id,
+                            code: this.trunk.code,
+                            en_trunk: this.trunk.en_trunk,
+                            cn_trunk: this.trunk.cn_trunk,
+                            analysis: this.trunk.analysis,
+                            level: this.trunk.level,
+                            comment: this.trunk.comment,
+                            order_num: this.trunk.order_num,
+                            parent: '',
+                            options: this.trunk.options,
+                        };
+                    }
                     axios({
                         url: '/question/api/' + this.encodedTrunkId,
                         method: 'PUT',
                         data: {
-                            trunk: this.trunk,
-                            options: this.options,
-                            pics: this.pics,
+                            trunk: trunk,
                         },
                     }).then(function (response) {
                         if (response.status === 200 && response.statusText === 'OK') {
@@ -202,9 +239,6 @@
                             alert('保存失败，请检查日志。' + error);
                         }
                     );
-                },
-                hasTrunkChildChange: function () {
-
                 },
             },
         });
