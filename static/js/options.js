@@ -94,13 +94,7 @@ const OptionsComponent = Vue.extend({
     methods: {
         insertOption: function (idx) {
             if (this.options.length < 12) {
-                this.options.splice(idx + 1, 0, {
-                    entity_id: '',
-                    trunk_id: '',
-                    en_option: '',
-                    cn_option: '',
-                    is_true: false,
-                });
+                this.options.splice(idx + 1, 0, newOption());
             }
         },
         removeOption: function (idx) {
