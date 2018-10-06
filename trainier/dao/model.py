@@ -90,43 +90,44 @@ comment="{}",
         )
 
 
-class Pic(Base):
-    __tablename__ = 'pic'
-    __table_args__ = {'extend_existing': True}
-
-    db_id = Column(Integer, primary_key=True, autoincrement=True)
-    entity_id = Column(String(24), unique=True, index=True, default='')
-    trunk_id = Column(String(24), nullable=False, index=True, default='')
-    code = Column(String(100), index=True, default='')
-    name = Column(TEXT, index=True, default='')
-    data = Column(BLOB, default=b'')
-    source = Column(TEXT, index=True, default='')
-    order_num = Column(Integer, default=0)
-    comment = Column(TEXT, default='')
-
-    def __repr__(self) -> str:
-        super().__repr__()
-        return '''{{
-db_id="{}",
-entity_id="{}",
-trunk_id="{}",
-code="{}",
-name="{}",
-data="{}",
-source="{}",
-order_num="{}",
-comment="{}"
-}}'''.format(
-            self.db_id,
-            self.entity_id,
-            self.trunk_id,
-            self.code,
-            self.name,
-            self.data,
-            self.source,
-            self.order_num,
-            self.comment
-        )
+## 由于使用了 ckeditor ，使用外部的图片链接，暂时不需要 Pic
+# class Pic(Base):
+#     __tablename__ = 'pic'
+#     __table_args__ = {'extend_existing': True}
+#
+#     db_id = Column(Integer, primary_key=True, autoincrement=True)
+#     entity_id = Column(String(24), unique=True, index=True, default='')
+#     trunk_id = Column(String(24), nullable=False, index=True, default='')
+#     code = Column(String(100), index=True, default='')
+#     name = Column(TEXT, index=True, default='')
+#     data = Column(BLOB, default=b'')
+#     source = Column(TEXT, index=True, default='')
+#     order_num = Column(Integer, default=0)
+#     comment = Column(TEXT, default='')
+#
+#     def __repr__(self) -> str:
+#         super().__repr__()
+#         return '''{{
+# db_id="{}",
+# entity_id="{}",
+# trunk_id="{}",
+# code="{}",
+# name="{}",
+# data="{}",
+# source="{}",
+# order_num="{}",
+# comment="{}"
+# }}'''.format(
+#             self.db_id,
+#             self.entity_id,
+#             self.trunk_id,
+#             self.code,
+#             self.name,
+#             self.data,
+#             self.source,
+#             self.order_num,
+#             self.comment
+#         )
 
 
 class Quiz(Base):
