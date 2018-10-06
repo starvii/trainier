@@ -64,3 +64,71 @@ function delCookie(name) {
     if (cval != null)
         document.cookie = name + "=" + cval + ";expires=" + exp.toUTCString()
 }
+
+const ckeditorConfig = {
+    toolbar: ['imageUpload'],
+};
+
+
+class CkeditorUploadAdapter {
+    constructor (loader) {
+        this.loader = loader;
+    }
+    upload() {
+        const body = new FormData();
+        body.append('upload', this.loader.file);
+        return fetch('/upload/', {
+            body: body,
+            method: 'POST'
+        }).then((response) => {
+            return response.json();
+        }).then((result) => {
+            if (result.uploaded) {
+                return {
+                    default: result.url,
+                };
+            } else {
+                alert('请求失败，请检查日志');
+            }
+        }).catch((error) => {
+            alert('请求失败，请检查日志。' + error);
+        });
+    }
+    static abort() {
+        console.log('Abort upload.');
+    }
+}
+
+const newTrunk = () => {
+    return {
+        entity_id: '',
+        code: '',
+        en_trunk: '',
+        cn_trunk: '',
+        analysis: '',
+        source: '',
+        level: 0,
+        comment: '',
+        order_num: 0,
+        parent: '',
+        options: [
+            newOption(),
+            newOption(),
+            newOption(),
+            newOption(),
+        ],
+    };
+};
+
+const newOption = () => {
+    return {
+        entity_id: '',
+        trunk_id: '',
+        code: '',
+        en_option: '',
+        cn_option: '',
+        is_true: false,
+        order_num: 0,
+        comment: '',
+    };
+};
