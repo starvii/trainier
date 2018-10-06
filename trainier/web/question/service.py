@@ -36,6 +36,7 @@ class QuestionService:
                         Trunk.parent == trunk_parent.entity_id).order_by(
                         Trunk.order_num.asc()).all()
                     if len(trunk_children) > 0:
+                        trunks.extend(trunk_children)
                         trunk_parent.__setattr__('_trunks', trunk_children)
                         for trunk in trunk_children:
                             if trunk.parent == ROOT_NODE:
@@ -195,20 +196,22 @@ class QuestionService:
         try:
             while len(queue) > 0:
                 trunk_cur: Trunk = queue.pop(0)
-                QuestionService.__save_trunk(session, trunk_cur)  # 获取保存动作
                 trunk_children: List[Trunk] = trunk_cur.__dict__.get('_trunks')
-                # pics: List[Pic] = trunk_cur.__dict__.get('_pics')
-                # QuestionService.__save_pics(session, pics, trunk_cur.entity_id)
                 if trunk_children is not None:
                     trunk_cur.parent = ROOT_NODE
+                QuestionService.__save_trunk(session, trunk_cur)  # 保存后可获取 trunk_id
+                if trunk_children is not None:
                     for idx, trunk_child in enumerate(trunk_children):
                         trunk_child.parent = trunk_cur.entity_id
                         trunk_child.code = '{}({})'.format(trunk_cur.code, idx + 1)
+                        trunk_child.order_num = idx
                         queue.append(trunk_child)
                 else:  # leaf node
                     options: List[Option] = trunk_cur.__dict__.get('_options')
                     for idx, option in enumerate(options):
                         option.code = '{}-{}'.format(trunk_cur.code, string.ascii_uppercase[idx])
+                        option.trunk_id = trunk_cur.entity_id
+                        option.order_num = idx
                     QuestionService.__save_options(session, options, trunk_cur)
             session.commit()
         except Exception as e:
