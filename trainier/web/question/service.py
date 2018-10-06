@@ -9,7 +9,7 @@ from trainier.dao.model import Trunk, Option
 from trainier.dao.orm import Session
 from trainier.util.logger import logger
 from trainier.util.object_id import object_id
-
+from util.value import html_strip
 
 ROOT_NODE = 'root'
 
@@ -132,7 +132,9 @@ class QuestionService:
             session.query(Trunk).filter(Trunk.entity_id == trunk.entity_id).update({
                 Trunk.code:trunk.code,
                 Trunk.en_trunk: trunk.en_trunk,
+                Trunk.en_trunk_text: trunk.en_trunk_text,
                 Trunk.cn_trunk: trunk.cn_trunk,
+                Trunk.cn_trunk_text: trunk.cn_trunk_text,
                 Trunk.analysis: trunk.analysis,
                 Trunk.source: trunk.source,
                 Trunk.level: trunk.level,
@@ -197,8 +199,13 @@ class QuestionService:
             while len(queue) > 0:
                 trunk_cur: Trunk = queue.pop(0)
                 trunk_children: List[Trunk] = trunk_cur.__dict__.get('_trunks')
+                trunk_cur.en_trunk_text = html_strip(trunk_cur.en_trunk)
+                trunk_cur.cn_trunk_text = html_strip(trunk_cur.cn_trunk)
+                trunk_cur.order_num = 0
+                trunk_cur.parent = ''
                 if trunk_children is not None:
                     trunk_cur.parent = ROOT_NODE
+                    trunk_cur.analysis = ''
                 QuestionService.__save_trunk(session, trunk_cur)  # 保存后可获取 trunk_id
                 if trunk_children is not None:
                     for idx, trunk_child in enumerate(trunk_children):
@@ -207,6 +214,7 @@ class QuestionService:
                         trunk_child.order_num = idx
                         queue.append(trunk_child)
                 else:  # leaf node
+                    trunk_cur.parent = ''
                     options: List[Option] = trunk_cur.__dict__.get('_options')
                     for idx, option in enumerate(options):
                         option.code = '{}-{}'.format(trunk_cur.code, string.ascii_uppercase[idx])
