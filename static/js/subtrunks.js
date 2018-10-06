@@ -26,8 +26,6 @@
 
 */
 
-//@import('./subtrunk.js')
-
 
 const TrunksComponent = Vue.extend({
     template: '' +
@@ -60,19 +58,17 @@ const TrunksComponent = Vue.extend({
         },
     },
     mounted: function () {
-        if (this.trunks === null) {
-            this.trunks = [];
-        }
-        if (this.trunks.length === 0) {
-            this.trunks.push({});
-        }
     },
     methods: {
         insertTrunk: function (index) {
-
+            let idx = index + 1;
+            this.trunks.splice(idx, 0, {});
+            this.$set(this.trunks, idx, newTrunk());
         },
         removeTrunk: function (index) {
-
+            if (this.trunks.length > 1) {
+                this.trunks.splice(index, 1);
+            }
         },
     },
 });
