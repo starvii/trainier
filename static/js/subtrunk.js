@@ -115,52 +115,6 @@ const TrunkComponent = Vue.extend({
         }
     },
     mounted: function () {
-        // if (typeof this.trunk === 'undefined' || this.trunk === null) {
-        //     this.trunk = {
-        //         en_trunk: '',
-        //         cn_trunk: '',
-        //         options: [
-        //             {
-        //                 entity_id: '',
-        //                 trunk_id: '',
-        //                 en_option: '',
-        //                 cn_option: '',
-        //                 is_true: false,
-        //                 order_num: 0,
-        //                 comment: '',
-        //             },
-        //             {
-        //                 entity_id: '',
-        //                 trunk_id: '',
-        //                 en_option: '',
-        //                 cn_option: '',
-        //                 is_true: false,
-        //                 order_num: 0,
-        //                 comment: '',
-        //             },
-        //             {
-        //                 entity_id: '',
-        //                 trunk_id: '',
-        //                 en_option: '',
-        //                 cn_option: '',
-        //                 is_true: false,
-        //                 order_num: 0,
-        //                 comment: '',
-        //             },
-        //             {
-        //                 entity_id: '',
-        //                 trunk_id: '',
-        //                 en_option: '',
-        //                 cn_option: '',
-        //                 is_true: false,
-        //                 order_num: 0,
-        //                 comment: '',
-        //             },
-        //         ],
-        //         analysis: '',
-        //         comment: '',
-        //     };
-        // }
     },
     methods: {
 
