@@ -7,7 +7,7 @@ from typing import Dict, List, Set, Any
 from flask import Blueprint, Response, request, make_response, abort, render_template
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
-from trainier.dao.model import Trunk, Option, Pic
+from trainier.dao.model import Trunk, Option
 from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
 from trainier.util.logger import logger
 from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json
@@ -33,15 +33,6 @@ option_fields = {
     Option.en_option,
     Option.cn_option,
     Option.is_true,
-}
-
-pic_fields = {
-    Pic.entity_id,
-    # Pic.trunk_id,
-    Pic.code,
-    Pic.name,
-    Pic.data,
-    Pic.source,
 }
 
 
@@ -99,10 +90,10 @@ class API:
     @staticmethod
     def __trans_trunk_to_dict(trunk: Trunk) -> Dict:
         trunk_dict: Dict = labelify(trunk, trunk_fields)
-        pics: List[Pic] = trunk.__dict__.get('_pics')
-        if pics:
-            pics_dict: Dict = labelify(pics, pic_fields)
-            trunk_dict['pics'] = pics_dict
+        # pics: List[Pic] = trunk.__dict__.get('_pics')
+        # if pics:
+        #     pics_dict: Dict = labelify(pics, pic_fields)
+        #     trunk_dict['pics'] = pics_dict
         trunks: List[Trunk] = trunk.__dict__.get('_trunks')
         if trunks is not None and len(trunks) > 0:
             trunk_list: List[Dict] = list()
@@ -131,10 +122,10 @@ class API:
             options_dict: List[Dict] = trunk_dict['options']
             options: List[Option] = list_to_entities(options_dict, Option(), option_fields)
             trunk.__setattr__('_options', options)
-        if 'pics' in trunk_dict and len(trunk_dict['pics']) > 0:
-            pics_dict: List[Dict] = trunk_dict['pics']
-            pics: List[Pic] = list_to_entities(pics_dict, Pic(), pic_fields)
-            trunk.__setattr__('_pics', pics)
+        # if 'pics' in trunk_dict and len(trunk_dict['pics']) > 0:
+        #     pics_dict: List[Dict] = trunk_dict['pics']
+        #     pics: List[Pic] = list_to_entities(pics_dict, Pic(), pic_fields)
+        #     trunk.__setattr__('_pics', pics)
         return trunk
 
     @staticmethod
@@ -158,20 +149,20 @@ class API:
         else:
             abort(404)
 
-    @staticmethod
-    @blueprint.route('/api/upload/<trunk_id>', methods={'POST'})
-    def upload(trunk_id: str) -> Response:
-        """
-        上传图片
-        还是使用传统的上传方式好了，格式支持广泛，处理起来也方便
-        :return:
-        """
-        pass
-
-    @staticmethod
-    @blueprint.route('/api/upload/<trunk_id>/<pic_id>', methods={'GET'})
-    def uploaded_file(trunk_id: str, pic_id: str) -> Any:
-        pass
+    # @staticmethod
+    # @blueprint.route('/api/upload/<trunk_id>', methods={'POST'})
+    # def upload(trunk_id: str) -> Response:
+    #     """
+    #     上传图片
+    #     还是使用传统的上传方式好了，格式支持广泛，处理起来也方便
+    #     :return:
+    #     """
+    #     pass
+    #
+    # @staticmethod
+    # @blueprint.route('/api/upload/<trunk_id>/<pic_id>', methods={'GET'})
+    # def uploaded_file(trunk_id: str, pic_id: str) -> Any:
+    #     pass
 
     @staticmethod
     @blueprint.route('/api/', methods={'PUT'})
