@@ -37,7 +37,7 @@ function textDigest(text, n) {
     if (text.length <= n) {
         return text;
     } else {
-        return text.substring(0, n - 3) + '...';
+        return text.substring(0, n - 1) + '…';
     }
 }
 
