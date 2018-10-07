@@ -4,17 +4,40 @@
     <nav class="navbar"></nav>
     <div id="app">
         <div class="columns">
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label" for="trunk_code">编号</label>
+                    <div class="control">
+                        <pre v-text="trunk.code"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-4">
+                <div class="field">
+                    <label class="label" for="trunk_level">等级</label>
+                    <div class="control">
+                        <pre v-text="trunk.level"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="field">
+                    <label class="label">包含子题</label>
+                    <div class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" v-model="hasTrunkChild" readonly="readonly" disabled="disabled">
+                            主题干下有数个子题
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="column is-1">
-                <label class="label">编号</label>
-            </div>
-            <div class="column is-5">
-                <pre v-text="trunk.code"></pre>
-            </div>
-            <div class="column is-1">
-                <label class="label">等级</label>
-            </div>
-            <div class="column is-5">
-                <pre v-text="trunk.level"></pre>
+                <div class="field">
+                    <label class="label">&nbsp;</label>
+                    <div class="control">
+                        <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -132,8 +155,6 @@
             </div>
         </div>
 
-
-        <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
     </div>
     <footer class="footer has-background-white"></footer>
     {% endraw %}
