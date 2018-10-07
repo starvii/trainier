@@ -141,7 +141,7 @@
             el: '#app',
             data: {
                 hasTrunkChild: false,
-                encodedTrunkId: '',
+                trunkId: '',
                 trunk: newTrunk(),
                 trunkChildren: [newTrunk()],
                 config: ckeditorConfig,
@@ -151,14 +151,14 @@
                 let hsh = location.hash.trim();
                 if (hsh[0] === '#') {
                     hsh = hsh.substring(1);
-                    this.encodedTrunkId = hsh;
+                    this.trunkId = hsh;
                     this.load();
                 }
             },
             methods: {
                 load: function () {
                     axios({
-                        url: '/question/api/' + this.encodedTrunkId,
+                        url: '/question/api/' + this.trunkId,
                         method: 'GET',
                     }).then(
                         function (response) {
@@ -224,7 +224,7 @@
                         };
                     }
                     axios({
-                        url: '/question/api/' + this.encodedTrunkId,
+                        url: '/question/api/' + this.trunkId,
                         method: 'PUT',
                         data: {
                             trunk: trunk,
