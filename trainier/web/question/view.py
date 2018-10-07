@@ -90,10 +90,10 @@ class API:
     @staticmethod
     def __trans_trunk_to_dict(trunk: Trunk) -> Dict:
         trunk_dict: Dict = labelify(trunk, trunk_fields)
-        # pics: List[Pic] = trunk.__dict__.get('_pics')
-        # if pics:
-        #     pics_dict: Dict = labelify(pics, pic_fields)
-        #     trunk_dict['pics'] = pics_dict
+
+        trunk_dict['en_trunk_len'] = len(trunk.en_trunk_text)
+        trunk_dict['cn_trunk_len'] = len(trunk.cn_trunk_text)
+
         trunks: List[Trunk] = trunk.__dict__.get('_trunks')
         if trunks is not None and len(trunks) > 0:
             trunk_list: List[Dict] = list()
