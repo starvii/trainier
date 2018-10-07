@@ -8,7 +8,7 @@
 		<div class="level">
 			<div class="level-left">
 				<div class="level-item">
-					<div class="subtitle" v-text="`第` + index + `题`"></div>
+					<div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>
 				</div>
 			</div>
 			<div class="level-right">
