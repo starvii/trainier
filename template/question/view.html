@@ -20,21 +20,23 @@
 
         <div class="columns">
             <div class="column">
-                <div class="field" v-if="trunk.en_trunk.length > 0">
+                <div class="field" v-if="trunk.en_trunk_len>0">
                     <label class="label">英文题目</label>
                     <div class="control">
-                        <pre v-text="trunk.en_trunk"></pre>
+                        <ckeditor type="classic" v-model="trunk.en_trunk" :config="config"
+                                  :readonly="config.readonly"></ckeditor>
                     </div>
                 </div>
-                <div class="field" v-if="trunk.cn_trunk.length > 0">
+                <div class="field" v-if="trunk.cn_trunk_len>0">
                     <label class="label">中文题目</label>
                     <div class="control">
-                        <pre v-text="trunk.cn_trunk"></pre>
+                        <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"
+                                  :readonly="config.readonly"></ckeditor>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="columns" v-for="(opt, index) in options">
+        <div class="columns" v-for="(opt, index) in trunk.options" v-if="!hasTrunkChild">
             <div class="column is-1">
                 <span class="icon is-right">
                     <i class="fas fa-check is-true" v-if="opt.is_true"></i>
@@ -54,22 +56,79 @@
                 <pre v-text="opt.x_option"></pre>
             </div>
         </div>
-        <div class="field" v-if="trunk.analysis.length > 0">
+        <div class="field" v-if="!hasTrunkChild&&trunk.analysis.length>0">
             <label class="label">详解</label>
             <div class="control">
                 <pre v-text="trunk.analysis"></pre>
             </div>
         </div>
-        <div class="field" v-if="trunk.source.length > 0">
+        <div class="field" v-if="trunk.source.length>0">
             <label class="label">来源</label>
             <div class="control">
                 <pre v-text="trunk.source"></pre>
             </div>
         </div>
-        <div class="field" v-if="trunk.comment.length > 0">
+        <div class="field" v-if="trunk.comment.length>0">
             <label class="label">备注</label>
             <div class="control">
                 <pre v-text="trunk.comment"></pre>
+            </div>
+        </div>
+
+        <div class="container" v-for="(trunkChild, index) in trunkChildren" v-if="hasTrunkChild">
+            <hr/>
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="field" v-if="trunkChild.en_trunk_len>0">
+                <label class="label">英文题目</label>
+                <div class="control">
+                    <ckeditor type="classic" v-model="trunkChild.en_trunk" :config="config"
+                              :readonly="config.readonly"></ckeditor>
+                </div>
+            </div>
+            <div class="field" v-if="trunkChild.cn_trunk_len>0">
+                <label class="label">中文题目</label>
+                <div class="control">
+                    <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config"
+                              :readonly="config.readonly"></ckeditor>
+                </div>
+            </div>
+            <div class="columns" v-for="(opt, index) in trunkChild.options">
+                <div class="column is-1">
+                <span class="icon is-right">
+                    <i class="fas fa-check is-true" v-if="opt.is_true"></i>
+                    <i class="fas fa-times is-false" v-if="!opt.is_true"></i>
+                </span>
+                </div>
+                <div class="column is-1">
+                    <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+                </div>
+                <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
+                    <pre v-text="opt.en_option"></pre>
+                </div>
+                <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
+                    <pre v-text="opt.cn_option"></pre>
+                </div>
+                <div class="column is-10" v-else>
+                    <pre v-text="opt.x_option"></pre>
+                </div>
+            </div>
+            <div class="field" v-if="trunkChild.analysis.length>0">
+                <label class="label">详解</label>
+                <div class="control">
+                    <pre v-text="trunkChild.analysis"></pre>
+                </div>
+            </div>
+            <div class="field" v-if="trunkChild.comment.length>0">
+                <label class="label">备注</label>
+                <div class="control">
+                    <pre v-text="trunkChild.comment"></pre>
+                </div>
             </div>
         </div>
 
@@ -82,45 +141,56 @@
 {% block script %}
     {% raw %}
     <script src="/js/common.js"></script>
+    <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
+    <script type="text/javascript" src="/ckeditor/vue-ckeditor5.js"></script>
     <script type="text/javascript">
+        window.Vue.use(VueCkeditor.plugin, {
+            editors: {
+                classic: ClassicEditor,
+                //balloon: BalloonEditor
+            },
+            name: 'ckeditor'
+        });
         const app = new window.Vue({
             el: '#app',
             data: {
-
-                encodedTrunkId: '',
-                trunk: {
-                    entity_id: '',
-                    code: '',
-                    en_trunk: '',
-                    cn_trunk: '',
-                    level: 0,
-                    comment: '',
-                    analysis: '',
-                    source: '',
+                trunkId: '',
+                hasTrunkChild: false,
+                trunk: newTrunk(),
+                trunkChildren: [newTrunk()],
+                config: {
+                    toolbar: [],
+                    readonly: true,
                 },
-                options: [],
-                pics: [],
+                uploadAdapter: CkeditorUploadAdapter,
             },
-            mounted: function() {
+            mounted: function () {
                 let hsh = location.hash.trim();
                 if (hsh[0] === '#') {
                     hsh = hsh.substring(1);
-                    this.encodedTrunkId = hsh;
+                    this.trunkId = hsh;
                     this.load();
                 }
             },
             methods: {
                 load: function () {
                     axios({
-                        url: '/question/api/' + this.encodedTrunkId,
+                        url: '/question/api/' + this.trunkId,
                         method: 'GET',
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 this.trunk = response.data.trunk;
-                                this.options = response.data.options;
-                                mergeOptions(this.options);
-                                this.pics = response.data.pics;
+                                if (typeof this.trunk.trunks === 'undefined') {
+                                    this.hasTrunkChild = false;
+                                    mergeOptions(this.trunk.options);
+                                } else {
+                                    this.hasTrunkChild = true;
+                                    this.trunkChildren = this.trunk.trunks;
+                                    for (let t of this.trunkChildren) {
+                                        mergeOptions(t.options)
+                                    }
+                                }
                             } else {
                                 alert('请求失败，请检查日志');
                             }
