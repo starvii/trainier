@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import string
-from typing import List, Set
+from typing import List, Set, Dict
 
 from sqlalchemy.sql import or_
 
@@ -115,6 +115,10 @@ class QuestionService:
             c: int = q.count()
 
             l: List[Trunk] = q.order_by(Trunk.order_num.asc()).offset((page - 1) * size).limit(size).all()
+            # 由于增添了新字段，在此处查询时，覆盖原有字段
+            for e in l:
+                e.en_trunk = e.en_trunk_text
+                e.cn_trunk = e.cn_trunk_text
             return l, c
         except Exception as e:
             logger.error(e)
@@ -195,6 +199,7 @@ class QuestionService:
     def save(trunk: Trunk) -> None:
         session: Session = Session()
         queue: List[Trunk] = [trunk]
+        relation: Dict[Trunk, str] = dict()
         try:
             while len(queue) > 0:
                 trunk_cur: Trunk = queue.pop(0)
@@ -206,20 +211,25 @@ class QuestionService:
                 if trunk_children is not None:
                     trunk_cur.parent = ROOT_NODE
                     trunk_cur.analysis = ''
+                if trunk_cur in relation:
+                    trunk_cur.parent = relation[trunk_cur]  # 保存主题干的ID
                 QuestionService.__save_trunk(session, trunk_cur)  # 保存后可获取 trunk_id
                 if trunk_children is not None:
                     for idx, trunk_child in enumerate(trunk_children):
-                        trunk_child.parent = trunk_cur.entity_id
+                        # trunk_child.parent = trunk_cur.entity_id
+                        relation[trunk_child] = trunk_cur.entity_id
                         trunk_child.code = '{}({})'.format(trunk_cur.code, idx + 1)
                         trunk_child.order_num = idx
+                        trunk_child.source = ''
+                        trunk_child.level = trunk_cur.level
                         queue.append(trunk_child)
                 else:  # leaf node
-                    trunk_cur.parent = ''
                     options: List[Option] = trunk_cur.__dict__.get('_options')
                     for idx, option in enumerate(options):
                         option.code = '{}-{}'.format(trunk_cur.code, string.ascii_uppercase[idx])
                         option.trunk_id = trunk_cur.entity_id
                         option.order_num = idx
+                        option.comment = ''
                     QuestionService.__save_options(session, options, trunk_cur)
             session.commit()
         except Exception as e:
