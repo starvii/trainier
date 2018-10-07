@@ -103,8 +103,8 @@ class QuestionService:
                 # entity_ids = entity_ids.union(set([o.trunk_id for o in lst]))
                 q = q.filter(or_(
                     Trunk.code.like(k),
-                    Trunk.en_trunk.like(k),
-                    Trunk.cn_trunk.like(k),
+                    Trunk.en_trunk_text.like(k),
+                    Trunk.cn_trunk_text.like(k),
                     Trunk.analysis.like(k),
                     Trunk.source.like(k),
                     Trunk.comment.like(k),
@@ -216,7 +216,6 @@ class QuestionService:
                 QuestionService.__save_trunk(session, trunk_cur)  # 保存后可获取 trunk_id
                 if trunk_children is not None:
                     for idx, trunk_child in enumerate(trunk_children):
-                        # trunk_child.parent = trunk_cur.entity_id
                         relation[trunk_child] = trunk_cur.entity_id
                         trunk_child.code = '{}({})'.format(trunk_cur.code, idx + 1)
                         trunk_child.order_num = idx
