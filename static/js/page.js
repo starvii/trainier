@@ -1,24 +1,64 @@
+/*
+
+<nav class="pagination is-small" role="navigation" aria-label="pagination">
+	<a v-if="conf.totalItems > 0" class="pagination-previous" v-bind="{'disabled': conf.currentPage == 1}" @click="prevPage()">
+		<i class="fas fa-angle-left"></i>
+	</a>
+	<a v-if="conf.totalItems > 0" class="pagination-next" v-bind="{'disabled': conf.currentPage == conf.numberOfPages}" @click="nextPage()">
+		<i class="fas fa-angle-right"></i>
+	</a>
+	<ul class="pagination-list" v-if="conf.totalItems > 0">
+		<li v-for="item in pageList">
+			<a :class="{'is-current pagination-link': item == conf.currentPage, 'pagination-link': item != conf.currentPage, 'pagination-ellipsis': item == '...'}" @click="changeCurrentPage(item)" v-text="item"></a>
+		</li>
+	</ul>
+	<div class="page-total" v-if="conf.totalItems > 0">
+		<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>
+		<input class="input is-small" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>
+		<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>
+		<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>
+		<span class="select">
+			<select class="is-small is-rounded" v-model="conf.itemsPerPage">
+				<option v-for="option in conf.perPageOptions" v-text="option"></option>
+			</select>
+		</span>
+		<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">
+	</div>
+	<div v-if="conf.totalItems <= 0">暂无数据</div>
+</nav>
+
+*/
+
+
 const PageComponent = Vue
     .extend({
-        template: ''
-            + '<nav class="pagination is-centered is-small" role="navigation" aria-label="pagination">'
-            + '<a v-if="conf.totalItems > 0" class="pagination-previous" v-bind="{\'disabled\': conf.currentPage == 1}" @click="prevPage()"><i class="fas fa-angle-left"></i></a>'
-            + '<a v-if="conf.totalItems > 0" class="pagination-next" v-bind="{\'disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()"><i class="fas fa-angle-right"></i></a>'
-            + '<ul class="pagination-list" v-if="conf.totalItems > 0">'
-            + '<li v-for="item in pageList">'
-            + '<a :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}" @click="changeCurrentPage(item)" v-text="item"></a>'
-            + '</li>'
-            + '</ul>'
-            + '<div class="page-total" v-if="conf.totalItems > 0">'
-            + '<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>'
-            + '<input class="input is-small" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>'
-            + '<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>'
-            + '<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>'
-            + '<span class="select"><select class="is-small is-rounded" v-model="conf.itemsPerPage"><option v-for="option in conf.perPageOptions" v-text="option"></option></select></span>'
-            + '<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">'
-            + '</div>'
-            + '<div v-if="conf.totalItems <= 0">暂无数据</div>'
-            + '</nav>',
+        template: '' +
+            '<nav class="pagination is-small" role="navigation" aria-label="pagination">\n' +
+            '\t<a v-if="conf.totalItems > 0" class="pagination-previous" v-bind="{\'disabled\': conf.currentPage == 1}" @click="prevPage()">\n' +
+            '\t\t<i class="fas fa-angle-left"></i>\n' +
+            '\t</a>\n' +
+            '\t<a v-if="conf.totalItems > 0" class="pagination-next" v-bind="{\'disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()">\n' +
+            '\t\t<i class="fas fa-angle-right"></i>\n' +
+            '\t</a>\n' +
+            '\t<ul class="pagination-list" v-if="conf.totalItems > 0">\n' +
+            '\t\t<li v-for="item in pageList">\n' +
+            '\t\t\t<a :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}" @click="changeCurrentPage(item)" v-text="item"></a>\n' +
+            '\t\t</li>\n' +
+            '\t</ul>\n' +
+            '\t<div class="page-total" v-if="conf.totalItems > 0">\n' +
+            '\t\t<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>\n' +
+            '\t\t<input class="input is-small" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>\n' +
+            '\t\t<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>\n' +
+            '\t\t<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>\n' +
+            '\t\t<span class="select">\n' +
+            '\t\t\t<select class="is-small is-rounded" v-model="conf.itemsPerPage">\n' +
+            '\t\t\t\t<option v-for="option in conf.perPageOptions" v-text="option"></option>\n' +
+            '\t\t\t</select>\n' +
+            '\t\t</span>\n' +
+            '\t\t<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">\n' +
+            '\t</div>\n' +
+            '\t<div v-if="conf.totalItems <= 0">暂无数据</div>\n' +
+            '</nav>',
         replace: true,
         props: {
             conf: {
