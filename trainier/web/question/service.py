@@ -58,6 +58,28 @@ class QuestionService:
             session.close()
 
     @staticmethod
+    def select_next_prev_by_id(entity_id: str) -> (str, str):
+        session: Session = Session()
+        try:
+            trunk = session.query(Trunk).filter(Trunk.entity_id == entity_id).one_or_none()
+            if trunk is None:
+                return '', ''
+            next_trunk: Trunk = session.query(Trunk.entity_id).filter(
+                or_(Trunk.parent.is_(None), Trunk.parent == '', Trunk.parent == 'root')).filter(
+                Trunk.order_num > trunk.order_num).order_by(Trunk.order_num.asc()).first()
+            prev_trunk: Trunk = session.query(Trunk.entity_id).filter(
+                or_(Trunk.parent.is_(None), Trunk.parent == '', Trunk.parent == 'root')).filter(
+                Trunk.order_num < trunk.order_num).order_by(Trunk.order_num.desc()).first()
+            next_id: str = next_trunk.entity_id if next_trunk is not None else ''
+            prev_id: str = prev_trunk.entity_id if prev_trunk is not None else ''
+            return prev_id, next_id
+        except Exception as e:
+            logger.error(e)
+            return '', ''
+        finally:
+            session.close()
+
+    @staticmethod
     def select_options_by_trunk_id(trunk_id: str) -> List[Option]:
         """
         供保存测验结果时使用
@@ -134,7 +156,7 @@ class QuestionService:
             session.add(trunk)
         else:
             session.query(Trunk).filter(Trunk.entity_id == trunk.entity_id).update({
-                Trunk.code:trunk.code,
+                Trunk.code: trunk.code,
                 Trunk.en_trunk: trunk.en_trunk,
                 Trunk.en_trunk_text: trunk.en_trunk_text,
                 Trunk.cn_trunk: trunk.cn_trunk,
