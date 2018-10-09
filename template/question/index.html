@@ -43,23 +43,23 @@
                 <tbody>
                 <tr v-for="(item, idx) in data">
                     <td>
-                        <a :href="`view#` + item.entity_id" target="_blank" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" target="_blank" v-text="item.code"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.code"></a>
                     </td>
                     <td colspan="2" v-if="item.x_trunk.length > 0">
-                        <a :href="`view#` + item.entity_id" target="_blank" :title="item.x_trunk" v-text="item.x_trunk_digest"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" :title="item.x_trunk" v-text="item.x_trunk_digest"></a>
                     </td>
                     <td v-if="item.x_trunk.length == 0">
-                        <a :href="`view#` + item.entity_id" target="_blank" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
                     </td>
                     <td v-if="item.x_trunk.length == 0">
-                        <a :href="`view#` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
+                        <a :href="`view?id` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
-                            <a class="button is-small" title="编辑" :href="`edit#` + item.entity_id" target="_blank">
+                            <a class="button is-small" title="编辑" :href="`edit?id=` + item.entity_id" target="_blank">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a class="button is-small" title="删除" @click="remove(item.entity_id)" target="_blank">
