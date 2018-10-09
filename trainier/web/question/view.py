@@ -139,9 +139,17 @@ class API:
         trunk: Trunk = QuestionService.select_trunk_by_id(entity_id)
         if trunk is not None:
             trunk_dict: Dict = API.__trans_trunk_to_dict(trunk)
-            r: Dict = dict(
-                trunk=trunk_dict,
-            )
+            if '/question/view?id=' in request.referrer:
+                prev_id, next_id = QuestionService.select_next_prev_by_id(entity_id)
+                r: Dict = dict(
+                    trunk=trunk_dict,
+                    prev=prev_id,
+                    next=next_id,
+                )
+            else:
+                r: Dict = dict(
+                    trunk=trunk_dict,
+                )
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
             res.data = json.dumps(r).encode()
