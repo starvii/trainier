@@ -35,7 +35,12 @@
                 <div class="field">
                     <label class="label">&nbsp;</label>
                     <div class="control">
-                        <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
+                        <nav class="pagination is-rounded">
+                            <a class="pagination-previous" @click="prevTrunk()">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                            <a class="pagination-next" @click="nextTrunk()"><i class="fas fa-angle-right"></i></a>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -176,6 +181,8 @@
             el: '#app',
             data: {
                 trunkId: '',
+                nextId: '',
+                prevId: '',
                 hasTrunkChild: false,
                 trunk: newTrunk(),
                 trunkChildren: [newTrunk()],
@@ -186,12 +193,8 @@
                 uploadAdapter: CkeditorUploadAdapter,
             },
             mounted: function () {
-                let hsh = location.hash.trim();
-                if (hsh[0] === '#') {
-                    hsh = hsh.substring(1);
-                    this.trunkId = hsh;
+                    this.trunkId = getUrlParam('id');
                     this.load();
-                }
             },
             methods: {
                 load: function () {
@@ -202,6 +205,8 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 this.trunk = response.data.trunk;
+                                this.nextId = response.data['next'];
+                                this.prevId = response.data['prev'];
                                 if (typeof this.trunk.trunks === 'undefined') {
                                     this.hasTrunkChild = false;
                                     mergeOptions(this.trunk.options);
@@ -222,8 +227,19 @@
                         }
                     );
                 },
-                ok: function () {
-                    window.history.back(-1);
+                nextTrunk: function () {
+                    if (this.nextId.length === 0) {
+                        alert('no next trunk.');
+                    } else {
+                        window.location.href = 'view?id=' + this.nextId;
+                    }
+                },
+                prevTrunk: function () {
+                    if (this.prevId.length === 0) {
+                        alert('no prev trunk.');
+                    } else {
+                        window.location.href = 'view?id=' + this.prevId;
+                    }
                 },
             },
         });
