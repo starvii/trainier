@@ -21,6 +21,8 @@ def not_none(val) -> str:
 
 
 def html_strip(val: str) -> str:
+    if val is None:
+        return ''
     soup: BeautifulSoup = BeautifulSoup(val, features="lxml")
     return soup.get_text(strip=True)
 
