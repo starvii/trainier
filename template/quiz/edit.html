@@ -104,22 +104,22 @@
                             <input type="checkbox" :value="trunk.entity_id" v-model="selLst">
                         </td>
                         <td>
-                            <a :href="`/question/view#` + trunk.entity_id" target="_blank"
+                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank"
                                v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                         </td>
                         <td>
-                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
+                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
                         </td>
                         <td colspan="2" v-if="trunk.x_trunk.length > 0">
-                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
+                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
                                v-text="trunk.x_trunk_digest"></a>
                         </td>
                         <td v-if="trunk.x_trunk.length == 0">
-                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
+                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
                                v-text="trunk.en_trunk_digest"></a>
                         </td>
                         <td v-if="trunk.x_trunk.length == 0">
-                            <a :href="`/question/view#` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
+                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
                                v-text="trunk.cn_trunk_digest"></a>
                         </td>
                     </tr>
@@ -189,10 +189,9 @@
                 },
             },
             mounted: function () {
-                let hsh = location.hash.trim();
-                if (hsh[0] === '#') {
-                    hsh = hsh.substring(1);
-                    this.quiz.entity_id = hsh;
+                let id = getUrlParam('id');
+                if (id !== null) {
+                    this.quiz.entity_id = id;
                     this.load();
                 } else {
                     this.quiz.entity_id = '';

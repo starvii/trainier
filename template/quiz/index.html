@@ -39,23 +39,23 @@
                 <tbody>
                 <tr v-for="(item, idx) in data">
                     <td>
-                        <a :href="`view#` + item.entity_id"
+                        <a :href="`view?id=` + item.entity_id"
                            target="_blank"
                            v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
                            :title="item.comment"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" target="_blank" v-text="item.code" :title="item.comment"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.code" :title="item.comment"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" target="_blank" v-text="item.name" :title="item.comment"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.name" :title="item.comment"></a>
                     </td>
                     <td>
-                        <a :href="`view#` + item.entity_id" target="_blank" v-text="item.count" :title="item.comment"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.count" :title="item.comment"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
-                            <a class="button is-small" title="编辑" :href="`edit#` + item.entity_id" target="_blank">
+                            <a class="button is-small" title="编辑" :href="`edit?id=` + item.entity_id" target="_blank">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a class="button is-small" title="删除" @click="remove(item.entity_id)" target="_blank">
@@ -115,7 +115,7 @@
 
                         }.bind(this)).catch(
                         function (error) {
-                            alert('请求服务失败，请检查日志');
+                            alert('请求服务失败，请检查日志。' + error);
                         }
                     );
                 },
