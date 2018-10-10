@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import string
+import re
 from typing import List, Set, Dict
 
 from sqlalchemy.sql import or_
@@ -15,6 +17,49 @@ ROOT_NODE = 'root'
 
 
 class QuestionService:
+
+    @staticmethod
+    def split_code(code: str) -> (int, str):
+        m = re.match(r'^[A-Z]{1,3}\d{1,2}/\d{1,3}/\S+', code)
+        if not m:
+            raise ValueError('code {} not match.'.format(code))
+        book: str = re.search(r'^[A-Z]+', code).group()
+        version: int = int(re.search(r'\d+', code).group())
+        cs = code.split('/')
+        chapter: int = int(cs[1])
+        question_num: str = cs[2]
+        return QuestionService._order_num(book, version, chapter, question_num)
+
+    @staticmethod
+    def _order_num(book: str, version: int, chapter: int, question_num: str) -> (int, str):
+        """
+        根据 code 生成排序编码，一共是 18 位（十进制）
+        sqlite int 8 字节 (long long) 整型，
+            用来存储有符号的整数，从 -9223372036854775808 到 9223372036854775807(19)
+            或者无符号的整数，从 0 到 18446744073709551615(20)
+        :param book: space 100
+        :param version: space 10
+        :param chapter: space 100
+        :param question_num: space 1000 + sub-question 100
+        :return:
+        """
+        book_idx: int = string.ascii_uppercase.find(book[0].upper())
+        sub_question: int = 0
+        if re.match(r'\d+', question_num):
+            qn = int(question_num)
+        elif re.match(r'\d+-\d+', question_num):
+            qn = int(question_num.split('-')[0])
+        elif re.match(r'\d+-\d+\(\d+\)', question_num):
+            qn = int(question_num.split('-')[0])
+            m = re.search(r'(?<=\()\d+(?=\))', question_num)
+            sub_question = int(m.group())
+        else:
+            raise ValueError('question_num {} not match.'.format(question_num))
+        order_num: int = int(str(book_idx).rjust(3, '0') + str(version).rjust(2, '0') + str(chapter).rjust(3, '0') + str(qn).rjust(
+            4, '0') + str(sub_question).rjust(3, '0'))
+        code: str = '{}{}/{}/{}'.format(book, version, chapter, question_num)
+        return order_num, code
+
     @staticmethod
     def select_trunk_by_id(entity_id: str) -> Trunk or None:
         """
@@ -202,21 +247,6 @@ class QuestionService:
         if len(delete_db_ids) > 0:
             session.query(Option).filter(Option.entity_id.in_(delete_db_ids)).delete()
 
-    # @staticmethod
-    # def __save_pics(session: Session, pics: List[Pic], trunk_id: str):
-    #     pics_db: List[Option] = session.query(Pic).filter(Pic.trunk_id == trunk_id).all()
-    #     exist_db_ids: Set[str] = set([i.entity_id for i in pics_db])
-    #     write_db_ids: Set[str] = set()
-    #     for pic in pics:
-    #         if pic.entity_id is None or len(pic.entity_id.strip()) == 0:
-    #             pic.entity_id = object_id()
-    #             session.add(pic)
-    #         else:
-    #             session.merge(pic)
-    #         write_db_ids.add(pic.entity_id)
-    #     delete_db_ids: Set[str] = exist_db_ids - write_db_ids
-    #     session.query(Pic).filter(Pic.entity_id.in_(delete_db_ids)).delete()
-
     @staticmethod
     def save(trunk: Trunk) -> None:
         session: Session = Session()
@@ -235,6 +265,7 @@ class QuestionService:
                     trunk_cur.analysis = ''
                 if trunk_cur in relation:
                     trunk_cur.parent = relation[trunk_cur]  # 保存主题干的ID
+                trunk_cur.order_num, trunk_cur.code = QuestionService.split_code(trunk_cur.code)  # 计算 order_num
                 QuestionService.__save_trunk(session, trunk_cur)  # 保存后可获取 trunk_id
                 if trunk_children is not None:
                     for idx, trunk_child in enumerate(trunk_children):
