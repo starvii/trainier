@@ -55,7 +55,7 @@
                         <a :href="`view?id=` + item.entity_id" target="_blank" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
                     </td>
                     <td v-if="item.x_trunk.length == 0">
-                        <a :href="`view?id` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
+                        <a :href="`view?id=` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
                     </td>
                     <td>
                         <div class="buttons has-addons">
