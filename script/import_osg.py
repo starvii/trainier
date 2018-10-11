@@ -9,7 +9,7 @@ from typing import List, Dict
 p = r'^\d+\.\s+'
 pa = r'^[A-Ja-j]\.\s+'
 book = 'OSG7'
-chapter = 5
+chapter = 10
 src = 'CISSP Official Study Guide 7th'
 
 def choices_en(q: str) -> (str, List[str]):
@@ -47,7 +47,7 @@ def cn(trunks: List):
 
 def en():
     source: str = open('en.txt', 'rb').read().decode()
-    source = source.replace('‐', '-').replace('’', "'")
+    source = source.replace('‐', '-').replace('’', "'").replace('“', '"').replace('”', '"')
 
     buf = [x for x in re.split(p, source, flags=re.M) if len(x.strip()) > 0]
     num = [m.group() for m in re.finditer(p, source, flags=re.M)]

@@ -16,7 +16,7 @@ from urllib.parse import quote, unquote
 from flask import Blueprint, Response, make_response, abort, render_template, request
 
 from trainier import Config
-from trainier.dao.model import Quiz, Trunk, Option, Pic, Result
+from trainier.dao.model import Quiz, Trunk, Option, Result
 from trainier.util.labelify import labelify
 from trainier.util.logger import logger
 from trainier.util.object_id import object_id
@@ -44,15 +44,15 @@ option_fields = {
     Option.cn_option,
 }
 
-pic_fields = {
-    Pic.entity_id,
-    Pic.code,
-    Pic.name,
-    Pic.data,
-    Pic.source,
-    Pic.order_num,
-    Pic.comment,
-}
+# pic_fields = {
+#     Pic.entity_id,
+#     Pic.code,
+#     Pic.name,
+#     Pic.data,
+#     Pic.source,
+#     Pic.order_num,
+#     Pic.comment,
+# }
 
 
 class QuestionVO:
@@ -127,7 +127,7 @@ class API:
         qid: str = question['id']
         trunk: Trunk = None
         options: List[Option] = None
-        pics: List[Pic] = None
+        # pics: List[Pic] = None
         trunk, options, pics = QuestionService.select_trunks_options_pics_by_id(qid)
         # 判断是单选还是多选
         if trunk is None:
@@ -152,11 +152,12 @@ class API:
         #     if idx < 0 or idx >= len(answer):
         #         raise ValueError('something wrong in answer {} of {}'.format(answer, str(question)))
         #     options_dict[idx]['is_true'] = True
-        pics_dict: Dict = labelify(pics, pic_fields)
+
+        # pics_dict: Dict = labelify(pics, pic_fields)
         ret: Dict = dict(
             trunk=trunk_dict,
             options=options_dict,
-            pics=pics_dict,
+            # pics=pics_dict,
         )
         return ret
 
