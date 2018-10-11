@@ -11,7 +11,7 @@ from trainier.dao.model import Trunk, Option
 from trainier.dao.orm import Session
 from trainier.util.logger import logger
 from trainier.util.object_id import object_id
-from util.value import html_strip
+from trainier.util.value import html_strip
 
 ROOT_NODE = 'root'
 
@@ -45,14 +45,14 @@ class QuestionService:
         """
         book_idx: int = string.ascii_uppercase.find(book[0].upper())
         sub_question: int = 0
-        if re.match(r'\d+', question_num):
-            qn = int(question_num)
-        elif re.match(r'\d+-\d+', question_num):
-            qn = int(question_num.split('-')[0])
-        elif re.match(r'\d+-\d+\(\d+\)', question_num):
+        if re.match(r'\d+-\d+\(\d+\)', question_num):
             qn = int(question_num.split('-')[0])
             m = re.search(r'(?<=\()\d+(?=\))', question_num)
             sub_question = int(m.group())
+        elif re.match(r'\d+-\d+', question_num):
+            qn = int(question_num.split('-')[0])
+        elif re.match(r'\d+', question_num):
+            qn = int(question_num)
         else:
             raise ValueError('question_num {} not match.'.format(question_num))
         order_num: int = int(str(book_idx).rjust(3, '0') + str(version).rjust(2, '0') + str(chapter).rjust(3, '0') + str(qn).rjust(
