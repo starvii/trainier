@@ -9,7 +9,7 @@ from typing import List, Dict
 p = r'^\d+\.\s+'
 pa = r'^[A-Ja-j]\.\s+'
 book = 'OSG7'
-chapter = 10
+chapter = 21
 src = 'CISSP Official Study Guide 7th'
 
 def choices_en(q: str) -> (str, List[str]):

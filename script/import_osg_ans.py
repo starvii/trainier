@@ -2,15 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import re
-import json
-
-from typing import List, Dict
-
-p = r'^\d+\.\s+'
-pa = r'^[A-Ja-j]\.\s+'
-book = 'OSG7'
-chapter = 6
-src = 'CISSP Official Study Guide 7th'
 
 
 def cn():
