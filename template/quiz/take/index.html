@@ -145,21 +145,21 @@
                         <tbody>
                         <tr v-for="(item, idx) in data">
                             <td>
-                                <a :href="`/quiz/view#` + item.entity_id"
+                                <a :href="`/quiz/view?id=` + item.entity_id"
                                    target="_blank"
                                    v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
                                    :title="item.comment"></a>
                             </td>
                             <td>
-                                <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.code"
+                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.code"
                                    :title="item.comment"></a>
                             </td>
                             <td>
-                                <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.name"
+                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.name"
                                    :title="item.comment"></a>
                             </td>
                             <td>
-                                <a :href="`/quiz/view#` + item.entity_id" target="_blank" v-text="item.count"
+                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.count"
                                    :title="item.comment"></a>
                             </td>
                             <td>
