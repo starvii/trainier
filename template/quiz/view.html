@@ -126,7 +126,6 @@
                 </table>
             </div>
         </div>
-        <a class="button is-link is-success is-pulled-right" @click="ok()">确定</a>
     </div>
     <footer class="footer has-background-white"></footer>
     {% endraw %}
@@ -222,9 +221,6 @@
                             alert('请求服务失败，请检查日志。' + error);
                         }
                     );
-                },
-                ok: function () {
-                    window.history.back(-1);
                 },
                 search: function () {
                     if (this.keyword !== this.kw.trim()) {
