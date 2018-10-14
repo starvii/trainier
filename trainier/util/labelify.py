@@ -9,6 +9,8 @@ from typing import Dict, Set, List
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
+from dao.model import Trunk, Option
+
 
 def __deal_fields(fields: Set[str or InstrumentedAttribute]) -> Set[str]:
     _set: Set[str] = set()
@@ -119,3 +121,41 @@ def list_to_entities(_list: List[Dict],
                 o.__dict__[k] = v
         l.append(o)
     return l
+
+def trans_trunk_to_dict(trunk: Trunk, trunk_fields: Set[InstrumentedAttribute] = None,
+                        option_fields: Set[InstrumentedAttribute] = None) -> Dict:
+    trunk_dict: Dict = labelify(trunk, trunk_fields)
+
+    trunk_dict['en_trunk_len'] = len(trunk.en_trunk_text)
+    trunk_dict['cn_trunk_len'] = len(trunk.cn_trunk_text)
+
+    trunks: List[Trunk] = trunk.__dict__.get('_trunks')
+    if trunks is not None and len(trunks) > 0:
+        trunk_list: List[Dict] = list()
+        for trunk_child in trunks:
+            trunk_child_dict: Dict = trans_trunk_to_dict(trunk_child)
+            trunk_list.append(trunk_child_dict)
+        trunk_dict['trunks'] = trunk_list
+    else:
+        options: List[Option] = trunk.__dict__.get('_options')
+        options_dict: Dict = labelify(options, option_fields)
+        trunk_dict['options'] = options_dict
+    return trunk_dict
+
+
+def trans_dict_to_trunk(trunk_dict: Dict, trunk_fields: Set[InstrumentedAttribute] = None,
+                        option_fields: Set[InstrumentedAttribute] = None) -> Trunk:
+    trunk: Trunk = dict_to_entity(trunk_dict, Trunk(), trunk_fields)
+    if 'trunks' in trunk_dict and len(trunk_dict['trunks']) > 0:
+        # 存在子问题
+        trunk_children_dict: Dict = trunk_dict['trunks']
+        trunk_children: List[Trunk] = list()
+        trunk.__setattr__('_trunks', trunk_children)
+        for trunk_child_dict in trunk_children_dict:
+            trunk_child: Trunk = trans_dict_to_trunk(trunk_child_dict)
+            trunk_children.append(trunk_child)
+    elif 'options' in trunk_dict and len(trunk_dict['options']) > 0:
+        options_dict: List[Dict] = trunk_dict['options']
+        options: List[Option] = list_to_entities(options_dict, Option(), option_fields)
+        trunk.__setattr__('_options', options)
+    return trunk
