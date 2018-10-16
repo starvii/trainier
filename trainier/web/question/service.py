@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import string
 import re
+import string
 from typing import List, Set, Dict
 
 from sqlalchemy.sql import or_
@@ -55,8 +55,9 @@ class QuestionService:
             qn = int(question_num)
         else:
             raise ValueError('question_num {} not match.'.format(question_num))
-        order_num: int = int(str(book_idx).rjust(3, '0') + str(version).rjust(2, '0') + str(chapter).rjust(3, '0') + str(qn).rjust(
-            4, '0') + str(sub_question).rjust(3, '0'))
+        order_num: int = int(
+            str(book_idx).rjust(3, '0') + str(version).rjust(2, '0') + str(chapter).rjust(3, '0') + str(qn).rjust(
+                4, '0') + str(sub_question).rjust(3, '0'))
         code: str = '{}{}/{}/{}'.format(book, version, chapter, question_num)
         return order_num, code
 
