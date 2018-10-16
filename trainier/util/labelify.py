@@ -123,12 +123,11 @@ def list_to_entities(_list: List[Dict],
     return l
 
 def trans_trunk_to_dict(trunk: Trunk, trunk_fields: Set[InstrumentedAttribute] = None,
-                        option_fields: Set[InstrumentedAttribute] = None) -> Dict:
+                        option_fields: Set[InstrumentedAttribute] = None, **kwargs) -> Dict:
     trunk_dict: Dict = labelify(trunk, trunk_fields)
-
-    trunk_dict['en_trunk_len'] = len(trunk.en_trunk_text)
-    trunk_dict['cn_trunk_len'] = len(trunk.cn_trunk_text)
-
+    if 'functions' in kwargs:
+        for f in kwargs['functions']:
+            f(trunk_dict, trunk)
     trunks: List[Trunk] = trunk.__dict__.get('_trunks')
     if trunks is not None and len(trunks) > 0:
         trunk_list: List[Dict] = list()
@@ -159,3 +158,8 @@ def trans_dict_to_trunk(trunk_dict: Dict, trunk_fields: Set[InstrumentedAttribut
         options: List[Option] = list_to_entities(options_dict, Option(), option_fields)
         trunk.__setattr__('_options', options)
     return trunk
+
+def trunk_len(trunk_dict: Dict, trunk: Trunk) -> Dict:
+    trunk_dict['en_trunk_len'] = len(trunk.en_trunk_text)
+    trunk_dict['cn_trunk_len'] = len(trunk.cn_trunk_text)
+    return trunk_dict
