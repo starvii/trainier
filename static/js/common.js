@@ -75,6 +75,19 @@ function delCookie(name) {
         document.cookie = name + "=" + cval + ";expires=" + exp.toUTCString()
 }
 
+const rjust = (string, len, ch) => {
+    if (string.length < len) {
+        let n = len - string.length;
+        let buf = [];
+        for (let i = 0; i < n; i++) {
+            buf.push(ch);
+        }
+        buf.push(string);
+        return buf.join('');
+    }
+    return string;
+};
+
 const ckeditorConfig = {
     toolbar: ['imageUpload'],
 };
