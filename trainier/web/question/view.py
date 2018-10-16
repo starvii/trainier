@@ -8,9 +8,9 @@ from flask import Blueprint, Response, request, make_response, abort, render_tem
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from trainier.dao.model import Trunk, Option
-from trainier.util.labelify import labelify, trans_trunk_to_dict, trans_dict_to_trunk
+from trainier.util.labelify import labelify, trans_trunk_to_dict, trans_dict_to_trunk, trunk_len
 from trainier.util.logger import logger
-from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json
+from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, read_list_json, jsonify
 from trainier.web.question.service import QuestionService
 
 blueprint: Blueprint = Blueprint('question', __name__, url_prefix='/question')
@@ -80,7 +80,7 @@ class API:
                 r['ids'] = ids
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(r).encode()
+            res.data = jsonify(r).encode()
             return res
         except Exception as e:
             logger.error(e)
@@ -96,7 +96,7 @@ class API:
         """
         trunk: Trunk = QuestionService.select_trunk_by_id(entity_id)
         if trunk is not None:
-            trunk_dict: Dict = trans_trunk_to_dict(trunk, trunk_fields, option_fields)
+            trunk_dict: Dict = trans_trunk_to_dict(trunk, trunk_fields, option_fields, functions={trunk_len})
             if '/question/view?id=' in request.referrer:
                 prev_id, next_id = QuestionService.select_next_prev_by_id(entity_id)
                 r: Dict = dict(
@@ -110,7 +110,7 @@ class API:
                 )
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(r).encode()
+            res.data = jsonify(r).encode()
             return res
         else:
             abort(404)
@@ -131,7 +131,7 @@ class API:
             QuestionService.save(trunk)
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(dict(result=True)).encode()
+            res.data = jsonify(dict(result=True)).encode()
             return res
         except Exception as e:
             logger.error(e)
@@ -155,7 +155,7 @@ class API:
             QuestionService.save(trunk)
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(dict(result=True)).encode()
+            res.data = jsonify(dict(result=True)).encode()
             return res
         except Exception as e:
             logger.error(e)
