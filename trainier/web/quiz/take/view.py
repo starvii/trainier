@@ -17,10 +17,11 @@ from flask import Blueprint, Response, make_response, abort, render_template, re
 
 from trainier import Config
 from trainier.dao.model import Quiz, Trunk, Option, Result
-from trainier.util.labelify import labelify, trans_trunk_to_dict
+from trainier.util.labelify import labelify, trans_trunk_to_dict, trunk_len
 from trainier.util.logger import logger
 from trainier.util.object_id import object_id
 from trainier.util.sec_cookie import Codec
+from trainier.util.value import jsonify
 from trainier.web.question.service import QuestionService
 from trainier.web.quiz.service import QuizService
 from trainier.web.quiz.take.service import TakeService
@@ -33,9 +34,7 @@ trunk_fields = {
     Trunk.entity_id,
     Trunk.code,
     Trunk.en_trunk,
-    Trunk.en_trunk_text,
     Trunk.cn_trunk,
-    Trunk.cn_trunk_text,
     Trunk.analysis,
     Trunk.source,
     Trunk.level,
@@ -79,7 +78,7 @@ class API:
                     question['seed'] = random.randint(0, 65535)
                 quiz_dict['questions'].append(question)
             c: str = quote(codec.enc_dict(quiz_dict))
-            res: Response = make_response(json.dumps(dict(result=True)).encode())
+            res: Response = make_response(jsonify(dict(result=True)).encode())
             res.content_type = 'application/json; charset=utf-8'
             res.set_cookie('quiz', value=c)
             return res
@@ -126,7 +125,7 @@ class API:
         trunk: Trunk = QuestionService.select_trunk_by_id(qid)
         if trunk is None:
             raise ValueError('cannot select trunk by id:' + qid)
-        trunk_dict: Dict = trans_trunk_to_dict(trunk, trunk_fields, option_fields)
+        trunk_dict: Dict = trans_trunk_to_dict(trunk, trunk_fields, option_fields, functions={trunk_len})
         # 判断是否有子题、以及是单选还是多选
         sub_trunks: List[Trunk] = trunk.__dict__.get('_trunks')
         if sub_trunks is None:
@@ -152,7 +151,7 @@ class API:
     @staticmethod
     def __list_status(quiz_dict: Dict) -> List[Dict]:
         # 题目列表
-        questions: List[Dict] = [dict(marked=question['marked'], answer=question['answer']) for question in
+        questions: List[Dict] = [dict(m=question['marked'], a=question['answer']) for question in
                                  quiz_dict['questions']]
         return questions
 
@@ -181,7 +180,7 @@ class API:
                 ret['questions'] = API.__list_status(quiz_dict)
             enc_quiz: str = codec.enc_dict(quiz_dict)
 
-            res: Response = make_response(json.dumps(ret).encode())
+            res: Response = make_response(jsonify(ret).encode())
             res.content_type = 'application/json; charset=utf-8'
             res.set_cookie('quiz', value=enc_quiz)
             return res
@@ -193,7 +192,7 @@ class API:
     @blueprint.route('/api/', methods={'DELETE'})
     def api_exit() -> Response:
         try:
-            res: Response = make_response(json.dumps(dict(result=True)).encode())
+            res: Response = make_response(jsonify(dict(result=True)).encode())
             res.delete_cookie('quiz')
             res.content_type = 'application/json; charset=utf-8'
             return res
@@ -245,7 +244,7 @@ class API:
                 result.answer = ','.join(answers)
                 results.append(result)
             TakeService.save(results)
-            res: Response = make_response(json.dumps(dict(result=True)).encode())
+            res: Response = make_response(jsonify(dict(result=True)).encode())
             res.delete_cookie('quiz')
             res.content_type = 'application/json; charset=utf-8'
             return res
