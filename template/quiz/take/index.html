@@ -19,18 +19,19 @@
                 </div>
             </nav>
 
-            <div class="columns">
+            <div class="columns"><!-- 题目索引 -->
                 <div class="column is-12">
                     <div class="buttons">
                         <a class="button"
                            v-for="(q, idx) in questions"
-                           v-text="idx+1"
+                           v-text="rjust(idx+1)"
                            @click="switch_to(idx+1)"
-                           :class="[idx+1==currentIndex?'is-info':{'is-success':!q.marked&&q.answer.length>0,'is-danger':q.marked&&q.answer.length==0,'is-warning':q.marked&&q.answer.length>0}]"
+                           :class="[idx+1==currentIndex?'is-info':{'is-success':!q.m&&q.a.length>0,'is-danger':q.m&&q.a.length==0,'is-warning':q.m&&q.a.length>0}]"
                         ></a>
                     </div>
                 </div>
-            </div>
+            </div><!-- 题目索引 -->
+
             <div class="columns">
                 <div class="column is-1">
                     <label class="label">编号</label>
@@ -52,51 +53,67 @@
                 </div>
                 <div class="column is-1">
                     <label class="label">标记
-                        <input type="checkbox" v-model="questions[currentIndex-1].marked">
+                        <input type="checkbox" v-model="questions[currentIndex-1].m">
                     </label>
                 </div>
             </div>
+
             <div class="columns">
                 <div class="column">
-                    <div class="field" v-if="trunk.en_trunk.length > 0">
+                    <div class="field" v-if="trunk.en_trunk_len>0">
                         <label class="label">英文题目</label>
                         <div class="control">
-                            <pre v-text="trunk.en_trunk"></pre>
+                            <ckeditor type="classic" v-model="trunk.en_trunk" :config="config"
+                                      :readonly="config.readonly"></ckeditor>
                         </div>
                     </div>
-                    <div class="field" v-if="trunk.cn_trunk.length > 0">
+                    <div class="field" v-if="trunk.cn_trunk_len>0">
                         <label class="label">中文题目</label>
                         <div class="control">
-                            <pre v-text="trunk.cn_trunk"></pre>
+                            <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"
+                                      :readonly="config.readonly"></ckeditor>
                         </div>
                     </div>
                 </div>
             </div>
-            <label v-for="(opt, index) in options" :for="`ABCDEFGHIJKL`[index]">
-                <div class="columns">
-                    <div class="column is-1">
-                        <input :id="`ABCDEFGHIJKL`[index]" type="checkbox" name="answer" :value="`ABCDEFGHIJKL`[index]"
-                               v-model="questions[currentIndex-1].answer" v-if="opt.multi_choice">
-                        <input :id="`ABCDEFGHIJKL`[index]" type="radio" name="answer" :value="`ABCDEFGHIJKL`[index]"
-                               v-model="questions[currentIndex-1].answer" v-else>
-                        <span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-                    </div>
-                    <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
-                        <pre v-text="opt.en_option"></pre>
-                    </div>
-                    <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
-                        <pre v-text="opt.cn_option"></pre>
-                    </div>
-                    <div class="column is-1" v-if="opt.en_option.length>0&&opt.cn_option.length>0">&nbsp;</div>
-                    <div class="column is-11" v-else>
-                        <pre v-text="opt.x_option"></pre>
+
+            <quiz-options-component v-if="!hasTrunkChild" :prefix="``" :options.sync="trunk.options"
+                                    :question.sync="questions[currentIndex-1]">
+            </quiz-options-component>
+
+            <div class="container" v-if="hasTrunkChild" v-for="(trunkChild, index) in trunk.trunks">
+                <hr/>
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>
+                        </div>
                     </div>
                 </div>
-            </label>
+                <div class="field" v-if="trunkChild.en_trunk_len>0">
+                    <label class="label">英文题目</label>
+                    <div class="control">
+                        <ckeditor type="classic" v-model="trunkChild.en_trunk" :config="config"
+                                  :readonly="config.readonly"></ckeditor>
+                    </div>
+                </div>
+                <div class="field" v-if="trunkChild.cn_trunk_len>0">
+                    <label class="label">中文题目</label>
+                    <div class="control">
+                        <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config"
+                                  :readonly="config.readonly"></ckeditor>
+                    </div>
+                </div>
+                <quiz-options-component :prefix="(index + 1) + `-`" :options.sync="trunkChild.options"
+                                        :question.sync="questions[currentIndex-1]">
+                </quiz-options-component>
+            </div>
+
             <div class="level">
                 <div class="level-left">
                     <div class="level-item">
-                        <a class="button" v-bind="{'disabled':currentIndex<=1}" @click="switch_to(currentIndex-1)">上一题</a>
+                        <a class="button" v-bind="{'disabled':currentIndex<=1}"
+                           @click="switch_to(currentIndex-1)">上一题</a>
                     </div>
                 </div>
                 <div class="level-right">
@@ -181,9 +198,19 @@
 {% endblock %}
 {% block script %}
     {% raw %}
-    <script src="/js/common.js"></script>
-    <script src="/js/page.js"></script>
+    <script type="text/javascript" src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/page.js"></script>
+    <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
+    <script type="text/javascript" src="/ckeditor/vue-ckeditor5.js"></script>
+    <script type="text/javascript" src="/js/quiz_options.js"></script>
     <script>
+        window.Vue.use(VueCkeditor.plugin, {
+            editors: {
+                classic: ClassicEditor,
+                //balloon: BalloonEditor
+            },
+            name: 'ckeditor'
+        });
         const app = new window.Vue({
             el: '#app',
             data: {
@@ -200,8 +227,8 @@
                 kw: '',
                 questions: [
                     {
-                        answer:'',
-                        marked:false,
+                        a: '', // answer
+                        m: false, // marked
                     },
                 ],
                 currentIndex: 1,
@@ -211,21 +238,29 @@
                     source: 'source',
                     en_trunk: 'en_trunk',
                     cn_trunk: 'cn_trunk',
+                    options: [],
                 },
-                options: [],
-
+                hasTrunkChild: false,
+                config: {
+                    toolbar: [],
+                    readonly: true,
+                },
+                index_length: 0,
             },
-            mounted: function () {
+            mounted() {
                 if (this.isTaking()) {
                     this.switch_to(1);
                 }
             },
             methods: {
-                isTaking: function () {
+                rjust(idx) {
+                    return rjust(idx.toString(), this.index_length, ' ');
+                },
+                isTaking() {
                     let quiz = getCookie('quiz');
                     return quiz !== null;
                 },
-                listQuiz: function () {
+                listQuiz() {
                     axios({
                         method: 'POST',
                         url: '/quiz/api/',
@@ -252,13 +287,15 @@
                         }
                     );
                 },
-                start: function (quizId) {
+                start(quizId) {
                     axios({
                         method: 'GET',
                         url: '/quiz/take/api/' + quizId,
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK' && response.data.result === true) {
+                            if (response.status === 200 &&
+                                response.statusText === 'OK' &&
+                                response.data.result === true) {
                                 // 设置cookie完成
                                 if (this.isTaking()) {
                                     window.location.reload();
@@ -282,8 +319,8 @@
                     }
                     let postData = {
                         index: this.currentIndex,
-                        answer: this.questions[this.currentIndex - 1].answer,
-                        marked: this.questions[this.currentIndex - 1].marked,
+                        answer: this.questions[this.currentIndex - 1].a,
+                        marked: this.questions[this.currentIndex - 1].m,
                     };
                     axios({
                         method: 'POST',
@@ -291,11 +328,32 @@
                         data: postData,
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK') {
+                            if (response.status === 200 &&
+                                response.statusText === 'OK') {
                                 this.questions = response.data['questions'];
+                                if (this.index_length === 0) {
+                                    this.index_length = (this.questions.length + 1).toString().length;
+                                }
                                 this.trunk = response.data['trunk'];
-                                this.options = response.data['options'];
-                                mergeOptions(this.options);
+                                let question = this.questions[this._switchIdx - 1];
+                                console.debug(question);
+                                if (typeof this.trunk.trunks === 'undefined') {
+                                    this.hasTrunkChild = false;
+                                    console.debug(`question.answer = ${question.a}`);
+                                    mergeOptions(this.trunk.options);
+                                } else {
+                                    this.hasTrunkChild = true;
+                                    console.debug(`question.answer = ${question.a}`);
+                                    if (question.a === '') {
+                                        question.a = [];
+                                        for (let i = 0; i < this.trunk.trunks.length; i++) {
+                                            question.a.push('');
+                                        }
+                                    }
+                                    for (let trunk of this.trunk.trunks) {
+                                        mergeOptions(trunk.options);
+                                    }
+                                }
                                 this.currentIndex = this._switchIdx;
                             } else {
                                 alert('请求服务失败，请检查日志');
@@ -306,7 +364,7 @@
                         }
                     );
                 },
-                exit: function () {
+                exit() {
                     let r = confirm('退出的话会导致该次测验结果丢失。确实要退出吗？');
                     if (!r) {
                         return;
@@ -320,7 +378,9 @@
                         url: '/quiz/take/api/',
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK' && response.data.result === true) {
+                            if (response.status === 200 &&
+                                response.statusText === 'OK' &&
+                                response.data.result === true) {
                                 alert('成功退出。');
                                 window.location.reload();
                             } else {
@@ -332,18 +392,18 @@
                         }
                     );
                 },
-                submit: function () {
+                submit() {
                     // 检查未完成题目、检查被标记题目
                     let prefix = '';
                     for (let q of this.questions) {
-                        if (q.answer.length === 0) {
+                        if (q.a === null || q.a.length === 0) {
                             prefix = '还有题目未完成。';
                             break;
                         }
                     }
                     if (prefix.length === 0) {
                         for (let q of this.questions) {
-                            if (q.marked) {
+                            if (q.m) {
                                 prefix = '还有题目被标记。';
                                 break;
                             }
@@ -359,8 +419,8 @@
                     }
                     let data = {
                         index: this.currentIndex,
-                        answer: this.questions[this.currentIndex - 1].answer,
-                        marked: this.questions[this.currentIndex - 1].marked,
+                        answer: this.questions[this.currentIndex - 1].a,
+                        marked: this.questions[this.currentIndex - 1].m,
                     }; // 最后还要提交一次结果
                     axios({
                         method: 'PUT',
@@ -368,7 +428,9 @@
                         data: data,
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK' && response.data.result === true) {
+                            if (response.status === 200 &&
+                                response.statusText === 'OK' &&
+                                response.data.result === true) {
                                 alert('成功退出。');
                                 window.location.reload();
                             } else {
