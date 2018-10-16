@@ -13,7 +13,7 @@ from trainier.util.logger import logger
 from trainier.dao.model import Quiz
 from trainier.util.labelify import dict_to_entity, list_to_entities, labelify
 from trainier.web.quiz.service import QuizService
-from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie
+from trainier.util.value import read_int_json_or_cookie, read_str_json_or_cookie, jsonify
 
 blueprint: Blueprint = Blueprint('quiz', __name__, url_prefix='/quiz')
 
@@ -66,7 +66,7 @@ class API:
             )
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(r).encode()
+            res.data = jsonify(r).encode()
             return res
         except Exception as e:
             logger.error(str(e))
@@ -81,7 +81,7 @@ class API:
             r['questions'] = q.questions.split(',')
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(r).encode()
+            res.data = jsonify(r).encode()
             return res
         else:
             abort(404)
@@ -102,7 +102,7 @@ class API:
             QuizService.save(q)
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(dict(result=True)).encode()
+            res.data = jsonify(dict(result=True)).encode()
             return res
         except Exception as e:
             logger.error(e)
@@ -126,7 +126,7 @@ class API:
             QuizService.save(q)
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = json.dumps(dict(result=True)).encode()
+            res.data = jsonify(dict(result=True)).encode()
             return res
         except Exception as e:
             logger.error(e)
