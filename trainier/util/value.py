@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import json
 import re
 from typing import Pattern, Dict, List
 
@@ -25,6 +25,10 @@ def html_strip(val: str) -> str:
         return ''
     soup: BeautifulSoup = BeautifulSoup(val, features="lxml")
     return soup.get_text(strip=True)
+
+
+def jsonify(val: object) -> str:
+    return json.dumps(val, ensure_ascii=False, separators=(',', ':'))
 
 
 def read_str_json_or_cookie(key: str, _json: Dict, req: Request, def_val: str or None = '') -> str or None:
