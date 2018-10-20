@@ -6,11 +6,11 @@
 			<div class="column is-1">
 				<input :id="prefix + `ABCDEFGHIJKL`[index]" type="checkbox"
 					:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"
-					v-model="question.a"
+					v-model="answer"
 					v-if="option.multi_choice">
 				<input :id="prefix + `ABCDEFGHIJKL`[index]" type="radio"
 					:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"
-					v-model="question.a"
+					v-model="answer"
 					v-else>
 				<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
 			</div>
@@ -39,11 +39,11 @@ const QuizOptionsComponent = Vue.extend({
         '\t\t\t<div class="column is-1">\n' +
         '\t\t\t\t<input :id="prefix + `ABCDEFGHIJKL`[index]" type="checkbox"\n' +
         '\t\t\t\t\t:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"\n' +
-        '\t\t\t\t\tv-model="question.a"\n' +
+        '\t\t\t\t\tv-model="answer"\n' +
         '\t\t\t\t\tv-if="option.multi_choice">\n' +
         '\t\t\t\t<input :id="prefix + `ABCDEFGHIJKL`[index]" type="radio"\n' +
         '\t\t\t\t\t:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"\n' +
-        '\t\t\t\t\tv-model="question.a"\n' +
+        '\t\t\t\t\tv-model="answer"\n' +
         '\t\t\t\t\tv-else>\n' +
         '\t\t\t\t<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>\n' +
         '\t\t\t</div>\n' +
@@ -73,9 +73,31 @@ const QuizOptionsComponent = Vue.extend({
         question: {
             type: Object,
             require: true,
+            default: '',
+        },
+        answerIndex: {
+            type: Number,
+            require: false,
+            default: -1,
         },
     },
-    methods: {
+    computed: {
+        answer: {
+            get() {
+                if (this.answerIndex >= 0) {
+                    return this.question.a[this.answerIndex];
+                } else {
+                    return this.question.a;
+                }
+            },
+            set(val) {
+                if (this.answerIndex >= 0) {
+                    this.question.a[this.answerIndex] = val;
+                } else {
+                    this.question.a = val;
+                }
+            },
+        },
     },
 });
 
