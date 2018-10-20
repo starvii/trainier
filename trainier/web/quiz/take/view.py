@@ -70,7 +70,7 @@ class API:
             for e in question_id_list:
                 question: Dict = dict(
                     id=e,
-                    marked=False,
+                    marked=0,
                     answer='',
                     seed=-1,
                 )
@@ -78,7 +78,7 @@ class API:
                     question['seed'] = random.randint(0, 65535)
                 quiz_dict['questions'].append(question)
             c: str = quote(codec.enc_dict(quiz_dict))
-            res: Response = make_response(jsonify(dict(result=True)).encode())
+            res: Response = make_response(jsonify(dict(result=1)).encode())
             res.content_type = 'application/json; charset=utf-8'
             res.set_cookie('quiz', value=c)
             return res
@@ -192,7 +192,7 @@ class API:
     @blueprint.route('/api/', methods={'DELETE'})
     def api_exit() -> Response:
         try:
-            res: Response = make_response(jsonify(dict(result=True)).encode())
+            res: Response = make_response(jsonify(dict(result=1)).encode())
             res.delete_cookie('quiz')
             res.content_type = 'application/json; charset=utf-8'
             return res
@@ -244,7 +244,7 @@ class API:
                 result.answer = ','.join(answers)
                 results.append(result)
             TakeService.save(results)
-            res: Response = make_response(jsonify(dict(result=True)).encode())
+            res: Response = make_response(jsonify(dict(result=1)).encode())
             res.delete_cookie('quiz')
             res.content_type = 'application/json; charset=utf-8'
             return res
