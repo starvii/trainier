@@ -163,26 +163,30 @@ class API:
             cookie = unquote(cookie)
             quiz_dict: Dict = codec.dec_dict(cookie)
 
-            # 保存提交的结果
-            data: bytes = request.data
-            try:
-                post_dict: Dict = json.loads(data)
-                quiz_dict = API.__deal_submit(quiz_dict, post_dict)
-            except json.JSONDecodeError as e:
-                # 如果没有提交数据或提交有误，就不进行更新
-                logger.error(str(e))
-            if switch_to_index > 0 and switch_to_index <= len(quiz_dict['questions']):
-                ret: Dict = API.__deal_switch(quiz_dict, switch_to_index)
-                ret['questions'] = API.__list_status(quiz_dict)
-            else:
+            if switch_to_index == 0:
                 # 第一次请求
                 ret: Dict = API.__deal_switch(quiz_dict, 1)
                 ret['questions'] = API.__list_status(quiz_dict)
-            enc_quiz: str = codec.enc_dict(quiz_dict)
+            elif switch_to_index > 0 and switch_to_index <= len(quiz_dict['questions']):
+                # 保存提交的结果
+                data: bytes = request.data
+                try:
+                    post_dict: Dict = json.loads(data)
+                    quiz_dict = API.__deal_submit(quiz_dict, post_dict)
+                except json.JSONDecodeError as e:
+                    # 如果没有提交数据或提交有误，就不进行更新
+                    logger.error(str(e))
+                ret: Dict = API.__deal_switch(quiz_dict, switch_to_index)
+                ret['questions'] = API.__list_status(quiz_dict)
+            else:
+                raise ValueError('switch_to_index {} out of range.'.format(switch_to_index))
+
+            enc_quiz: str = quote(codec.enc_dict(quiz_dict))
 
             res: Response = make_response(jsonify(ret).encode())
             res.content_type = 'application/json; charset=utf-8'
             res.set_cookie('quiz', value=enc_quiz)
+            # res.set_cookie('debug', value=jsonify(quiz_dict).replace('"', "'"))
             return res
         except Exception as e:
             logger.error(str(e))
