@@ -109,17 +109,21 @@
                 </quiz-options-component>
             </div>
 
-            <div class="level">
-                <div class="level-left">
-                    <div class="level-item">
-                        <a class="button" v-bind="{'disabled':currentIndex<=1}"
-                           @click="switch_to(currentIndex-1)">上一题</a>
-                    </div>
-                </div>
-                <div class="level-right">
-                    <div class="level-item">
-                        <a class="button" v-bind="{'disabled':currentIndex>=questions.length}"
-                           @click="switch_to(currentIndex+1)">下一题</a>
+            <div class="columns">
+                <div class="column is-12">
+                    <div class="level">
+                        <div class="level-left">
+                            <div class="level-item">
+                                <a class="button" v-bind="{'disabled':currentIndex<=1}"
+                                   @click="switch_to(currentIndex-1)">上一题</a>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            <div class="level-item">
+                                <a class="button" v-bind="{'disabled':currentIndex>=questions.length}"
+                                   @click="switch_to(currentIndex+1)">下一题</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -249,7 +253,7 @@
             },
             mounted() {
                 if (this.isTaking()) {
-                    this.switch_to(1);
+                    this.switch_to(0);
                 }
             },
             methods: {
@@ -310,21 +314,25 @@
                     );
                 },
                 switch_to: function (switchIdx) {
-                    if (switchIdx < 1) {
+                    if (switchIdx < 0) {
                         return;
+                    } else if (switchIdx === 0) {
+                        this._switchIdx = 1;
                     } else if (switchIdx > this.questions.length) {
                         return;
                     } else {
                         this._switchIdx = switchIdx;
                     }
-                    let postData = {
+                    let url = '/quiz/take/api/' + (switchIdx === 0 ? 0 : this._switchIdx);
+                    let postData = switchIdx === 0 ? {} : {
                         index: this.currentIndex,
                         answer: this.questions[this.currentIndex - 1].a,
                         marked: this.questions[this.currentIndex - 1].m ? 1 : 0,
                     };
+
                     axios({
                         method: 'POST',
-                        url: '/quiz/take/api/' + this._switchIdx,
+                        url: url,
                         data: postData,
                     }).then(
                         function (response) {
