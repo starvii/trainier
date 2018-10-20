@@ -102,7 +102,7 @@ class API:
             QuizService.save(q)
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = jsonify(dict(result=True)).encode()
+            res.data = jsonify(dict(result=1)).encode()
             return res
         except Exception as e:
             logger.error(e)
@@ -126,7 +126,7 @@ class API:
             QuizService.save(q)
             res: Response = make_response()
             res.content_type = 'application/json; charset=utf-8'
-            res.data = jsonify(dict(result=True)).encode()
+            res.data = jsonify(dict(result=1)).encode()
             return res
         except Exception as e:
             logger.error(e)
