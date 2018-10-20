@@ -26,7 +26,7 @@
                            v-for="(q, idx) in questions"
                            v-text="rjust(idx+1)"
                            @click="switch_to(idx+1)"
-                           :class="[idx+1==currentIndex?'is-info':{'is-success':!q.m&&q.a.length>0,'is-danger':q.m&&q.a.length==0,'is-warning':q.m&&q.a.length>0}]"
+                           :class="[idx+1==currentIndex?'is-info':{'is-success':!q.m==1&&q.a.length>0,'is-danger':q.m==1&&q.a.length==0,'is-warning':q.m==1&&q.a.length>0}]"
                         ></a>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            <quiz-options-component v-if="!hasTrunkChild" :prefix="``" :options.sync="trunk.options"
+            <quiz-options-component v-if="!hasTrunkChild" :prefix="``" :options="trunk.options"
                                     :question.sync="questions[currentIndex-1]">
             </quiz-options-component>
 
@@ -104,8 +104,8 @@
                                   :readonly="config.readonly"></ckeditor>
                     </div>
                 </div>
-                <quiz-options-component :prefix="(index + 1) + `-`" :options.sync="trunkChild.options"
-                                        :question.sync="questions[currentIndex-1]">
+                <quiz-options-component :prefix="(index + 1) + `-`" :options="trunkChild.options"
+                                        :question.sync="questions[currentIndex-1]" :answerIndex="index">
                 </quiz-options-component>
             </div>
 
@@ -295,7 +295,7 @@
                         function (response) {
                             if (response.status === 200 &&
                                 response.statusText === 'OK' &&
-                                response.data.result === true) {
+                                response.data.result) {
                                 // 设置cookie完成
                                 if (this.isTaking()) {
                                     window.location.reload();
@@ -320,7 +320,7 @@
                     let postData = {
                         index: this.currentIndex,
                         answer: this.questions[this.currentIndex - 1].a,
-                        marked: this.questions[this.currentIndex - 1].m,
+                        marked: this.questions[this.currentIndex - 1].m ? 1 : 0,
                     };
                     axios({
                         method: 'POST',
@@ -336,14 +336,11 @@
                                 }
                                 this.trunk = response.data['trunk'];
                                 let question = this.questions[this._switchIdx - 1];
-                                console.debug(question);
                                 if (typeof this.trunk.trunks === 'undefined') {
                                     this.hasTrunkChild = false;
-                                    console.debug(`question.answer = ${question.a}`);
                                     mergeOptions(this.trunk.options);
                                 } else {
                                     this.hasTrunkChild = true;
-                                    console.debug(`question.answer = ${question.a}`);
                                     if (question.a === '') {
                                         question.a = [];
                                         for (let i = 0; i < this.trunk.trunks.length; i++) {
@@ -380,7 +377,7 @@
                         function (response) {
                             if (response.status === 200 &&
                                 response.statusText === 'OK' &&
-                                response.data.result === true) {
+                                response.data.result) {
                                 alert('成功退出。');
                                 window.location.reload();
                             } else {
@@ -420,7 +417,7 @@
                     let data = {
                         index: this.currentIndex,
                         answer: this.questions[this.currentIndex - 1].a,
-                        marked: this.questions[this.currentIndex - 1].m,
+                        marked: this.questions[this.currentIndex - 1].m ? 1 : 0,
                     }; // 最后还要提交一次结果
                     axios({
                         method: 'PUT',
@@ -430,7 +427,7 @@
                         function (response) {
                             if (response.status === 200 &&
                                 response.statusText === 'OK' &&
-                                response.data.result === true) {
+                                response.data.result) {
                                 alert('成功退出。');
                                 window.location.reload();
                             } else {
