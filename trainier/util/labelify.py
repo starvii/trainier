@@ -125,14 +125,14 @@ def list_to_entities(_list: List[Dict],
 def trans_trunk_to_dict(trunk: Trunk, trunk_fields: Set[InstrumentedAttribute] = None,
                         option_fields: Set[InstrumentedAttribute] = None, **kwargs) -> Dict:
     trunk_dict: Dict = labelify(trunk, trunk_fields)
-    if 'functions' in kwargs:
-        for f in kwargs['functions']:
-            f(trunk_dict, trunk)
+    functions: Set = kwargs.get('functions')
+    for f in functions:
+        f(trunk_dict, trunk)
     trunks: List[Trunk] = trunk.__dict__.get('_trunks')
     if trunks is not None and len(trunks) > 0:
         trunk_list: List[Dict] = list()
         for trunk_child in trunks:
-            trunk_child_dict: Dict = trans_trunk_to_dict(trunk_child)
+            trunk_child_dict: Dict = trans_trunk_to_dict(trunk_child, trunk_fields, option_fields, functions=functions)
             trunk_list.append(trunk_child_dict)
         trunk_dict['trunks'] = trunk_list
     else:
