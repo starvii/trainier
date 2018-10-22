@@ -26,7 +26,7 @@
                            v-for="(q, idx) in questions"
                            v-text="rjust(idx+1)"
                            @click="switch_to(idx+1)"
-                           :class="[idx+1==currentIndex?'is-info':{'is-success':!q.m==1&&q.a.length>0,'is-danger':q.m==1&&q.a.length==0,'is-warning':q.m==1&&q.a.length>0}]"
+                           :class="classOfQuestion(idx, q)"
                         ></a>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
                     </div>
                 </div>
                 <quiz-options-component :prefix="(index + 1) + `-`" :options="trunkChild.options"
-                                        :question.sync="questions[currentIndex-1]" :answerIndex="index">
+                                        :question.sync="questions[currentIndex-1]" :index="index">
                 </quiz-options-component>
             </div>
 
@@ -257,6 +257,33 @@
                 }
             },
             methods: {
+                hasValue(q) {
+                    if (typeof q.a === 'string') {
+                        return q.a.length > 0;
+                    } else {
+                        let r = true;
+                        for (let sa of q.a) {
+                            if (sa.length === 0) {
+                                r = false;
+                                break;
+                            }
+                        }
+                        return r;
+                    }
+                },
+                classOfQuestion(idx, q) {
+                    if (this.currentIndex === idx + 1) {
+                        return 'is-info';
+                    }
+                    let hv = this.hasValue(q);
+                    if (q.m !== 1 && hv) {
+                        return 'is-success';
+                    } else if (q.m === 1 && !hv) {
+                        return 'is-danger';
+                    } else if (q.m === 1 && hv) {
+                        return 'is-warning';
+                    }
+                },
                 rjust(idx) {
                     return rjust(idx.toString(), this.index_length, ' ');
                 },
