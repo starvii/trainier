@@ -3,9 +3,9 @@
 
 import base64
 import json
-import uuid
+# import uuid
 from urllib.parse import quote
-from pathlib import Path
+# from pathlib import Path
 from typing import Dict
 
 from flask import Blueprint, send_from_directory, request, Request, Response, make_response
@@ -24,9 +24,9 @@ def allowed_file(filename: str) -> str:
     return ''
 
 
-@blueprint.route('/<filename>', methods={'GET'})
-def uploaded_file(filename):
-    return send_from_directory(Config.default.UPLOAD_FOLDER, filename)
+# @blueprint.route('/<filename>', methods={'GET'})
+# def uploaded_file(filename):
+#     return send_from_directory(Config.default.UPLOAD_FOLDER, filename)
 
 
 # @blueprint.route('/', methods={'POST'})
