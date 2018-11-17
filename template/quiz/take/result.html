@@ -1,0 +1,114 @@
+{% extends "base/skeleton.html" %}
+{% block container %}
+    {% raw %}
+    <nav class="navbar"></nav>
+    <div id="app">
+        <div id="result-index" v-if="quizInstId==null" class="columns">
+            <div class="column is-12">
+                <table class="table is-striped is-narrow is-fullwidth is-hoverable">
+                    <thead>
+                    <tr>
+                        <td colspan="4">
+                            <page-component :conf.sync="pageConf"></page-component>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                        </td>
+                        <td><a class="button is-small" title="查找" @click="search()">
+                            <i class="fas fa-search"></i>
+                        </a></td>
+                    </tr>
+                    <tr>
+                        <th>序号</th>
+                        <th>测验</th>
+                        <th>时间</th>
+                        <th>得分</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <td colspan="4">
+                            <page-component :conf.sync="pageConf"></page-component>
+                        </td>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+                    <tr v-for="(item, idx) in data">
+                        <td>
+                            <a :href="`view?id=` + item.entity_id"
+                               target="_blank"
+                               v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
+                               :title="item.comment"></a>
+                        </td>
+                        <td>
+                            <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.code"
+                               :title="item.comment"></a>
+                        </td>
+                        <td>
+                            <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.name"
+                               :title="item.comment"></a>
+                        </td>
+                        <td>
+                            <a :href="`view?id=` + item.entity_id" target="_blank" v-text="item.count"
+                               :title="item.comment"></a>
+                        </td>
+                        <td>
+                            <div class="buttons has-addons">
+                                <a class="button is-small" title="编辑" :href="`edit?id=` + item.entity_id"
+                                   target="_blank">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a class="button is-small" title="删除" @click="remove(item.entity_id)" target="_blank">
+                                    <i class="fas fa-minus"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        <div id="result-view" v-else class="columns">
+            <div class="column is-12">
+                result view
+                trunk
+                true or false
+                false selected
+            </div>
+        </div>
+    </div>
+    <footer class="footer has-background-white"></footer>
+    {% endraw %}
+{% endblock %}
+{% block script %}
+    {% raw %}
+    <script type="text/javascript" src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/page.js"></script>
+    <script>
+        const app = new window.Vue({
+            el: '#app',
+            data: {
+                quizInstId: null,
+                data: [],
+                pageConf: {
+                    currentPage: 1,
+                    totalItems: 1000,
+                    itemsPerPage: 10,
+                    pagesLength: 9,
+                    perPageOptions: [10, 15, 30, 50, 100],
+                    onChange: 'listQuiz',
+                },
+                keyword: '',
+                kw: '',
+            },
+            mounted() {
+                this.quizInstId = getUrlParam('id');
+            },
+            methods: {},
+        });
+    </script>
+    {% endraw %}
+{% endblock %}

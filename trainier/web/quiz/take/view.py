@@ -10,6 +10,7 @@
 import json
 import random
 import string
+import time
 from typing import Dict, List
 from urllib.parse import quote, unquote
 
@@ -48,7 +49,7 @@ option_fields = {
 }
 
 
-class API:
+class IndexAPI:
     @staticmethod
     @blueprint.route('/api/<quiz_id>', methods={'GET'})
     def api_take_start(quiz_id: str) -> Response:
@@ -62,7 +63,7 @@ class API:
             if quiz is None:
                 abort(404)
             quiz_dict: Dict = labelify(quiz)
-            quiz_dict['quiz_inst_id'] = object_id()
+            quiz_dict['quiz_inst_id'] = time.strftime('%Y%m%d%H%M') + object_id()[12:]
             question_id_list: List[str] = [_.strip() for _ in quiz.questions.split(',') if len(_.strip()) > 0]
             if quiz.random_trunk:
                 random.shuffle(question_id_list)
@@ -129,11 +130,11 @@ class API:
         # 判断是否有子题、以及是单选还是多选
         sub_trunks: List[Trunk] = trunk.__dict__.get('_trunks')
         if sub_trunks is None:
-            trunk_dict['multi_choice'] = API.__multi_choice(trunk.__dict__.get('_options'))
+            trunk_dict['multi_choice'] = IndexAPI.__multi_choice(trunk.__dict__.get('_options'))
         else:
             # 对 sub_trunk 处理 option
             for sub_trunk, sub_trunk_dict in zip(sub_trunks, trunk_dict['trunks']):
-                sub_trunk_dict['multi_choice'] = API.__multi_choice(sub_trunk.__dict__.get('_options'))
+                sub_trunk_dict['multi_choice'] = IndexAPI.__multi_choice(sub_trunk.__dict__.get('_options'))
 
         # 对选项进行排序
         if quiz_dict.get('random_choice'):
@@ -165,19 +166,19 @@ class API:
 
             if switch_to_index == 0:
                 # 第一次请求
-                ret: Dict = API.__deal_switch(quiz_dict, 1)
-                ret['questions'] = API.__list_status(quiz_dict)
+                ret: Dict = IndexAPI.__deal_switch(quiz_dict, 1)
+                ret['questions'] = IndexAPI.__list_status(quiz_dict)
             elif switch_to_index > 0 and switch_to_index <= len(quiz_dict['questions']):
                 # 保存提交的结果
                 data: bytes = request.data
                 try:
                     post_dict: Dict = json.loads(data)
-                    quiz_dict = API.__deal_submit(quiz_dict, post_dict)
+                    quiz_dict = IndexAPI.__deal_submit(quiz_dict, post_dict)
                 except json.JSONDecodeError as e:
                     # 如果没有提交数据或提交有误，就不进行更新
                     logger.error(str(e))
-                ret: Dict = API.__deal_switch(quiz_dict, switch_to_index)
-                ret['questions'] = API.__list_status(quiz_dict)
+                ret: Dict = IndexAPI.__deal_switch(quiz_dict, switch_to_index)
+                ret['questions'] = IndexAPI.__list_status(quiz_dict)
             else:
                 raise ValueError('switch_to_index {} out of range.'.format(switch_to_index))
 
@@ -214,7 +215,7 @@ class API:
             data: bytes = request.data
             try:
                 post_dict: Dict = json.loads(data)
-                quiz_dict = API.__deal_submit(quiz_dict, post_dict)
+                quiz_dict = IndexAPI.__deal_submit(quiz_dict, post_dict)
             except json.JSONDecodeError:
                 # 如果没有提交数据或提交有误，就不进行更新
                 pass
@@ -257,41 +258,38 @@ class API:
             abort(500)
 
 
-class View:
-    @staticmethod
-    @blueprint.route('/', methods={'GET'})
-    def view_index() -> str:
-        return render_template('quiz/take/index.html')
+# class ResultAPI:
+#     @staticmethod
+#     @blueprint.route('/result/', methods={'POST'})
+#     def result_index() -> Response:
+#         """
+#         计分和查看结果（全部、错误）
+#         参数：quiz_id, take_id?
+#         调用api：
+#             计分
+#         :return:
+#         """
+#         pass
+#
+#     @staticmethod
+#     @blueprint.route('/result/<entity_id>', methods={'GET'})
+#     def result_index(entity_id: str) -> Response:
+#         pass
 
-    @staticmethod
-    def question_answer() -> str:
-        """
-        获取一项题目，并可进行答题
-        参数：quiz_id, trunk_id
-        调用api：
-            获取question
-            提交答案
-        :return:
-        """
-        pass
 
-    @staticmethod
-    def quiz_result() -> str:
-        """
-        计分和查看结果（全部、错误）
-        参数：quiz_id, take_id?
-        调用api：
-            计分
-        :return:
-        """
-        pass
-
-    @staticmethod
-    def statistics() -> str:
-        """
+class StatAPI:
+    """
+        statistics
         数据统计，全局来看，某道题做过几次、错误几次
         参数：
 
         :return:
         """
-        pass
+    pass
+
+
+class View:
+    @staticmethod
+    @blueprint.route('/', methods={'GET'})
+    def quiz_take() -> str:
+        return render_template('quiz/take/index.html')

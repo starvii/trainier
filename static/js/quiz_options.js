@@ -75,7 +75,7 @@ const QuizOptionsComponent = Vue.extend({
             require: true,
             default: '',
         },
-        answerIndex: {
+        index: {
             type: Number,
             require: false,
             default: -1,
@@ -84,15 +84,15 @@ const QuizOptionsComponent = Vue.extend({
     computed: {
         answer: {
             get() {
-                if (this.answerIndex >= 0) {
-                    return this.question.a[this.answerIndex];
+                if (this.index >= 0) {
+                    return this.question.a[this.index];
                 } else {
                     return this.question.a;
                 }
             },
             set(val) {
-                if (this.answerIndex >= 0) {
-                    this.question.a[this.answerIndex] = val;
+                if (this.index >= 0) {
+                    this.question.a[this.index] = val;
                 } else {
                     this.question.a = val;
                 }

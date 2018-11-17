@@ -1,0 +1,40 @@
+{% extends "base/skeleton.html" %}
+{% block container %}
+    {% raw %}
+    <nav class="navbar"></nav>
+    <div id="app">
+
+    </div>
+    <footer class="footer has-background-white"></footer>
+    {% endraw %}
+{% endblock %}
+{% block script %}
+    {% raw %}
+    <script type="text/javascript" src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/page.js"></script>
+    <script>
+        const app = new window.Vue({
+            el: '#app',
+            data: {
+                data: [],
+                pageConf: {
+                    currentPage: 1,
+                    totalItems: 1000,
+                    itemsPerPage: 10,
+                    pagesLength: 9,
+                    perPageOptions: [10, 15, 30, 50, 100],
+                    onChange: 'listQuiz',
+                },
+                keyword: '',
+                kw: '',
+            },
+            mounted() {
+
+            },
+            methods: {
+
+            },
+        });
+    </script>
+    {% endraw %}
+{% endblock %}

@@ -21,7 +21,7 @@
                     </a></td>
                 </tr>
                 <tr>
-                    <th>编号</th>
+                    <th>序号</th>
                     <th>编码</th>
                     <th>题目（英文）</th>
                     <th>题目（中文）</th>
@@ -125,7 +125,7 @@
 
                         }.bind(this)).catch(
                         function (error) {
-                            alert('请求服务失败，请检查日志');
+                            alert('请求服务失败，请检查日志。' + error);
                         }
                     );
                 },
