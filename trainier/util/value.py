@@ -3,8 +3,12 @@
 import json
 from typing import Dict, Tuple
 
+from bs4 import BeautifulSoup
+
 from trainier.util import const
+from trainier.util.base32 import encode_for_id
 from trainier.util.logger import Log
+from trainier.util.object_id import ObjectId
 
 const.PAGE_NUMBER_DEFAULT: int = 1
 const.PAGE_SIZE_DEFAULT: int = 10
@@ -38,3 +42,14 @@ def process_page_parameters(arguments: Dict) -> (int, int, str):
 
 def jsonify(val: object) -> str:
     return json.dumps(val, ensure_ascii=False, separators=(',', ':'))
+
+
+def b32_obj_id() -> str:
+    return encode_for_id(ObjectId.gen_id()).decode()
+
+
+def html_strip(val: str) -> str:
+    if val is None:
+        return ''
+    soup: BeautifulSoup = BeautifulSoup(val)
+    return soup.get_text(strip=True)

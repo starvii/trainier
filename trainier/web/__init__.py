@@ -9,6 +9,7 @@ from trainier.web.api.question.view import urls as question_urls
 urls: List[URLSpec] = \
     question_urls + \
     [
-        URLSpec(r'/', IndexHandler, {'url': '/index.html'}),
+        # URLSpec(r'/', IndexHandler, {'url': '/index.html'}),
+        URLSpec(r'/(.*\.html)', StaticHandler, {'path': AppConfig.HTML}),
         URLSpec(r'/(.*)', StaticHandler, {'path': AppConfig.STATIC}),
     ]

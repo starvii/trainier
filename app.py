@@ -24,7 +24,7 @@ sys.path.append('trainier')
 
 def main() -> None:
 
-    # static_templates(AppConfig.TEMPLATE, AppConfig.STATIC)
+    static_templates(AppConfig.TEMPLATE, AppConfig.HTML)
 
     app: Application = Application(urls)
     server: HTTPServer = HTTPServer(app)

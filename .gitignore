@@ -3,6 +3,7 @@
 /upload
 !/database/init-db.sqlite
 /script
+/html
 /.idea
 
 

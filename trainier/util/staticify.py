@@ -9,10 +9,30 @@ import re
 from pathlib import Path
 from typing import List, Dict, Pattern, Match, Set
 
-from tornado.template import Loader
+from tornado.template import Loader as TornadoLoader
 
 from trainier.util.logger import Log
 
+
+class Loader(TornadoLoader):
+    """
+    面对模板中自带的 {% extends "base/skeleton.html" %}
+    tornado 会使用当前模板的相对路径
+    在本程序中是有问题的
+    所以这里重载了 Loader 类
+    如果遇到相对路径
+    就从 template 的根目录开始查找
+    """
+    def __init__(self, root_directory, **kwargs):
+        super().__init__(root_directory, **kwargs)
+
+    def resolve_path(self, name, parent_path=None):
+        # return super().resolve_path(name, parent_path)
+        p: Path = Path(name)
+        if p.is_absolute():
+            root: Path = Path(self.root)
+            return str(p.relative_to(root))
+        return name
 
 class TemplateNode:
     def __init__(self, rel_path: Path, full_path: Path, parent_node = None, sub_nodes: List = None) -> None:
@@ -62,9 +82,11 @@ class TemplateForest:
             m: Match = TemplateForest.EXTENDS_PATTERN.search(tpl_bytes)
             if m:
                 base: str = m.group().decode().replace('{%', '').replace('%}', '').replace('extends', '').strip()
+                if (base.startswith('"') and base.endswith('"')) or (base.startswith("'") and base.endswith("'")):
+                    base = base[1:-1]
                 base_path: Path = Path(base)
-                if base_path not in self.forest:
-                    raise ValueError('"{}" not exists in node tree.'.format(base))
+                if base_path not in self.forest.keys():
+                    raise ValueError(f'{base} not exists in node tree.')
                 self.forest[base_path].sub_nodes.append(node)
                 node.parent_node = self.forest[base_path]
 
@@ -79,7 +101,10 @@ class TemplateForest:
             else:
                 leaves: Set[TemplateNode] = node.leaves
                 dst_leaves: Set[Path] = set([dst_dir / leaf.rel_path for leaf in leaves])
-                leaves_mt_min = min([p.stat().st_mtime for p in dst_leaves])
+                try:
+                    leaves_mt_min = min([p.stat().st_mtime for p in dst_leaves])
+                except FileNotFoundError:
+                    leaves_mt_min = 0
                 if node.full_path.stat().st_mtime > leaves_mt_min:
                     for leaf in leaves: leaf.is_changed = True
                 else:
@@ -112,7 +137,31 @@ def static_template(leaf_node: TemplateNode, dst_dir: Path, loader: Loader):
         b: bytes = loader.load(str(src_full)).generate()
         open(str(dst_full), 'wb').write(b)
     except Exception as e:
-        Log.trainier.info(str(e))
+        Log.trainier.error(str(e))
+
+
+def clean_output_dir(dst_dir: Path) -> None:
+    not_html: List[Path] = []
+    dirs: List[Path] = []
+    for p in dst_dir.rglob("*"):
+        if p.is_dir():
+            dirs.append(p)
+        elif p.suffix != '.html':
+            not_html.append(p)
+    for p in not_html:
+        try:
+            Log.trainier.info(f'detect "{p}" is not a html file in "{dst_dir}". delete it.')
+            os.remove(str(p))
+        except:
+            Log.trainier.error(f'cannot remove file "{p}"')
+    dirs.sort()
+    dirs.reverse()
+    for p in dirs:
+        try:
+            os.rmdir(str(p))  # only delete the empty directories
+            Log.trainier.info(f'detect empty directory "{p}" in "{dst_dir}". remove it.')
+        except Exception as e:
+            Log.trainier.debug(e)
 
 
 def static_templates(src_dir: Path, dst_dir: Path):
@@ -128,7 +177,7 @@ def static_templates(src_dir: Path, dst_dir: Path):
     forest.check_changes(dst_dir)
 
     # generate output html
-    loader: Loader = Loader(str(src_dir))
+    loader: Loader = Loader(str(src_dir), whitespace='all')
     for node in forest.to_update_leaves:
         Log.trainier.info('to generate template [%s] to static [%s] ...', node.rel_path, node.rel_path)
         static_template(node, dst_dir, loader)
@@ -136,3 +185,5 @@ def static_templates(src_dir: Path, dst_dir: Path):
     for p in find_to_delete_output(forest, dst_dir):
         Log.trainier.info('to delete static [%s] not in templates ...', p)
         os.remove(str(p))
+    # clear empty directories
+    clean_output_dir(dst_dir)
