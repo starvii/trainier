@@ -8,13 +8,13 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application
 
 from config import Config
-from trainier import AppConfig
+from trainier.config import AppConfig
 
 AppConfig.init_path()
 
 from trainier.util.logger import Log
 from trainier.util.staticify import static_templates
-from trainier.web import urls
+from trainier.web.url_pattern import urls
 
 if sys.version_info < (3, 6):
     print("please use python 3.6 or above.")

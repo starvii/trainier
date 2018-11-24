@@ -4,6 +4,7 @@
 !/database/init-db.sqlite
 /script
 /html
+/log
 /.idea
 
 

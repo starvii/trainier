@@ -8,7 +8,7 @@ import socket
 import struct
 import sys
 import time
-from multiprocessing.dummy import Lock
+from threading import Lock
 
 if not sys.version_info > (3,):
     range = xrange

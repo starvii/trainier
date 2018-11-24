@@ -6,13 +6,14 @@ from typing import List, Set, Dict
 
 from peewee import Query
 
-from trainier.dao import db
+from trainier.dao.orm import db
 from trainier.dao.model import Trunk, Option
 from trainier.util import const
 from trainier.util.logger import Log
 from trainier.util.value import b32_obj_id, html_strip
 
 const.ROOT_NODE = 'root'
+
 
 class QuestionService:
     @staticmethod
@@ -24,7 +25,7 @@ class QuestionService:
         """
         m = re.match(r'^[A-Z]{1,3}\d{1,2}/\d{1,3}/\S+', code)
         if not m:
-            raise ValueError('code {} not match.'.format(code))
+            raise ValueError(f'code {code} not match.')
         book: str = re.search(r'^[A-Z]+', code).group()
         version: int = int(re.search(r'\d+', code).group())
         cs = code.split('/')
@@ -56,7 +57,7 @@ class QuestionService:
         elif re.match(r'\d+', question_num):
             qn = int(question_num)
         else:
-            raise ValueError('question_num {} not match.'.format(question_num))
+            raise ValueError(f'question_num {question_num} not match.')
         order_num: int = int(
             str(book_idx).rjust(3, '0') + str(version).rjust(2, '0') + str(chapter).rjust(3, '0') + str(qn).rjust(
                 4, '0') + str(sub_question).rjust(3, '0'))
@@ -184,15 +185,17 @@ class QuestionService:
                 if trunk_children is not None:
                     for idx, trunk_child in enumerate(trunk_children):
                         relation[trunk_child] = trunk_cur.entity_id
-                        trunk_child.code = '{}({})'.format(trunk_cur.code, idx + 1)
+                        trunk_child.code = f'{trunk_cur.code}({idx + 1})'
                         trunk_child.order_num = idx
                         trunk_child.source = ''
                         trunk_child.level = trunk_cur.level
                         queue.append(trunk_child)
                 else:  # leaf node
                     options: List[Option] = trunk_cur.__dict__.get('_options')
+                    if options is None:
+                        raise ValueError('this is no options of trunk.')
                     for idx, option in enumerate(options):
-                        option.code = '{}-{}'.format(trunk_cur.code, string.ascii_uppercase[idx])
+                        option.code = f'{trunk_cur.code}-{string.ascii_uppercase[idx]}'
                         option.trunk_id = trunk_cur.entity_id
                         option.order_num = idx
                         option.comment = ''
@@ -213,7 +216,7 @@ class QuestionService:
                 en_trunk_text = trunk.en_trunk_text,
                 cn_trunk = trunk.cn_trunk,
                 cn_trunk_text = trunk.cn_trunk_text,
-                analysis = trunk.analysis,
+                explanation = trunk.explanation,
                 source = trunk.source,
                 level = trunk.level,
                 comment = trunk.comment,
@@ -223,7 +226,7 @@ class QuestionService:
             query.execute()
 
     @staticmethod
-    def __save_options(options: List[Option], trunk: Trunk):
+    def __save_options(options: List[Option], trunk: Trunk) -> None:
         options_db: List[Option] = [x for x in Option.select().where(Option.trunk_id == trunk.entity_id)]
         exist_db_ids: Set[str] = set([i.entity_id for i in options_db])
         write_db_ids: Set[str] = set()
@@ -246,3 +249,11 @@ class QuestionService:
             delete_db_ids: Set[str] = exist_db_ids - write_db_ids
             if len(delete_db_ids) > 0:
                 Option.delete().where(Option.entity_id.in_(delete_db_ids))
+
+
+def test():
+    print(QuestionService)
+
+
+if __name__ == '__main__':
+    test()

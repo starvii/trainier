@@ -8,7 +8,7 @@ from logging import Logger, StreamHandler, Handler, Formatter, getLogger, DEBUG
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from trainier import AppConfig
+from trainier.config import AppConfig
 
 
 def make_log(name: str) -> Logger:

@@ -1,6 +1,6 @@
 {% extends "base/skeleton.html" %}
+{% whitespace all %}
 {% block container %}
-    {% raw %}
     <div id="app">
         <div id="take_quiz" v-if="isTaking()">
             <nav class="navbar">
@@ -198,10 +198,8 @@
         </div>
         <footer class="footer has-background-white"></footer>
     </div>
-    {% endraw %}
-{% endblock %}
+{% end %}
 {% block script %}
-    {% raw %}
     <script type="text/javascript" src="/js/common.js"></script>
     <script type="text/javascript" src="/js/page.js"></script>
     <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
@@ -477,5 +475,4 @@
             },
         });
     </script>
-    {% endraw %}
-{% endblock %}
+{% end %}

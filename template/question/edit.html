@@ -21,6 +21,7 @@
 #}
 
 {% extends "base/skeleton.html" %}
+{% whitespace all %}
 {% block container %}
     <nav class="navbar"></nav>
     <div id="app">
@@ -120,9 +121,8 @@
 
     </div>
     <footer class="footer has-background-white"></footer>
-{% endblock %}
+{% end %}
 {% block script %}
-    {% raw %}
     <script type="text/javascript" src="/js/common.js"></script>
     <script type="text/javascript" src="/ckeditor/classic/ckeditor.js"></script>
     <script type="text/javascript" src="/ckeditor/vue-ckeditor5.js"></script>
@@ -245,5 +245,4 @@
             },
         });
     </script>
-    {% endraw %}
-{% endblock %}
+{% end %}

@@ -1,6 +1,6 @@
 {% extends "base/skeleton.html" %}
+{% whitespace all %}
 {% block container %}
-    {% raw %}
     <nav class="navbar"></nav>
     <div id="app">
         <div class="columns">
@@ -128,10 +128,8 @@
         </div>
     </div>
     <footer class="footer has-background-white"></footer>
-    {% endraw %}
-{% endblock %}
+{% end %}
 {% block script %}
-    {% raw %}
     <script src="/js/page.js"></script>
     <script src="/js/common.js"></script>
     <script type="text/javascript">
@@ -231,5 +229,4 @@
             },
         });
     </script>
-    {% endraw %}
-{% endblock %}
+{% end %}

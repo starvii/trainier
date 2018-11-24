@@ -3,7 +3,7 @@
 
 from peewee import IntegerField, CharField, Field, TextField, AutoField, BooleanField
 
-from trainier.dao import BaseModel, db
+from trainier.dao.orm import BaseModel, db
 
 
 class Trunk(BaseModel):

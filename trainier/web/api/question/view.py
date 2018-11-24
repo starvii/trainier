@@ -3,14 +3,17 @@
 from concurrent.futures import Executor, ThreadPoolExecutor
 from typing import List, Dict
 
+from playhouse.shortcuts import model_to_dict
 from tornado.concurrent import run_on_executor
 from tornado.gen import coroutine
 from tornado.httputil import HTTPServerRequest
 from tornado.routing import URLSpec
 
+from dao.model import Trunk
 from trainier.util.logger import Log
 from trainier.util.value import process_page_parameters, jsonify
-from trainier.web.api import BaseHandler
+from web.api.question.service import QuestionService
+from web.base_handler import BaseHandler
 
 
 class QuestionHandler(BaseHandler):
@@ -26,13 +29,13 @@ class QuestionHandler(BaseHandler):
         else:
             # select page
             request: HTTPServerRequest = self.request
-            jsn = yield self.query_questions(request.arguments)
+            jsn = yield self.query_questions(request.arguments, request.body)
         self.finish(jsn)
 
     @coroutine
     def post(self, *args, **kwargs) -> None:
         request: HTTPServerRequest = self.request
-        jsn = yield self.query_questions(request.arguments)
+        jsn = yield self.query_questions(request.arguments, request.body)
         self.finish(jsn)
 
     @coroutine
@@ -55,12 +58,35 @@ class QuestionHandler(BaseHandler):
         jsn = yield self.delete_question()
         self.finish(jsn)
 
-    """================================================================================="""
+    #=================================================================================
 
     @run_on_executor
-    def query_questions(self, arguments: Dict) -> str:
-        page, size, keyword = process_page_parameters(arguments)
-        return jsonify([])
+    def query_questions(self, arguments: Dict, body: bytes) -> str:
+        """
+        优先使用arguments中的参数（urlencoded），如果没有再采用body中的参数（json）
+        :param arguments:
+        :param body:
+        :return:
+        """
+        page, size, keyword = process_page_parameters(arguments, body)
+        trunks, count = QuestionService.select_trunks(page, size, keyword, None)
+        trunks_list: List[Dict] = [model_to_dict(t, only={
+            Trunk.entity_id,
+            Trunk.code,
+
+        }) for t in trunks]
+        if trunks is not None:
+            result: Dict = dict(
+                result=1,
+                trunks=trunks,
+                count=count,
+            )
+        else:
+            result: Dict = dict(
+                result=0,
+                error='query failed'
+            )
+        return jsonify(result)
 
     @run_on_executor
     def query_question(self, entity_id: str) -> str:
@@ -86,3 +112,11 @@ class QuestionHandler(BaseHandler):
 urls: List = [
     URLSpec(r'/api/question/(.*)', QuestionHandler),
 ]
+
+
+def test():
+    print(urls)
+
+
+if __name__ == '__main__':
+    test()
