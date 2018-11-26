@@ -78,7 +78,7 @@ class QuestionHandler(BaseHandler):
         if trunks is not None:
             result: Dict = dict(
                 result=1,
-                trunks=trunks,
+                trunks=trunks_list,
                 count=count,
             )
         else:

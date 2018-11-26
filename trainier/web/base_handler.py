@@ -11,6 +11,13 @@ class StaticHandler(StaticFileHandler):
         default_headers(self)
 
 
+class HtmlHandler(StaticHandler):
+    def parse_url_path(self, url_path):
+        if not url_path or url_path.endswith('/'):
+            url_path += 'index.html'
+        return super(HtmlHandler, self).parse_url_path(url_path)
+
+
 class IndexHandler(RedirectHandler):
     def set_default_headers(self):
         default_headers(self)

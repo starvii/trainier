@@ -15,3 +15,13 @@ class TestService(unittest.TestCase):
             )
         ]
         QuestionService.save(trunk)
+
+    def test_service_select_trunk_by_id(self):
+        entity_id = '0p2sp2g40z3sj0y20s7b'
+        trunk = QuestionService.select_trunk_by_id(entity_id)
+        print(trunk)
+
+    def test_service_select_trunks(self):
+        query = Trunk.select().where((Trunk.parent_id.is_null()) | (Trunk.parent_id == '') | (Trunk.parent_id == const.ROOT_NODE))
+        print(query.sql())
+        print([x for x in query])

@@ -74,6 +74,7 @@
     </div>
     <footer class="footer has-background-white"></footer>
 {% end %}
+
 {% block script %}
     <script src="/js/page.js"></script>
     <script src="/js/common.js"></script>
@@ -92,9 +93,17 @@
                 },
                 keyword: '',
                 kw: '',
+                timestamp: 0,
             },
             methods: {
                 list: function () {
+                    // 防止发送多次请求
+                    let now = new Date().getTime();
+                    if (now - this.timestamp <= 500) {
+                        return;
+                    }
+                    this.timestamp = now;
+
                     let data = {
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
@@ -102,13 +111,13 @@
                     };
                     axios({
                         method: 'POST',
-                        url: '/question/api/',
+                        url: '/api/question/',
                         data: data,
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK') {
                                 let t = response.data;
-                                // 进行简化处理
+                                // 进行合并处理
                                 let trunks = t.data;
                                 digest(trunks);
                                 // 分页器赋值

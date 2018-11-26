@@ -17,13 +17,13 @@ const.PAGE_SIZE_DEFAULT: int = const.PAGE_SIZES[0]
 
 def _parameter_from_request(parameter: str, arguments: Dict, body: bytes, body_json: Dict) -> (Any, Dict):
     if parameter in arguments:
-        return arguments.get(parameter), body_json
+        return arguments.get(parameter)[0], body_json
     if body_json is not None and parameter in body_json:
-        return body_json.get(parameter), body_json
+        return body_json.get(parameter)[0], body_json
     if body_json is None:
         try:
             j: Dict = json.loads(body)
-            return j.get(parameter), j
+            return j.get(parameter)[0], j
         except Exception as e:
             Log.trainier.debug(e)
     return None, None
