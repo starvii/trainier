@@ -73,7 +73,8 @@ class QuestionHandler(BaseHandler):
         trunks_list: List[Dict] = [model_to_dict(t, only={
             Trunk.entity_id,
             Trunk.code,
-
+            Trunk.en_trunk,
+            Trunk.cn_trunk,
         }) for t in trunks]
         if trunks is not None:
             result: Dict = dict(

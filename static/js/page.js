@@ -1,30 +1,59 @@
 /*
 
-<nav class="pagination is-small" role="navigation" aria-label="pagination">
-	<a v-if="conf.totalItems > 0" class="pagination-previous" v-bind="{'disabled': conf.currentPage == 1}" @click="prevPage()">
-		<i class="fas fa-angle-left"></i>
-	</a>
-	<a v-if="conf.totalItems > 0" class="pagination-next" v-bind="{'disabled': conf.currentPage == conf.numberOfPages}" @click="nextPage()">
-		<i class="fas fa-angle-right"></i>
-	</a>
-	<ul class="pagination-list" v-if="conf.totalItems > 0">
-		<li v-for="item in pageList">
-			<a :class="{'is-current pagination-link': item == conf.currentPage, 'pagination-link': item != conf.currentPage, 'pagination-ellipsis': item == '...'}" @click="changeCurrentPage(item)" v-text="item"></a>
-		</li>
-	</ul>
-	<div class="page-total" v-if="conf.totalItems > 0">
-		<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>
-		<input class="input is-small" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>
-		<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>
-		<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>
-		<span class="select">
-			<select class="is-small is-rounded" v-model="conf.itemsPerPage">
-				<option v-for="option in conf.perPageOptions" v-text="option"></option>
-			</select>
-		</span>
-		<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">
+<nav name="page-list">
+	<div name="pagination" v-if="conf.totalItems>0">
+		<ul class="pagination pagination-right pagination-sm" style="float: right; margin: 0;">
+			<li class="page-item" :class="{disabled:conf.currentPage==1}">
+				<a class="page-link" :class="{disabled:conf.currentPage==1}" @click="prevPage()">
+					<i class="fas fa-angle-left"></i>
+				</a>
+			</li>
+			<li class="page-item"
+				:class="{active:item==conf.currentPage,disabled:item=='...'}"
+				v-for="(item, index) in pageList">
+				<a class="page-link" v-if="item=='...'" v-text="item"
+					style="{cursor: default; border-top:none; border-bottom:none;} :hover {background: none}">
+				</a>
+				<a class="page-link" v-else
+					@click="changeCurrentPage(item)" v-text="item">
+				</a>
+			</li>
+			<li class="page-item" :class="{disabled:conf.currentPage==conf.numberOfPages}">
+				<a class="page-link"
+					:class="{disabled:conf.currentPage==conf.numberOfPages}"
+					@click="nextPage()">
+					<i class="fas fa-angle-right"></i>
+				</a>
+			</li>
+		</ul>
+		<form name=pate-total class="form-inline" style="float: left; margin:0;">
+			<div class="form-group">
+				第
+				<input class="form-control form-control-sm"
+					type="text"
+					v-model="jumpPageNum"
+					@keyup.enter="jumpToPage($event)"
+					style="height: 26px; border:1px solid #ddd; width: 50px; padding-left:3px;"
+				/>
+				页
+			</div>
+			&nbsp;|&nbsp;
+			<div class="form-group">
+				每页
+				<select class="form-control form-control-sm"
+					v-model="conf.itemsPerPage"
+					style="height: 26px; border:1px solid #ddd; width: 70px;"
+				>
+					<option v-for="option in conf.perPageOptions" v-text="option"></option>
+				</select>/共
+				<strong v-text="conf.totalItems"></strong>
+				条
+			</div>
+		</form>
 	</div>
-	<div v-if="conf.totalItems <= 0">暂无数据</div>
+	<div name="no-items" v-else>
+		<strong>无数据</strong>
+	</div>
 </nav>
 
 */
@@ -33,31 +62,60 @@
 const PageComponent = Vue
     .extend({
         template: '' +
-            '<nav class="pagination is-small" role="navigation" aria-label="pagination">\n' +
-            '\t<a v-if="conf.totalItems > 0" class="pagination-previous" v-bind="{\'disabled\': conf.currentPage == 1}" @click="prevPage()">\n' +
-            '\t\t<i class="fas fa-angle-left"></i>\n' +
-            '\t</a>\n' +
-            '\t<a v-if="conf.totalItems > 0" class="pagination-next" v-bind="{\'disabled\': conf.currentPage == conf.numberOfPages}" @click="nextPage()">\n' +
-            '\t\t<i class="fas fa-angle-right"></i>\n' +
-            '\t</a>\n' +
-            '\t<ul class="pagination-list" v-if="conf.totalItems > 0">\n' +
-            '\t\t<li v-for="item in pageList">\n' +
-            '\t\t\t<a :class="{\'is-current pagination-link\': item == conf.currentPage, \'pagination-link\': item != conf.currentPage, \'pagination-ellipsis\': item == \'...\'}" @click="changeCurrentPage(item)" v-text="item"></a>\n' +
-            '\t\t</li>\n' +
-            '\t</ul>\n' +
-            '\t<div class="page-total" v-if="conf.totalItems > 0">\n' +
-            '\t\t<input class="input is-static is-small" type="text" value="第" style="width: 40px;" readonly>\n' +
-            '\t\t<input class="input is-small" style="width: 60px;" type="text" v-model="jumpPageNum" @keyup.enter="jumpToPage($event)"/>\n' +
-            '\t\t<input class="input is-static is-small" type="text" value="页" style="width: 40px;" readonly>\n' +
-            '\t\t<input class="input is-static is-small" type="text" value="每页" style="width: 40px;" readonly>\n' +
-            '\t\t<span class="select">\n' +
-            '\t\t\t<select class="is-small is-rounded" v-model="conf.itemsPerPage">\n' +
-            '\t\t\t\t<option v-for="option in conf.perPageOptions" v-text="option"></option>\n' +
-            '\t\t\t</select>\n' +
-            '\t\t</span>\n' +
-            '\t\t<input class="input is-static is-small" type="text" style="width: 60px;" readonly v-model="totalItems">\n' +
+            '<nav name="page-list">\n' +
+            '\t<div name="pagination" v-if="conf.totalItems>0">\n' +
+            '\t\t<ul class="pagination pagination-right pagination-sm" style="float: right; margin: 0;">\n' +
+            '\t\t\t<li class="page-item" :class="{disabled:conf.currentPage==1}">\n' +
+            '\t\t\t\t<a class="page-link" :class="{disabled:conf.currentPage==1}" @click="prevPage()">\n' +
+            '\t\t\t\t\t<i class="fas fa-angle-left"></i>\n' +
+            '\t\t\t\t</a>\n' +
+            '\t\t\t</li>\n' +
+            '\t\t\t<li class="page-item"\n' +
+            '\t\t\t\t:class="{active:item==conf.currentPage,disabled:item==\'...\'}"\n' +
+            '\t\t\t\tv-for="(item, index) in pageList">\n' +
+            '\t\t\t\t<a class="page-link" v-if="item==\'...\'" v-text="item"\n' +
+            '\t\t\t\t\tstyle="{cursor: default; border-top:none; border-bottom:none;} :hover {background: none}">\n' +
+            '\t\t\t\t</a>\n' +
+            '\t\t\t\t<a class="page-link" v-else\n' +
+            '\t\t\t\t\t@click="changeCurrentPage(item)" v-text="item">\n' +
+            '\t\t\t\t</a>\n' +
+            '\t\t\t</li>\n' +
+            '\t\t\t<li class="page-item" :class="{disabled:conf.currentPage==conf.numberOfPages}">\n' +
+            '\t\t\t\t<a class="page-link"\n' +
+            '\t\t\t\t\t:class="{disabled:conf.currentPage==conf.numberOfPages}"\n' +
+            '\t\t\t\t\t@click="nextPage()">\n' +
+            '\t\t\t\t\t<i class="fas fa-angle-right"></i>\n' +
+            '\t\t\t\t</a>\n' +
+            '\t\t\t</li>\n' +
+            '\t\t</ul>\n' +
+            '\t\t<form name=pate-total class="form-inline" style="float: left; margin:0;">\n' +
+            '\t\t\t<div class="form-group">\n' +
+            '\t\t\t\t第\n' +
+            '\t\t\t\t<input class="form-control form-control-sm"\n' +
+            '\t\t\t\t\ttype="text"\n' +
+            '\t\t\t\t\tv-model="jumpPageNum"\n' +
+            '\t\t\t\t\t@keyup.enter="jumpToPage($event)"\n' +
+            '\t\t\t\t\tstyle="height: 26px; border:1px solid #ddd; width: 50px; padding-left:3px;"\n' +
+            '\t\t\t\t/>\n' +
+            '\t\t\t\t页\n' +
+            '\t\t\t</div>\n' +
+            '\t\t\t&nbsp;|&nbsp;\n' +
+            '\t\t\t<div class="form-group">\n' +
+            '\t\t\t\t每页\n' +
+            '\t\t\t\t<select class="form-control form-control-sm"\n' +
+            '\t\t\t\t\tv-model="conf.itemsPerPage"\n' +
+            '\t\t\t\t\tstyle="height: 26px; border:1px solid #ddd; width: 70px;"\n' +
+            '\t\t\t\t>\n' +
+            '\t\t\t\t\t<option v-for="option in conf.perPageOptions" v-text="option"></option>\n' +
+            '\t\t\t\t</select>/共\n' +
+            '\t\t\t\t<strong v-text="conf.totalItems"></strong>\n' +
+            '\t\t\t\t条\n' +
+            '\t\t\t</div>\n' +
+            '\t\t</form>\n' +
             '\t</div>\n' +
-            '\t<div v-if="conf.totalItems <= 0">暂无数据</div>\n' +
+            '\t<div name="no-items" v-else>\n' +
+            '\t\t<strong>无数据</strong>\n' +
+            '\t</div>\n' +
             '</nav>',
         replace: true,
         props: {
