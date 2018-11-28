@@ -19,11 +19,11 @@ def _parameter_from_request(parameter: str, arguments: Dict, body: bytes, body_j
     if parameter in arguments:
         return arguments.get(parameter)[0], body_json
     if body_json is not None and parameter in body_json:
-        return body_json.get(parameter)[0], body_json
+        return body_json.get(parameter), body_json
     if body_json is None:
         try:
             j: Dict = json.loads(body)
-            return j.get(parameter)[0], j
+            return j.get(parameter), j
         except Exception as e:
             Log.trainier.debug(e)
     return None, None
@@ -50,9 +50,7 @@ def process_page_parameters(arguments: Dict, body: bytes) -> (int, int, str):
 
     kw, body_json = _parameter_from_request('keyword', arguments, body, body_json)
     try:
-        keyword: str = kw.decode().strip()
-        if len(keyword) > 0:
-            keyword = f'%{keyword}%'
+        keyword: str = kw.strip()
     except Exception as e:
         Log.trainier.debug(e)
         keyword = ''

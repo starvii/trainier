@@ -104,16 +104,27 @@
                     this.kwBind = keyword;
                     this.keyword = keyword;
                 }
+                console.debug('mounted');
             },
             methods: {
                 list: function () {
+
                     // 防止发送多次请求
                     let now = new Date().getTime();
-                    if (now - this.timestamp <= 500) {
+                    if (this.timestamp === 0) {
+                        console.debug('list 0');
+                        this.timestamp = now;
+                        setTimeout(this.list, 500);
+                        return;
+                    }
+                    if (now - this.timestamp <= 300)
+                    {
+                        console.debug('list <300');
                         return;
                     }
                     this.timestamp = now;
                     // 查询
+                    console.debug('list');
                     let data = {
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
@@ -135,9 +146,9 @@
                                 this.data = trunks;
                                 // 修改url
                                  if (history && history.pushState) {
-                                     let href = `${location.pathname}?p=${this.pageConf.currentPage}&s=${this.pageConf.itemsPerPage}&k=${this.keyword}`;
+                                     let href = `${window.location.pathname}?p=${this.pageConf.currentPage}&s=${this.pageConf.itemsPerPage}&k=${this.keyword}`;
                                      //console.debug(location.pathname);
-                                     history.pushState(null, document.title, href);
+                                     window.history.pushState(null, document.title, href);
                                  }
                             } else {
                                 alert('请求服务失败，请检查日志');
