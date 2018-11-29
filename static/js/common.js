@@ -128,7 +128,7 @@ const newTrunk = () => {
         code: '',
         en_trunk: '',
         cn_trunk: '',
-        analysis: '',
+        explanation: '',
         source: '',
         level: 0,
         comment: '',

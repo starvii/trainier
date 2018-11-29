@@ -1,38 +1,30 @@
 /*
 
-<div class="container">
-	<div class="columns" v-for="(option, index) in options" @dblclick="changeAnswer(index)">
-		<div class="column is-1">
-			<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
+<div>
+	<div class="form-row" v-for="(option, index) in options" @dblclick="changeAnswer(index)" style="padding-bottom: 7px;">
+		<div class="col">
+			<label v-text="`ABCDEFGHIJKL`[index] + `.`"></label>
+			<span class="float-right">
+				<i class="fas fa-check-circle text-success" v-if="option.is_true"></i>
+				<i class="fas fa-times-circle text-danger" v-else></i>
+			</span>
 		</div>
-		<div class="column is-5">
-			<p class="control has-icons-right">
-				<input class="input is-small" type="text" placeholder="English Option"
-					   v-model="option.en_option"
-					   :class="[option.is_true ? 'is-success' : 'is-danger']">
-				<span class="icon is-small is-right">
-					<i class="fas fa-check" v-if="option.is_true"></i>
-					<i class="fas fa-times" v-if="!option.is_true"></i>
-				</span>
-			</p>
+		<div class="col-5">
+			<input class="form-control form-control-sm" type="text" placeholder="English Option"
+				v-model="option.en_option"
+				:class="[option.is_true?'is-valid':'is-invalid']">
 		</div>
-		<div class="column is-5">
-			<p class="control has-icons-right">
-				<input class="input is-small" type="text" placeholder="Chinese Option"
-					   v-model="option.cn_option"
-					   :class="[option.is_true ? 'is-success' : 'is-danger']">
-				<span class="icon is-small is-right">
-					<i class="fas fa-check" v-if="option.is_true"></i>
-					<i class="fas fa-times" v-if="!option.is_true"></i>
-				</span>
-			</p>
+		<div class="col-5">
+			<input class="form-control form-control-sm" type="text" placeholder="中文选项"
+				v-model="option.cn_option"
+				:class="[option.is_true?'is-valid':'is-invalid']">
 		</div>
-		<div class="column is-1">
-			<div class="buttons has-addons">
-				<a class="button is-small" @click="insertOption(index)">
+		<div class="col">
+			<div class="btn-group">
+				<a class="btn btn-sm" @click="insertOption(index)">
 					<i class="fas fa-plus"></i>
 				</a>
-				<a class="button is-small" @click="removeOption(index)">
+				<a class="btn btn-sm" @click="removeOption(index)">
 					<i class="fas fa-minus"></i>
 				</a>
 			</div>
@@ -45,39 +37,31 @@
 
 const OptionsComponent = Vue.extend({
     template: '' +
-        '<div class="container">\n' +
-        '\t<div class="columns" v-for="(option, index) in options" @dblclick="changeAnswer(index)">\n' +
-        '\t\t<div class="column is-1">\n' +
-        '\t\t\t<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>\n' +
+        '<div>\n' +
+        '\t<div class="form-row" v-for="(option, index) in options" @dblclick="changeAnswer(index)" style="padding-bottom: 7px;">\n' +
+        '\t\t<div class="col">\n' +
+        '\t\t\t<label v-text="`ABCDEFGHIJKL`[index] + `.`"></label>\n' +
+        '\t\t\t<span class="float-right">\n' +
+        '\t\t\t\t<i class="fas fa-check-circle text-success" v-if="option.is_true"></i>\n' +
+        '\t\t\t\t<i class="fas fa-times-circle text-danger" v-else></i>\n' +
+        '\t\t\t</span>\n' +
         '\t\t</div>\n' +
-        '\t\t<div class="column is-5">\n' +
-        '\t\t\t<p class="control has-icons-right">\n' +
-        '\t\t\t\t<input class="input is-small" type="text" placeholder="English Option"\n' +
-        '\t\t\t\t\t   v-model="option.en_option"\n' +
-        '\t\t\t\t\t   :class="[option.is_true ? \'is-success\' : \'is-danger\']">\n' +
-        '\t\t\t\t<span class="icon is-small is-right">\n' +
-        '\t\t\t\t\t<i class="fas fa-check" v-if="option.is_true"></i>\n' +
-        '\t\t\t\t\t<i class="fas fa-times" v-if="!option.is_true"></i>\n' +
-        '\t\t\t\t</span>\n' +
-        '\t\t\t</p>\n' +
+        '\t\t<div class="col-5">\n' +
+        '\t\t\t<input class="form-control form-control-sm" type="text" placeholder="English Option"\n' +
+        '\t\t\t\tv-model="option.en_option"\n' +
+        '\t\t\t\t:class="[option.is_true?\'is-valid\':\'is-invalid\']">\n' +
         '\t\t</div>\n' +
-        '\t\t<div class="column is-5">\n' +
-        '\t\t\t<p class="control has-icons-right">\n' +
-        '\t\t\t\t<input class="input is-small" type="text" placeholder="Chinese Option"\n' +
-        '\t\t\t\t\t   v-model="option.cn_option"\n' +
-        '\t\t\t\t\t   :class="[option.is_true ? \'is-success\' : \'is-danger\']">\n' +
-        '\t\t\t\t<span class="icon is-small is-right">\n' +
-        '\t\t\t\t\t<i class="fas fa-check" v-if="option.is_true"></i>\n' +
-        '\t\t\t\t\t<i class="fas fa-times" v-if="!option.is_true"></i>\n' +
-        '\t\t\t\t</span>\n' +
-        '\t\t\t</p>\n' +
+        '\t\t<div class="col-5">\n' +
+        '\t\t\t<input class="form-control form-control-sm" type="text" placeholder="中文选项"\n' +
+        '\t\t\t\tv-model="option.cn_option"\n' +
+        '\t\t\t\t:class="[option.is_true?\'is-valid\':\'is-invalid\']">\n' +
         '\t\t</div>\n' +
-        '\t\t<div class="column is-1">\n' +
-        '\t\t\t<div class="buttons has-addons">\n' +
-        '\t\t\t\t<a class="button is-small" @click="insertOption(index)">\n' +
+        '\t\t<div class="col">\n' +
+        '\t\t\t<div class="btn-group">\n' +
+        '\t\t\t\t<a class="btn btn-sm" @click="insertOption(index)">\n' +
         '\t\t\t\t\t<i class="fas fa-plus"></i>\n' +
         '\t\t\t\t</a>\n' +
-        '\t\t\t\t<a class="button is-small" @click="removeOption(index)">\n' +
+        '\t\t\t\t<a class="btn btn-sm" @click="removeOption(index)">\n' +
         '\t\t\t\t\t<i class="fas fa-minus"></i>\n' +
         '\t\t\t\t</a>\n' +
         '\t\t\t</div>\n' +

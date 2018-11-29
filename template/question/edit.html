@@ -4,7 +4,7 @@
         en_trunk
         cn_trunk
         (options)
-        (analysis)
+        (explanation)
         source, comment
 
     parent trunk:
@@ -16,111 +16,70 @@
         en_trunk
         cn_trunk
         options
-        analysis
+        explanation
         comment
 #}
 
-{% extends "base/skeleton.html" %}
+{% extends "base/base.html" %}
 {% whitespace all %}
-{% block container %}
-    <nav class="navbar"></nav>
-    <div id="app">
-        <div class="columns">
-            <div class="column is-4">
-                <div class="field">
-                    <label class="label" for="trunk_code">编号</label>
-                    <div class="control">
-                        <input id="trunk_code" type="text" class="input" v-model="trunk.code">
-                    </div>
+{% block body %}
+    <ul class="nav"></ul>
+    <div class="container" id="app" style="padding-top: 20px; padding-bottom: 20px;">
+        <form>
+            <div class="form-row align-items-center" style="padding-bottom: 10px;">
+                <div class="col-auto">
+                    <label class="sr-only" for="trunk_code">编号</label>
+                    <input type="text" class="form-control form-control-sm" id="trunk_code" placeholder="编号" v-model="trunk.code">
                 </div>
-            </div>
-            <div class="column is-4">
-                <div class="field">
-                    <label class="label" for="trunk_level">等级</label>
-                    <div class="control">
-                        <input id="trunk_level" type="text" class="input" v-model="trunk.level">
-                    </div>
+                <div class="col-auto">
+                    <label class="sr-only" for="trunk_level">等级</label>
+                    <input type="text" class="form-control form-control-sm" id="trunk_level" placeholder="等级" v-model="trunk.level">
                 </div>
-            </div>
-            <div class="column is-3">
-                <div class="field">
-                    <label class="label">包含子题</label>
-                    <div class="control">
-                        <label class="checkbox">
-                            <input type="checkbox" v-model="hasTrunkChild">
-                            如果主题干下有数个子题<br/>　请勾选此处
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="has_children" title="如果主题干下有数个小题，请勾选此处" v-model="hasTrunkChild">
+                        <label class="form-check-label" for="has_children" title="如果主题干下有数个小题，请勾选此处">
+                            包含子题
                         </label>
                     </div>
                 </div>
-            </div>
-            <div class="column is-1">
-                <div class="field">
-                    <label class="label">&nbsp;</label>
-                    <div class="control">
-                        <a class="button is-link is-success is-pulled-right" @click="save()">保存</a>
-                    </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary btn-sm">保存</button>
                 </div>
             </div>
-        </div>
-        <div class="columns">
-            <div class="column">
-                <div class="field">
-                    <label class="label">英文题目</label>
-                    <div class="control">
-                        <ckeditor type="classic" v-model="trunk.en_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="en_trunk">英文题目</label>
+                <ckeditor id="en_trunk" type="classic" v-model="trunk.en_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
             </div>
-        </div>
-        <div class="columns">
-            <div class="column">
-                <div class="field">
-                    <label class="label">中文题目</label>
-                    <div class="control">
-                        <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="cn_trunk">中文题目</label>
+                <ckeditor id="cn_trunk" type="classic" v-model="trunk.cn_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
             </div>
-        </div>
 
-        <options-component :options.sync="trunk.options" v-if="!hasTrunkChild"></options-component>
+            <div v-if="!hasTrunkChild">
+                <options-component :options.sync="trunk.options"></options-component>
 
-        <div class="columns" v-if="!hasTrunkChild">
-            <div class="column">
-                <div class="field">
-                    <label class="label">详解</label>
-                    <div class="control">
-                        <textarea rows="5" class="textarea is-small" placeholder="Explanation"
-                                  v-model="trunk.analysis"></textarea>
-                    </div>
+                <div class="form-group">
+                    <label for="explanation">详解</label>
+                    <textarea id="explanation" class="form-control form-control-sm" rows="5" v-model="trunk.explanation"></textarea>
                 </div>
             </div>
-        </div>
-        <div class="columns">
-            <div class="column is-12">
-                <div class="field">
-                    <div class="field-body">
-                        <div class="field">
-                            <p class="control is-expanded">
-                                <textarea rows="3" class="textarea is-small" placeholder="source"
-                                          v-model="trunk.source"></textarea>
-                            </p>
-                        </div>
-                        <div class="field">
-                            <p class="control is-expanded">
-                                <textarea rows="3" class="textarea is-small" placeholder="comment"
-                                          v-model="trunk.comment"></textarea>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <trunks-component :trunks.sync="trunkChildren" v-if="hasTrunkChild"></trunks-component>
+            <div class="form-row">
+                    <div class="col">
+                        <label for="source">来源</label>
+                        <textarea id="source" class="form-control form-control-sm" rows="3" v-model="trunk.source"></textarea>
+                    </div>
+                <div class="col">
+                        <label for="comment">备注</label>
+                        <textarea id="comment" class="form-control form-control-sm" rows="3" v-model="trunk.comment"></textarea>
+                    </div>
+            </div>
+
+            <trunks-component :trunks.sync="trunkChildren" v-if="hasTrunkChild"></trunks-component>
+        </form>
 
     </div>
-    <footer class="footer has-background-white"></footer>
 {% end %}
 {% block script %}
     <script type="text/javascript" src="/js/common.js"></script>
@@ -137,7 +96,7 @@
               },
               name: 'ckeditor'
         });
-        const app = new window.Vue({
+        window.app = new window.Vue({
             el: '#app',
             data: {
                 hasTrunkChild: false,
@@ -157,7 +116,7 @@
             methods: {
                 load: function () {
                     axios({
-                        url: '/question/api/' + this.trunkId,
+                        url: `/api/question/${this.trunkId}`,//'/question/api/' + this.trunkId,
                         method: 'GET',
                     }).then(
                         function (response) {

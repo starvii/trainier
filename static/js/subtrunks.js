@@ -2,22 +2,18 @@
 
 /*
 
-<div class="container">
-	<div class="container" id="trunk-children" v-for="(trunk, index) in trunks">
+<div>
+	<div id="trunk-children" v-for="(trunk, index) in trunks">
 		<hr/>
-		<div class="level">
-			<div class="level-left">
-				<div class="level-item">
-					<div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>
-				</div>
-			</div>
-			<div class="level-right">
-				<div class="level-item">
-					<a class="button is-link is-success" @click="insertTrunk(index)">添加</a>
-				</div>
-				<div class="level-item">
-					<a class="button is-link is-success" @click="removeTrunk(index)">删除</a>
-				</div>
+		<div class="row justify-content-between">
+			<strong class="col" v-text="`第` + (index + 1) + `题`"></strong>
+			<div class="col justify-content-end">
+				<button type="button" class="btn btn-sm btn-outline-success" @click="insertTrunk(index)">
+					<i class="fas fa-plus"></i>
+				</button>
+				<button type="button" class="btn btn-sm btn-outline-danger" @click="removeTrunk(index)">
+					<i class="fas fa-minus"></i>
+				</button>
 			</div>
 		</div>
 		<trunk-component :trunk.sync="trunk"></trunk-component>
@@ -29,22 +25,18 @@
 
 const TrunksComponent = Vue.extend({
     template: '' +
-        '<div class="container">\n' +
-        '\t<div class="container" id="trunk-children" v-for="(trunk, index) in trunks">\n' +
+        '<div>\n' +
+        '\t<div id="trunk-children" v-for="(trunk, index) in trunks">\n' +
         '\t\t<hr/>\n' +
-        '\t\t<div class="level">\n' +
-        '\t\t\t<div class="level-left">\n' +
-        '\t\t\t\t<div class="level-item">\n' +
-        '\t\t\t\t\t<div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>\n' +
-        '\t\t\t\t</div>\n' +
-        '\t\t\t</div>\n' +
-        '\t\t\t<div class="level-right">\n' +
-        '\t\t\t\t<div class="level-item">\n' +
-        '\t\t\t\t\t<a class="button is-link is-success" @click="insertTrunk(index)">添加</a>\n' +
-        '\t\t\t\t</div>\n' +
-        '\t\t\t\t<div class="level-item">\n' +
-        '\t\t\t\t\t<a class="button is-link is-success" @click="removeTrunk(index)">删除</a>\n' +
-        '\t\t\t\t</div>\n' +
+        '\t\t<div class="row justify-content-between">\n' +
+        '\t\t\t<strong class="col" v-text="`第` + (index + 1) + `题`"></strong>\n' +
+        '\t\t\t<div class="col justify-content-end">\n' +
+        '\t\t\t\t<button type="button" class="btn btn-sm btn-outline-success" @click="insertTrunk(index)">\n' +
+        '\t\t\t\t\t<i class="fas fa-plus"></i>\n' +
+        '\t\t\t\t</button>\n' +
+        '\t\t\t\t<button type="button" class="btn btn-sm btn-outline-danger" @click="removeTrunk(index)">\n' +
+        '\t\t\t\t\t<i class="fas fa-minus"></i>\n' +
+        '\t\t\t\t</button>\n' +
         '\t\t\t</div>\n' +
         '\t\t</div>\n' +
         '\t\t<trunk-component :trunk.sync="trunk"></trunk-component>\n' +

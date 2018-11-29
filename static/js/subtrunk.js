@@ -2,51 +2,27 @@
 
 /*
 
-<div class="container">
-	<div class="columns">
-		<div class="column is-12">
-			<div class="field">
-				<label class="label">英文题目</label>
-				<div class="control">
-					<ckeditor type="classic" v-model="trunk.en_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
-				</div>
-			</div>
-		</div>
+<div>
+	<div class="form-group">
+		<label>英文题目</label>
+		<ckeditor type="classic" v-model="trunk.en_trunk" :config="config"
+			:upload-adapter="uploadAdapter"></ckeditor>
 	</div>
-	<div class="columns">
-		<div class="column is-12">
-			<div class="field">
-				<label class="label">中文题目</label>
-				<div class="control">
-					<ckeditor type="classic" v-model="trunk.cn_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>
-				</div>
-			</div>
-		</div>
+	<div class="form-group">
+		<label>中文题目</label>
+		<ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"
+			:upload-adapter="uploadAdapter"></ckeditor>
 	</div>
-	<div class="columns">
-		<div class="column is-12">
-			<options-component :options.sync="trunk.options"></options-component>
-		</div>
-	</div>
-	<div class="columns">
-		<div class="column is-12">
-			<div class="field">
-				<div class="field-body">
-					<div class="field">
-						<p class="control is-expanded">
-							<textarea rows="2" class="textarea is-small" placeholder="analysis"
-									  v-model="trunk.analysis"></textarea>
-						</p>
-					</div>
-					<div class="field">
-						<p class="control is-expanded">
-							<textarea rows="2" class="textarea is-small" placeholder="comment"
-									  v-model="trunk.comment"></textarea>
-						</p>
-					</div>
-				</div>
+	<options-component :options.sync="trunk.options"></options-component>
+	<div class="form-row">
+			<div class="col">
+				<label>详解</label>
+				<textarea class="form-control form-control-sm" rows="3" v-model="trunk.explanation"></textarea>
 			</div>
-		</div>
+		<div class="col">
+				<label>备注</label>
+				<textarea class="form-control form-control-sm" rows="3" v-model="trunk.comment"></textarea>
+			</div>
 	</div>
 </div>
 
@@ -54,51 +30,27 @@
 
 const TrunkComponent = Vue.extend({
     template: '' +
-        '<div class="container">\n' +
-        '\t<div class="columns">\n' +
-        '\t\t<div class="column is-12">\n' +
-        '\t\t\t<div class="field">\n' +
-        '\t\t\t\t<label class="label">英文题目</label>\n' +
-        '\t\t\t\t<div class="control">\n' +
-        '\t\t\t\t\t<ckeditor type="classic" v-model="trunk.en_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>\n' +
-        '\t\t\t\t</div>\n' +
-        '\t\t\t</div>\n' +
-        '\t\t</div>\n' +
+        '<div>\n' +
+        '\t<div class="form-group">\n' +
+        '\t\t<label>英文题目</label>\n' +
+        '\t\t<ckeditor type="classic" v-model="trunk.en_trunk" :config="config"\n' +
+        '\t\t\t:upload-adapter="uploadAdapter"></ckeditor>\n' +
         '\t</div>\n' +
-        '\t<div class="columns">\n' +
-        '\t\t<div class="column is-12">\n' +
-        '\t\t\t<div class="field">\n' +
-        '\t\t\t\t<label class="label">中文题目</label>\n' +
-        '\t\t\t\t<div class="control">\n' +
-        '\t\t\t\t\t<ckeditor type="classic" v-model="trunk.cn_trunk" :config="config" :upload-adapter="uploadAdapter"></ckeditor>\n' +
-        '\t\t\t\t</div>\n' +
-        '\t\t\t</div>\n' +
-        '\t\t</div>\n' +
+        '\t<div class="form-group">\n' +
+        '\t\t<label>中文题目</label>\n' +
+        '\t\t<ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"\n' +
+        '\t\t\t:upload-adapter="uploadAdapter"></ckeditor>\n' +
         '\t</div>\n' +
-        '\t<div class="columns">\n' +
-        '\t\t<div class="column is-12">\n' +
-        '\t\t\t<options-component :options.sync="trunk.options"></options-component>\n' +
-        '\t\t</div>\n' +
-        '\t</div>\n' +
-        '\t<div class="columns">\n' +
-        '\t\t<div class="column is-12">\n' +
-        '\t\t\t<div class="field">\n' +
-        '\t\t\t\t<div class="field-body">\n' +
-        '\t\t\t\t\t<div class="field">\n' +
-        '\t\t\t\t\t\t<p class="control is-expanded">\n' +
-        '\t\t\t\t\t\t\t<textarea rows="2" class="textarea is-small" placeholder="analysis"\n' +
-        '\t\t\t\t\t\t\t\t\t  v-model="trunk.analysis"></textarea>\n' +
-        '\t\t\t\t\t\t</p>\n' +
-        '\t\t\t\t\t</div>\n' +
-        '\t\t\t\t\t<div class="field">\n' +
-        '\t\t\t\t\t\t<p class="control is-expanded">\n' +
-        '\t\t\t\t\t\t\t<textarea rows="2" class="textarea is-small" placeholder="comment"\n' +
-        '\t\t\t\t\t\t\t\t\t  v-model="trunk.comment"></textarea>\n' +
-        '\t\t\t\t\t\t</p>\n' +
-        '\t\t\t\t\t</div>\n' +
-        '\t\t\t\t</div>\n' +
+        '\t<options-component :options.sync="trunk.options"></options-component>\n' +
+        '\t<div class="form-row">\n' +
+        '\t\t\t<div class="col">\n' +
+        '\t\t\t\t<label>详解</label>\n' +
+        '\t\t\t\t<textarea class="form-control form-control-sm" rows="3" v-model="trunk.explanation"></textarea>\n' +
         '\t\t\t</div>\n' +
-        '\t\t</div>\n' +
+        '\t\t<div class="col">\n' +
+        '\t\t\t\t<label>备注</label>\n' +
+        '\t\t\t\t<textarea class="form-control form-control-sm" rows="3" v-model="trunk.comment"></textarea>\n' +
+        '\t\t\t</div>\n' +
         '\t</div>\n' +
         '</div>',
     replace: true,

@@ -2,7 +2,7 @@
 
 <nav name="page-list">
 	<div name="pagination" v-if="conf.totalItems>0">
-		<ul class="pagination pagination-right pagination-sm" style="float: right; margin: 0;">
+		<ul class="pagination pagination-right pagination-sm float-right" style="margin: 0;">
 			<li class="page-item" :class="{disabled:conf.currentPage==1}">
 				<a class="page-link" :class="{disabled:conf.currentPage==1}" @click="prevPage()">
 					<i class="fas fa-angle-left"></i>
@@ -64,7 +64,7 @@ const PageComponent = Vue
         template: '' +
             '<nav name="page-list">\n' +
             '\t<div name="pagination" v-if="conf.totalItems>0">\n' +
-            '\t\t<ul class="pagination pagination-right pagination-sm" style="float: right; margin: 0;">\n' +
+            '\t\t<ul class="pagination pagination-right pagination-sm float-right" style="margin: 0;">\n' +
             '\t\t\t<li class="page-item" :class="{disabled:conf.currentPage==1}">\n' +
             '\t\t\t\t<a class="page-link" :class="{disabled:conf.currentPage==1}" @click="prevPage()">\n' +
             '\t\t\t\t\t<i class="fas fa-angle-left"></i>\n' +

@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 {% whitespace all %}
 {% block body %}
-    <div class="container" id="app">
+    <div class="container" id="app" style="padding-top: 20px; padding-bottom: 20px;">
         <div class="row">
             <table class="table table-striped table-bordered table-sm">
                 <thead>
@@ -12,19 +12,20 @@
                     </tr>
                     <tr>
                         <td colspan="4">
-                            <input class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
+                            <label for="search_text" hidden></label>
+                            <input id="search_text" class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
                         </td>
                         <td><a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
                             <i class="fas fa-search"></i>
                         </a></td>
-                        </tr>
+                    </tr>
                     <tr>
                         <th>序号</th>
                         <th>编码</th>
                         <th>题目（英文）</th>
                         <th>题目（中文）</th>
                         <th>
-                            <a class="btn btn-sm btn-outline-primary" href="edit.html" target="_blank" title="添加">
+                            <a href="edit.html" target="_blank" title="添加">
                                 <i class="fas fa-plus"></i>
                             </a>
 
@@ -56,10 +57,10 @@
                             <a :href="`view.html?id=` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
                         </td>
                         <td>
-                            <a class="button is-small" title="编辑" :href="`edit.html?id=` + item.entity_id" target="_blank">
+                            <a title="编辑" :href="`edit.html?id=` + item.entity_id" target="_blank">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a class="button is-small" title="删除" @click="remove(item.entity_id)" href="javascript:void(0);" target="_blank">
+                            <a title="删除" @click="remove(item.entity_id)" href="javascript:void(0);">
                                 <i class="fas fa-minus"></i>
                             </a>
                         </td>
@@ -71,10 +72,10 @@
 {% end %}
 
 {% block script %}
-    <script src="/js/page.js"></script>
-    <script src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/page.js"></script>
+    <script type="text/javascript" src="/js/common.js"></script>
     <script>
-        const app = new window.Vue({
+        window.app = new window.Vue({
             el: '#app',
             data: {
                 data: [],
@@ -90,7 +91,7 @@
                 kwBind: '',
                 timestamp: 0,
             },
-            mounted() {
+            created() {
                 let page = getUrlParam('p');
                 let size = getUrlParam('s');
                 let keyword = getUrlParam('k');
@@ -104,27 +105,17 @@
                     this.kwBind = keyword;
                     this.keyword = keyword;
                 }
-                console.debug('mounted');
             },
             methods: {
                 list: function () {
-
                     // 防止发送多次请求
                     let now = new Date().getTime();
-                    if (this.timestamp === 0) {
-                        console.debug('list 0');
-                        this.timestamp = now;
-                        setTimeout(this.list, 500);
-                        return;
-                    }
-                    if (now - this.timestamp <= 300)
+                    if (now - this.timestamp <= 500)
                     {
-                        console.debug('list <300');
                         return;
                     }
                     this.timestamp = now;
                     // 查询
-                    console.debug('list');
                     let data = {
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
