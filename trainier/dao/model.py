@@ -29,7 +29,7 @@ class Trunk(BaseModel):
 class Option(BaseModel):
     db_id: Field = AutoField(primary_key=True)
     entity_id: Field = CharField(max_length=20, unique=True, default='')
-    trunk_id: Field = CharField(max_length=20, unique=True, default='')
+    trunk_id: Field = CharField(max_length=20, index=True, default='')
     code: Field = CharField(max_length=100, unique=True, default='')
     en_option: Field = TextField(index=True, default='')
     cn_option: Field = TextField(index=True, default='')

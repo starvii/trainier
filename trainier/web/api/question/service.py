@@ -11,6 +11,7 @@ from trainier.dao.orm import db
 from trainier.util import const
 from trainier.util.logger import Log
 from trainier.util.value import b32_obj_id, html_strip
+from web.api import CannotFindError, ErrorInQueryError
 
 const.ROOT_NODE = 'root'
 
@@ -23,6 +24,7 @@ class QuestionService:
         :param code:
         :return:
         """
+        code = code.upper()
         m = re.match(r'^[A-Z]{1,3}\d{1,2}/\d{1,3}/\S+', code)
         if not m:
             raise ValueError(f'code {code} not match.')
@@ -65,11 +67,11 @@ class QuestionService:
         return order_num, code
 
     @staticmethod
-    def select_trunk_by_id(entity_id: str) -> Trunk or None:
+    def select_trunk_by_id(entity_id: str) -> Trunk:
         try:
             trunk: Trunk = Trunk.get(Trunk.entity_id == entity_id)
             if trunk is None:
-                return None
+                raise CannotFindError(None, f'cannot find {entity_id}')
             trunks: List[Trunk] = [trunk]
             if trunk.parent_id == const.ROOT_NODE:
                 queue: List[Trunk] = [trunk]
@@ -81,21 +83,18 @@ class QuestionService:
                     trunk_children: List[Trunk] = [t for t in query]
                     if len(trunk_children) > 0:
                         trunks.extend(trunk_children)
-                        trunk_parent.__setattr__('_trunks', trunk_children)
+                        trunk_parent.__setattr__('trunks', trunk_children)
                         for trunk in trunk_children:
                             if trunk.parent == const.ROOT_NODE:
                                 queue.append(trunk)
             for trunk in trunks:
                 if trunk.parent_id != const.ROOT_NODE:
-                    query: Query = Option.select().where(
-                        Option.trunk_id == trunk.entity_id
-                    ).order_by(Option.order_num.asc())
-                    options: List[Option] = [q for q in query]
-                    trunk.__setattr__('_options', options)
+                    options: List[Option] = QuestionService.select_options_by_trunk_id(trunk.entity_id)
+                    trunk.__setattr__('options', options)
             return trunks[0]
         except Exception as e:
             Log.trainier.error(e)
-            return None
+            raise ErrorInQueryError(e, f'some exception in query id={entity_id}. {e}')
 
     @staticmethod
     def select_next_prev_by_id(entity_id: str) -> (str, str):
@@ -159,49 +158,52 @@ class QuestionService:
             return l, c
         except Exception as e:
             Log.trainier.error(e)
-            return None, 0
+            raise ErrorInQueryError(e, f'some exception in query page={page}, size={size}, keyword={keyword}, ids={ids}. {e}')
 
     @staticmethod
     @db.atomic()
     def save(trunk: Trunk) -> None:
         queue: List[Trunk] = [trunk]
         relation: Dict[Trunk, str] = dict()
-        try:
-            while len(queue) > 0:
-                trunk_cur: Trunk = queue.pop(0)
-                trunk_children: List[Trunk] = trunk_cur.__dict__.get('_trunks')
-                trunk_cur.en_trunk_text = html_strip(trunk_cur.en_trunk)
-                trunk_cur.cn_trunk_text = html_strip(trunk_cur.cn_trunk)
-                trunk_cur.order_num = 0
-                trunk_cur.parent = ''
-                if trunk_children is not None:
-                    trunk_cur.parent = const.ROOT_NODE
-                    trunk_cur.analysis = ''
-                if trunk_cur in relation:
-                    trunk_cur.parent = relation[trunk_cur]  # 保存主题干的ID
-                trunk_cur.order_num, trunk_cur.code = QuestionService._split_code(trunk_cur.code)  # 计算 order_num
-                QuestionService._save_trunk(trunk_cur)  # 保存后可获取 trunk_id
-                if trunk_children is not None:
-                    for idx, trunk_child in enumerate(trunk_children):
-                        relation[trunk_child] = trunk_cur.entity_id
-                        trunk_child.code = f'{trunk_cur.code}({idx + 1})'
-                        trunk_child.order_num = idx
-                        trunk_child.source = ''
-                        trunk_child.level = trunk_cur.level
-                        queue.append(trunk_child)
-                else:  # leaf node
-                    options: List[Option] = trunk_cur.__dict__.get('_options')
-                    if options is None:
-                        raise ValueError('this is no options of trunk.')
-                    for idx, option in enumerate(options):
-                        option.code = f'{trunk_cur.code}-{string.ascii_uppercase[idx]}'
-                        option.trunk_id = trunk_cur.entity_id
-                        option.order_num = idx
-                        option.comment = ''
-                    QuestionService._save_options(options, trunk_cur)
-        except Exception as e:
-            Log.trainier.error(e)
-            raise e
+        with db.transaction() as tx:
+            try:
+                while len(queue) > 0:
+                    trunk_cur: Trunk = queue.pop(0)
+                    trunk_children: List[Trunk] = trunk_cur.__dict__.get('trunks')
+                    trunk_cur.en_trunk_text = html_strip(trunk_cur.en_trunk)
+                    trunk_cur.cn_trunk_text = html_strip(trunk_cur.cn_trunk)
+                    trunk_cur.order_num = 0
+                    trunk_cur.parent_id = ''
+                    if trunk_children is not None:
+                        trunk_cur.parent_id = const.ROOT_NODE
+                        trunk_cur.analysis = ''
+                    if trunk_cur in relation:
+                        trunk_cur.parent_id = relation[trunk_cur]  # 保存主题干的ID
+                    trunk_cur.order_num, trunk_cur.code = QuestionService._split_code(trunk_cur.code)  # 计算 order_num
+                    QuestionService._save_trunk(trunk_cur)  # 保存后可获取 trunk_id
+                    if trunk_children is not None:
+                        for idx, trunk_child in enumerate(trunk_children):
+                            relation[trunk_child] = trunk_cur.entity_id
+                            trunk_child.code = f'{trunk_cur.code}({idx + 1})'
+                            trunk_child.order_num = idx
+                            trunk_child.source = ''
+                            trunk_child.level = trunk_cur.level
+                            queue.append(trunk_child)
+                    else:  # leaf node
+                        options: List[Option] = trunk_cur.__dict__.get('options')
+                        if options is None:
+                            raise ValueError('this is no options of trunk.')
+                        for idx, option in enumerate(options):
+                            option.code = f'{trunk_cur.code}-{string.ascii_uppercase[idx]}'
+                            option.trunk_id = trunk_cur.entity_id
+                            option.order_num = idx
+                            option.comment = ''
+                        QuestionService._save_options(options, trunk_cur)
+                tx.commit()
+            except Exception as e:
+                tx.rollback()
+                Log.trainier.error(e)
+                raise e
 
     @staticmethod
     def _save_trunk(trunk: Trunk) -> None:
@@ -235,7 +237,7 @@ class QuestionService:
                 option.save()
             else:
                 query = Option.update(
-                    trunk_id = option.trunk_id,
+                    trunk_id = trunk.entity_id,
                     code = option.code,
                     en_option = option.en_option,
                     cn_option = option.cn_option,

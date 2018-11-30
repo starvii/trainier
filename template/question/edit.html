@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-primary btn-sm">保存</button>
+                    <button type="button" class="btn btn-primary btn-sm" @click="save()">保存</button>
                 </div>
             </div>
             <div class="form-group">
@@ -92,7 +92,6 @@
         window.Vue.use(VueCkeditor.plugin, {
             editors: {
                 classic: ClassicEditor,
-                //balloon: BalloonEditor
               },
               name: 'ckeditor'
         });
@@ -120,7 +119,7 @@
                         method: 'GET',
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK') {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                                 this.trunk = response.data.trunk;
                                 if (typeof this.trunk.trunks === 'undefined') {
                                     this.hasTrunkChild = false;
@@ -150,7 +149,7 @@
                                 code: `${parentCode}-${i + 1}`,
                                 en_trunk: t.en_trunk,
                                 cn_trunk: t.cn_trunk,
-                                analysis: t.analysis,
+                                explanation: t.explanation,
                                 comment: t. comment,
                                 options: t.options,
                             };
@@ -172,23 +171,23 @@
                             code: this.trunk.code,
                             en_trunk: this.trunk.en_trunk,
                             cn_trunk: this.trunk.cn_trunk,
-                            analysis: this.trunk.analysis,
+                            explanation: this.trunk.explanation,
                             level: this.trunk.level,
                             comment: this.trunk.comment,
                             order_num: this.trunk.order_num,
                             source: this.trunk.source,
-                            parent: '',
+                            parent_id: '',
                             options: this.trunk.options,
                         };
                     }
                     axios({
-                        url: '/question/api/' + this.trunkId,
+                        url: `/api/question/${this.trunkId}`,
                         method: 'PUT',
                         data: {
                             trunk: trunk,
                         },
                     }).then(function (response) {
-                        if (response.status === 200 && response.statusText === 'OK') {
+                        if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                             alert('保存成功');
                             //window.location.href = './';
                             window.opener=null;window.open('','_self');window.close();
