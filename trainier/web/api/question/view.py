@@ -23,14 +23,14 @@ class QuestionHandler(BaseHandler):
 
     @coroutine
     def get(self, *args, **kwargs) -> None:
+        request: HTTPServerRequest = self.request
         if len(args[0]) > 0:
             # select one
             entity_id: str = args[0]
             Log.trainier.debug('get: entity_id = %s', entity_id)
-            jsn = yield self.query_question(entity_id)
+            jsn = yield self.query_question(entity_id, request.headers.get('referer'))
         else:
             # select page
-            request: HTTPServerRequest = self.request
             jsn = yield self.query_questions(request.arguments, request.body)
         self.finish(jsn)
 
@@ -100,7 +100,7 @@ class QuestionHandler(BaseHandler):
         return jsonify(result)
 
     @run_on_executor
-    def query_question(self, entity_id: str) -> str:
+    def query_question(self, entity_id: str, referer: str) -> str:
         try:
             trunk: Trunk = QuestionService.select_trunk_by_id(entity_id)
             trunk_dict: Dict = self.trunk_to_dict(trunk)
