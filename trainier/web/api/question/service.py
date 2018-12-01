@@ -85,7 +85,7 @@ class QuestionService:
                         trunks.extend(trunk_children)
                         trunk_parent.__setattr__('trunks', trunk_children)
                         for trunk in trunk_children:
-                            if trunk.parent == const.ROOT_NODE:
+                            if trunk.parent_id == const.ROOT_NODE:
                                 queue.append(trunk)
             for trunk in trunks:
                 if trunk.parent_id != const.ROOT_NODE:
@@ -247,9 +247,9 @@ class QuestionService:
                 ).where(Option.entity_id == option.entity_id)
                 query.execute()
             write_db_ids.add(option.entity_id)
-            delete_db_ids: Set[str] = exist_db_ids - write_db_ids
-            if len(delete_db_ids) > 0:
-                Option.delete().where(Option.entity_id.in_(delete_db_ids)).execute()
+        delete_db_ids: Set[str] = exist_db_ids - write_db_ids
+        if len(delete_db_ids) > 0:
+            Option.delete().where(Option.entity_id.in_(delete_db_ids)).execute()
 
 
 def test():
