@@ -97,7 +97,7 @@ class QuestionService:
             raise ErrorInQueryError(e, f'some exception in query id={entity_id}. {e}')
 
     @staticmethod
-    def select_next_prev_by_id(entity_id: str) -> (str, str):
+    def select_prev_next_by_id(entity_id: str) -> (str, str):
         try:
             trunk: Trunk = Trunk.get(Trunk.entity_id == entity_id)
             if trunk is None:

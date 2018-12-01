@@ -23,7 +23,6 @@
 {% extends "base/base.html" %}
 {% whitespace all %}
 {% block body %}
-    <ul class="nav"></ul>
     <div class="container" id="app" style="padding-top: 20px; padding-bottom: 20px;">
         <form>
             <div class="form-row align-items-center" style="padding-bottom: 10px;">
@@ -78,7 +77,6 @@
 
             <trunks-component :trunks.sync="trunkChildren" v-if="hasTrunkChild"></trunks-component>
         </form>
-
     </div>
 {% end %}
 {% block script %}

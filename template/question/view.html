@@ -1,8 +1,38 @@
-{% extends "base/skeleton.html" %}
+{% extends "base/base.html" %}
 {% whitespace all %}
 {% block body %}
-    <div class="container" id="app">
-
+    <div class="container" id="app" style="padding-top: 20px; padding-bottom: 20px;">
+        <form>
+            <div class="form-row align-items-center" style="padding-bottom: 10px;">
+                <div class="col-auto">
+                    <label class="sr-only" for="trunk_code">编号</label>
+                    <input type="text" readonly="readonly" class="form-control-plaintext form-control-sm" id="trunk_code" placeholder="编号" v-model="trunk.code">
+                </div>
+                <div class="col-auto">
+                    <label class="sr-only" for="trunk_level">等级</label>
+                    <input type="text" readonly="readonly" class="form-control-plaintext form-control-sm" id="trunk_level" placeholder="等级" v-model="trunk.level">
+                </div>
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input class="form-check-input" disabled="disabled" type="checkbox" id="has_children" title="如果主题干下有数个小题，请勾选此处" v-model="hasTrunkChild">
+                        <label class="form-check-label" for="has_children" title="如果主题干下有数个小题，请勾选此处">
+                            包含子题
+                        </label>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary btn-sm" @click="ok()">确定</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="en_trunk">英文题目</label>
+                <ckeditor id="en_trunk" type="classic" v-model="trunk.en_trunk" :config="config" :readonly="config.readonly"></ckeditor>
+            </div>
+            <div class="form-group">
+                <label for="cn_trunk">中文题目</label>
+                <ckeditor id="cn_trunk" type="classic" v-model="trunk.cn_trunk" :config="config" :readonly="config.readonly"></ckeditor>
+            </div>
+        </form>
     </div>
 <!--
     <nav class="navbar"></nav>
@@ -180,7 +210,7 @@
             },
             name: 'ckeditor'
         });
-        const app = new window.Vue({
+        window.app = new window.Vue({
             el: '#app',
             data: {
                 trunkId: '',
@@ -201,11 +231,11 @@
             methods: {
                 load: function () {
                     axios({
-                        url: '/question/api/' + this.trunkId,
+                        url: `/api/question/${this.trunkId}`,
                         method: 'GET',
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK') {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                                 this.trunk = response.data.trunk;
                                 this.nextId = response.data['next'];
                                 this.prevId = response.data['prev'];
@@ -233,14 +263,14 @@
                     if (this.nextId.length === 0) {
                         alert('no next trunk.');
                     } else {
-                        window.location.href = 'view?id=' + this.nextId;
+                        window.location.href = 'view.html?id=' + this.nextId;
                     }
                 },
                 prevTrunk: function () {
                     if (this.prevId.length === 0) {
                         alert('no prev trunk.');
                     } else {
-                        window.location.href = 'view?id=' + this.prevId;
+                        window.location.href = 'view.html?id=' + this.prevId;
                     }
                 },
             },
