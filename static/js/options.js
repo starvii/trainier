@@ -7,7 +7,7 @@
 			<i class="fas fa-plus"></i>
 		</a>
 	</div>
-	<div class="form-row" v-else v-for="(option, index) in options" @dblclick="changeAnswer(index)" style="padding-bottom: 7px;">
+	<div class="form-row pb-2" v-else v-for="(option, index) in options" @dblclick="changeAnswer(index)">
 		<div class="col justify-content-between">
 			<span @click="changeAnswer(index)">
 				<i class="fas fa-check-circle text-success" v-if="option.is_true"></i>
@@ -50,7 +50,7 @@ const OptionsComponent = Vue.extend({
         '\t\t\t<i class="fas fa-plus"></i>\n' +
         '\t\t</a>\n' +
         '\t</div>\n' +
-        '\t<div class="form-row" v-else v-for="(option, index) in options" @dblclick="changeAnswer(index)" style="padding-bottom: 7px;">\n' +
+        '\t<div class="form-row pb-2" v-else v-for="(option, index) in options" @dblclick="changeAnswer(index)">\n' +
         '\t\t<div class="col justify-content-between">\n' +
         '\t\t\t<span @click="changeAnswer(index)">\n' +
         '\t\t\t\t<i class="fas fa-check-circle text-success" v-if="option.is_true"></i>\n' +

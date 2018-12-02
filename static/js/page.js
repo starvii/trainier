@@ -2,7 +2,7 @@
 
 <nav name="page-list">
 	<div name="pagination" v-if="conf.totalItems>0">
-		<ul class="pagination pagination-right pagination-sm float-right" style="margin: 0;">
+		<ul class="pagination pagination-sm m-0 float-right">
 			<li class="page-item" :class="{disabled:conf.currentPage==1}">
 				<a class="page-link" :class="{disabled:conf.currentPage==1}" @click="prevPage()">
 					<i class="fas fa-angle-left"></i>
@@ -26,28 +26,24 @@
 				</a>
 			</li>
 		</ul>
-		<form name=pate-total class="form-inline" style="float: left; margin:0;">
-			<div class="form-group">
-				第
-				<input class="form-control form-control-sm"
+		<form name=pate-total class="form-inline m-0">
+			<div class="form-group px-sm-3">
+				<label>第</label>
+				<input class="form-control form-control-sm mx-sm-2"
 					type="text"
 					v-model="jumpPageNum"
 					@keyup.enter="jumpToPage($event)"
-					style="height: 26px; border:1px solid #ddd; width: 50px; padding-left:3px;"
 				/>
-				页
+				<label>页</label>
 			</div>
-			&nbsp;|&nbsp;
-			<div class="form-group">
-				每页
-				<select class="form-control form-control-sm"
+			<div class="form-group px-sm-3">
+				<label>每页</label>
+				<select class="form-control form-control-sm mx-sm-2"
 					v-model="conf.itemsPerPage"
-					style="height: 26px; border:1px solid #ddd; width: 70px;"
 				>
 					<option v-for="option in conf.perPageOptions" v-text="option"></option>
-				</select>/共
-				<strong v-text="conf.totalItems"></strong>
-				条
+				</select>
+				<label>/共<strong v-text="conf.totalItems"></strong>条</label>
 			</div>
 		</form>
 	</div>
@@ -64,7 +60,7 @@ const PageComponent = Vue
         template: '' +
             '<nav name="page-list">\n' +
             '\t<div name="pagination" v-if="conf.totalItems>0">\n' +
-            '\t\t<ul class="pagination pagination-right pagination-sm float-right" style="margin: 0;">\n' +
+            '\t\t<ul class="pagination pagination-sm m-0 float-right">\n' +
             '\t\t\t<li class="page-item" :class="{disabled:conf.currentPage==1}">\n' +
             '\t\t\t\t<a class="page-link" :class="{disabled:conf.currentPage==1}" @click="prevPage()">\n' +
             '\t\t\t\t\t<i class="fas fa-angle-left"></i>\n' +
@@ -88,28 +84,24 @@ const PageComponent = Vue
             '\t\t\t\t</a>\n' +
             '\t\t\t</li>\n' +
             '\t\t</ul>\n' +
-            '\t\t<form name=pate-total class="form-inline" style="float: left; margin:0;">\n' +
-            '\t\t\t<div class="form-group">\n' +
-            '\t\t\t\t第\n' +
-            '\t\t\t\t<input class="form-control form-control-sm"\n' +
+            '\t\t<form name=pate-total class="form-inline m-0">\n' +
+            '\t\t\t<div class="form-group px-sm-3">\n' +
+            '\t\t\t\t<label>第</label>\n' +
+            '\t\t\t\t<input class="form-control form-control-sm mx-sm-2"\n' +
             '\t\t\t\t\ttype="text"\n' +
             '\t\t\t\t\tv-model="jumpPageNum"\n' +
             '\t\t\t\t\t@keyup.enter="jumpToPage($event)"\n' +
-            '\t\t\t\t\tstyle="height: 26px; border:1px solid #ddd; width: 50px; padding-left:3px;"\n' +
             '\t\t\t\t/>\n' +
-            '\t\t\t\t页\n' +
+            '\t\t\t\t<label>页</label>\n' +
             '\t\t\t</div>\n' +
-            '\t\t\t&nbsp;|&nbsp;\n' +
-            '\t\t\t<div class="form-group">\n' +
-            '\t\t\t\t每页\n' +
-            '\t\t\t\t<select class="form-control form-control-sm"\n' +
+            '\t\t\t<div class="form-group px-sm-3">\n' +
+            '\t\t\t\t<label>每页</label>\n' +
+            '\t\t\t\t<select class="form-control form-control-sm mx-sm-2"\n' +
             '\t\t\t\t\tv-model="conf.itemsPerPage"\n' +
-            '\t\t\t\t\tstyle="height: 26px; border:1px solid #ddd; width: 70px;"\n' +
             '\t\t\t\t>\n' +
             '\t\t\t\t\t<option v-for="option in conf.perPageOptions" v-text="option"></option>\n' +
-            '\t\t\t\t</select>/共\n' +
-            '\t\t\t\t<strong v-text="conf.totalItems"></strong>\n' +
-            '\t\t\t\t条\n' +
+            '\t\t\t\t</select>\n' +
+            '\t\t\t\t<label>/共<strong v-text="conf.totalItems"></strong>条</label>\n' +
             '\t\t\t</div>\n' +
             '\t\t</form>\n' +
             '\t</div>\n' +

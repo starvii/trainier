@@ -13,13 +13,12 @@
 				v-else>
 			<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
 		</div>
-		<div class="col-5" v-if="option.en_option.length>0&&option.cn_option.length>0">
+		<div class="col-6" v-if="option.en_option.length>0&&option.cn_option.length>0">
 			<pre v-text="option.en_option"></pre>
 		</div>
 		<div class="col-5" v-if="option.en_option.length>0&&option.cn_option.length>0">
 			<pre v-text="option.cn_option"></pre>
 		</div>
-		<div class="col" v-if="option.en_option.length>0&&option.cn_option.length>0">&nbsp;</div>
 		<div class="col-11" v-else>
 			<pre v-text="option.x_option"></pre>
 		</div>
@@ -44,13 +43,12 @@ const QuizOptionsComponent = Vue.extend({
         '\t\t\t\tv-else>\n' +
         '\t\t\t<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>\n' +
         '\t\t</div>\n' +
-        '\t\t<div class="col-5" v-if="option.en_option.length>0&&option.cn_option.length>0">\n' +
+        '\t\t<div class="col-6" v-if="option.en_option.length>0&&option.cn_option.length>0">\n' +
         '\t\t\t<pre v-text="option.en_option"></pre>\n' +
         '\t\t</div>\n' +
         '\t\t<div class="col-5" v-if="option.en_option.length>0&&option.cn_option.length>0">\n' +
         '\t\t\t<pre v-text="option.cn_option"></pre>\n' +
         '\t\t</div>\n' +
-        '\t\t<div class="col" v-if="option.en_option.length>0&&option.cn_option.length>0">&nbsp;</div>\n' +
         '\t\t<div class="col-11" v-else>\n' +
         '\t\t\t<pre v-text="option.x_option"></pre>\n' +
         '\t\t</div>\n' +

@@ -8,16 +8,16 @@
 		<div class="row">
 			<strong class="col" v-text="`第` + (index + 1) + `题`"></strong>
 			<div class="col justify-content-end">
-				<button type="button" class="btn btn-sm btn-outline-danger float-right"
-					style="margin-left: 3px; margin-right: 3px;"
-					@click="removeTrunk(index)">
-					<i class="fas fa-minus"></i>
-				</button>
-				<button type="button" class="btn btn-sm btn-outline-success float-right"
-					style="margin-left: 3px; margin-right: 3px;"
-					@click="insertTrunk(index)">
-					<i class="fas fa-plus"></i>
-				</button>
+				<div class="btn-group float-right">
+					<button type="button" class="btn btn-sm btn-info"
+						@click="insertTrunk(index)">
+						<i class="fas fa-plus"></i>
+					</button>
+					<button type="button" class="btn btn-sm btn-info"
+						@click="removeTrunk(index)">
+						<i class="fas fa-minus"></i>
+					</button>
+				</div>
 			</div>
 		</div>
 		<trunk-component :trunk.sync="trunk"></trunk-component>
@@ -35,16 +35,16 @@ const TrunksComponent = Vue.extend({
         '\t\t<div class="row">\n' +
         '\t\t\t<strong class="col" v-text="`第` + (index + 1) + `题`"></strong>\n' +
         '\t\t\t<div class="col justify-content-end">\n' +
-        '\t\t\t\t<button type="button" class="btn btn-sm btn-outline-danger float-right"\n' +
-        '\t\t\t\t\tstyle="margin-left: 3px; margin-right: 3px;"\n' +
-        '\t\t\t\t\t@click="removeTrunk(index)">\n' +
-        '\t\t\t\t\t<i class="fas fa-minus"></i>\n' +
-        '\t\t\t\t</button>\n' +
-        '\t\t\t\t<button type="button" class="btn btn-sm btn-outline-success float-right"\n' +
-        '\t\t\t\t\tstyle="margin-left: 3px; margin-right: 3px;"\n' +
-        '\t\t\t\t\t@click="insertTrunk(index)">\n' +
-        '\t\t\t\t\t<i class="fas fa-plus"></i>\n' +
-        '\t\t\t\t</button>\n' +
+        '\t\t\t\t<div class="btn-group float-right">\n' +
+        '\t\t\t\t\t<button type="button" class="btn btn-sm btn-info"\n' +
+        '\t\t\t\t\t\t@click="insertTrunk(index)">\n' +
+        '\t\t\t\t\t\t<i class="fas fa-plus"></i>\n' +
+        '\t\t\t\t\t</button>\n' +
+        '\t\t\t\t\t<button type="button" class="btn btn-sm btn-info"\n' +
+        '\t\t\t\t\t\t@click="removeTrunk(index)">\n' +
+        '\t\t\t\t\t\t<i class="fas fa-minus"></i>\n' +
+        '\t\t\t\t\t</button>\n' +
+        '\t\t\t\t</div>\n' +
         '\t\t\t</div>\n' +
         '\t\t</div>\n' +
         '\t\t<trunk-component :trunk.sync="trunk"></trunk-component>\n' +
