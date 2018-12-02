@@ -14,6 +14,8 @@
 }
 
 pre {
+    /*border: black solid 1px;*/
+    background-color: #cccccc;
     white-space: pre-wrap;
     word-wrap: break-word;
     padding: 0;

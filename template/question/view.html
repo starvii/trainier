@@ -1,202 +1,123 @@
 {% extends "base/base.html" %}
 {% whitespace all %}
 {% block body %}
-    <div class="container" id="app" style="padding-top: 20px; padding-bottom: 20px;">
-        <form>
-            <div class="form-row align-items-center" style="padding-bottom: 10px;">
-                <div class="col-auto">
-                    <label class="sr-only" for="trunk_code">编号</label>
-                    <input type="text" readonly="readonly" class="form-control-plaintext form-control-sm" id="trunk_code" placeholder="编号" v-model="trunk.code">
-                </div>
-                <div class="col-auto">
-                    <label class="sr-only" for="trunk_level">等级</label>
-                    <input type="text" readonly="readonly" class="form-control-plaintext form-control-sm" id="trunk_level" placeholder="等级" v-model="trunk.level">
-                </div>
-                <div class="col-auto">
-                    <div class="form-check">
-                        <input class="form-check-input" disabled="disabled" type="checkbox" id="has_children" title="如果主题干下有数个小题，请勾选此处" v-model="hasTrunkChild">
-                        <label class="form-check-label" for="has_children" title="如果主题干下有数个小题，请勾选此处">
-                            包含子题
-                        </label>
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-primary btn-sm" @click="ok()">确定</button>
-                </div>
+    <div class="container py-3" id="app" v-if="trunkId!=null&&trunk!=null">
+        <div class="btn-group float-right">
+            <button type="button" class="btn btn-primary btn-sm" @click="ok()">确定</button>
+            <button type="button" class="btn btn-warning btn-sm" @click="edit()">编辑</button>
+            <button type="button" class="btn btn-sm btn-info" @click="prevTrunk()"><i class="fas fa-angle-left"></i></button>
+            <button type="button" class="btn btn-sm btn-info" @click="nextTrunk()"><i class="fas fa-angle-right"></i></button>
+        </div>
+
+        <form class="form-inline pb-3">
+            <div class="form-group">
+                <label>编号</label>
+                <pre class="mx-sm-3" v-text="trunk.code"></pre>
             </div>
             <div class="form-group">
+                <label>等级</label>
+                <pre class="mx-sm-3" v-text="trunk.level"></pre>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" disabled="disabled" type="checkbox" id="has_children" title="如果主题干下有数个小题，请勾选此处" v-model="hasTrunkChild">
+                <label class="form-check-label" for="has_children" title="如果主题干下有数个小题，请勾选此处">
+                    包含子题
+                </label>
+            </div>
+        </form>
+        <form>
+            <div class="form-group" v-if="trunk.en_trunk_len>0">
                 <label for="en_trunk">英文题目</label>
                 <ckeditor id="en_trunk" type="classic" v-model="trunk.en_trunk" :config="config" :readonly="config.readonly"></ckeditor>
             </div>
-            <div class="form-group">
+            <div class="form-group" v-if="trunk.cn_trunk_len>0">
                 <label for="cn_trunk">中文题目</label>
                 <ckeditor id="cn_trunk" type="classic" v-model="trunk.cn_trunk" :config="config" :readonly="config.readonly"></ckeditor>
             </div>
-        </form>
-    </div>
-<!--
-    <nav class="navbar"></nav>
-    <div id="app">
-        <div class="columns">
-            <div class="column is-4">
-                <div class="field">
-                    <label class="label" for="trunk_code">编号</label>
-                    <div class="control">
-                        <pre v-text="trunk.code"></pre>
-                    </div>
-                </div>
-            </div>
-            <div class="column is-4">
-                <div class="field">
-                    <label class="label" for="trunk_level">等级</label>
-                    <div class="control">
-                        <pre v-text="trunk.level"></pre>
-                    </div>
-                </div>
-            </div>
-            <div class="column is-3">
-                <div class="field">
-                    <label class="label">包含子题</label>
-                    <div class="control">
-                        <label class="checkbox">
-                            <input type="checkbox" v-model="hasTrunkChild" readonly="readonly" disabled="disabled">
-                            主题干下有数个子题
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="column is-1">
-                <div class="field">
-                    <label class="label">&nbsp;</label>
-                    <div class="control">
-                        <nav class="pagination is-rounded">
-                            <a class="pagination-previous" @click="prevTrunk()">
-                                <i class="fas fa-angle-left"></i>
-                            </a>
-                            <a class="pagination-next" @click="nextTrunk()"><i class="fas fa-angle-right"></i></a>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="columns">
-            <div class="column">
-                <div class="field" v-if="trunk.en_trunk_len>0">
-                    <label class="label">英文题目</label>
-                    <div class="control">
-                        <ckeditor type="classic" v-model="trunk.en_trunk" :config="config"
-                                  :readonly="config.readonly"></ckeditor>
+            {# 选项 #}
+
+            <div v-if="!hasTrunkChild">
+                <div class="form-row" v-for="(option, index) in trunk.options" style="padding-bottom: 7px;">
+                    <div class="col justify-content-between">
+                        <span>
+                            <i class="fas fa-check-circle text-success" v-if="option.is_true"></i>
+                            <i class="fas fa-times-circle text-danger" v-else></i>
+                        </span>
+                        <label class="float-right" v-text="`ABCDEFGHIJKL`[index] + `.`"></label>
+                    </div>
+                    <div class="col-6" v-if="option.x_option.length==0">
+                        <pre v-text="option.en_option"></pre>
+                    </div>
+                    <div class="col-5" v-if="option.x_option.length==0">
+                        <pre v-text="option.cn_option"></pre>
+                    </div>
+                    <div class="col-11" v-else>
+                        <pre v-text="option.x_option"></pre>
                     </div>
                 </div>
-                <div class="field" v-if="trunk.cn_trunk_len>0">
-                    <label class="label">中文题目</label>
-                    <div class="control">
-                        <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"
-                                  :readonly="config.readonly"></ckeditor>
-                    </div>
+
+                <div class="form-group" v-if="trunk.explanation.length>0">
+                    <label>详解</label>
+                    <pre v-text="trunk.explanation"></pre>
                 </div>
             </div>
-        </div>
-        <div class="columns" v-for="(opt, index) in trunk.options" v-if="!hasTrunkChild">
-            <div class="column is-1">
-                <span class="icon is-right">
-                    <i class="fas fa-check is-true" v-if="opt.is_true"></i>
-                    <i class="fas fa-times is-false" v-if="!opt.is_true"></i>
-                </span>
-            </div>
-            <div class="column is-1">
-                <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-            </div>
-            <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
-                <pre v-text="opt.en_option"></pre>
-            </div>
-            <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
-                <pre v-text="opt.cn_option"></pre>
-            </div>
-            <div class="column is-10" v-else>
-                <pre v-text="opt.x_option"></pre>
-            </div>
-        </div>
-        <div class="field" v-if="!hasTrunkChild&&trunk.analysis.length>0">
-            <label class="label">详解</label>
-            <div class="control">
-                <pre v-text="trunk.analysis"></pre>
-            </div>
-        </div>
-        <div class="field" v-if="trunk.source.length>0">
-            <label class="label">来源</label>
-            <div class="control">
+
+            <div class="form-group" v-if="trunk.source.length>0">
+                <label>来源</label>
                 <pre v-text="trunk.source"></pre>
             </div>
-        </div>
-        <div class="field" v-if="trunk.comment.length>0">
-            <label class="label">备注</label>
-            <div class="control">
+            <div class="form-group" v-if="trunk.comment.length>0">
+                <label>备注</label>
                 <pre v-text="trunk.comment"></pre>
             </div>
-        </div>
 
-        <div class="container" v-for="(trunkChild, index) in trunkChildren" v-if="hasTrunkChild">
-            <hr/>
-            <div class="level">
-                <div class="level-left">
-                    <div class="level-item">
-                        <div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>
+            {# 子题目 #}
+
+            <div v-if="hasTrunkChild">
+                <div v-for="(trunkChild, index) in trunkChildren">
+                    <hr/>
+                    <div class="row">
+                        <strong class="col" v-text="`第` + (index + 1) + `题`"></strong>
+                    </div>
+                    <div class="form-group" v-if="trunkChild.en_trunk_len>0">
+                        <label>英文题目</label>
+                        <ckeditor type="classic" v-model="trunkChild.en_trunk" :config="config" :readonly="config.readonly"></ckeditor>
+                    </div>
+                    <div class="form-group" v-if="trunkChild.cn_trunk_len>0">
+                        <label>中文题目</label>
+                        <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config" :readonly="config.readonly"></ckeditor>
+                    </div>
+                    <div class="form-row" v-for="(option, index) in trunkChild.options" style="padding-bottom: 7px;">
+                        <div class="col justify-content-between">
+                            <span>
+                                <i class="fas fa-check-circle text-success" v-if="option.is_true"></i>
+                                <i class="fas fa-times-circle text-danger" v-else></i>
+                            </span>
+                            <label class="float-right" v-text="`ABCDEFGHIJKL`[index] + `.`"></label>
+                        </div>
+                        <div class="col-6" v-if="option.x_option.length==0">
+                            <pre v-text="option.en_option"></pre>
+                        </div>
+                        <div class="col-5" v-if="option.x_option.length==0">
+                            <pre v-text="option.cn_option"></pre>
+                        </div>
+                        <div class="col-11" v-else>
+                            <pre v-text="option.x_option"></pre>
+                        </div>
+                    </div>
+                    <div class="form-group" v-if="trunkChild.explanation.length>0">
+                        <label>详解</label>
+                        <pre v-text="trunkChild.explanation"></pre>
+                    </div>
+                    <div class="form-group" v-if="trunkChild.comment.length>0">
+                        <label>备注</label>
+                        <pre v-text="trunkChild.comment"></pre>
                     </div>
                 </div>
             </div>
-            <div class="field" v-if="trunkChild.en_trunk_len>0">
-                <label class="label">英文题目</label>
-                <div class="control">
-                    <ckeditor type="classic" v-model="trunkChild.en_trunk" :config="config"
-                              :readonly="config.readonly"></ckeditor>
-                </div>
-            </div>
-            <div class="field" v-if="trunkChild.cn_trunk_len>0">
-                <label class="label">中文题目</label>
-                <div class="control">
-                    <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config"
-                              :readonly="config.readonly"></ckeditor>
-                </div>
-            </div>
-            <div class="columns" v-for="(opt, index) in trunkChild.options">
-                <div class="column is-1">
-                <span class="icon is-right">
-                    <i class="fas fa-check is-true" v-if="opt.is_true"></i>
-                    <i class="fas fa-times is-false" v-if="!opt.is_true"></i>
-                </span>
-                </div>
-                <div class="column is-1">
-                    <span :class="[opt.is_true ? 'is-true' : 'is-false']" v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
-                </div>
-                <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
-                    <pre v-text="opt.en_option"></pre>
-                </div>
-                <div class="column is-5" v-if="opt.en_option.length>0&&opt.cn_option.length>0">
-                    <pre v-text="opt.cn_option"></pre>
-                </div>
-                <div class="column is-10" v-else>
-                    <pre v-text="opt.x_option"></pre>
-                </div>
-            </div>
-            <div class="field" v-if="trunkChild.analysis.length>0">
-                <label class="label">详解</label>
-                <div class="control">
-                    <pre v-text="trunkChild.analysis"></pre>
-                </div>
-            </div>
-            <div class="field" v-if="trunkChild.comment.length>0">
-                <label class="label">备注</label>
-                <div class="control">
-                    <pre v-text="trunkChild.comment"></pre>
-                </div>
-            </div>
-        </div>
-
+        </form>
     </div>
-    <footer class="footer has-background-white"></footer>
--->
 {% end %}
 {% block script %}
     <script src="/js/common.js"></script>
@@ -206,7 +127,6 @@
         window.Vue.use(VueCkeditor.plugin, {
             editors: {
                 classic: ClassicEditor,
-                //balloon: BalloonEditor
             },
             name: 'ckeditor'
         });
@@ -217,19 +137,23 @@
                 nextId: '',
                 prevId: '',
                 hasTrunkChild: false,
-                trunk: newTrunk(),
-                trunkChildren: [newTrunk()],
+                trunk: null,
+                trunkChildren: null,
                 config: {
                     toolbar: [],
                     readonly: true,
                 },
             },
-            mounted: function () {
-                    this.trunkId = getUrlParam('id');
+            created() {
+                this.trunkId = getUrlParam('id');
+            },
+            mounted() {
+                if (this.trunkId !== null) {
                     this.load();
+                }
             },
             methods: {
-                load: function () {
+                load() {
                     axios({
                         url: `/api/question/${this.trunkId}`,
                         method: 'GET',
@@ -237,8 +161,8 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                                 this.trunk = response.data.trunk;
-                                this.nextId = response.data['next'];
-                                this.prevId = response.data['prev'];
+                                this.nextId = this.trunk['next'];
+                                this.prevId = this.trunk['prev'];
                                 if (typeof this.trunk.trunks === 'undefined') {
                                     this.hasTrunkChild = false;
                                     mergeOptions(this.trunk.options);
@@ -254,24 +178,32 @@
                             }
                         }.bind(this)
                     ).catch(
-                        function (error) {
+                        error => {
                             alert('请求失败，请检查日志。' + error);
                         }
                     );
                 },
-                nextTrunk: function () {
+                nextTrunk() {
                     if (this.nextId.length === 0) {
                         alert('no next trunk.');
                     } else {
-                        window.location.href = 'view.html?id=' + this.nextId;
+                        window.location.href = `view.html?id=${this.nextId}`;
                     }
                 },
-                prevTrunk: function () {
+                prevTrunk() {
                     if (this.prevId.length === 0) {
                         alert('no prev trunk.');
                     } else {
-                        window.location.href = 'view.html?id=' + this.prevId;
+                        window.location.href = `view.html?id=${this.prevId}`;
                     }
+                },
+                ok() {
+                    window.opener=null;
+                    window.open('','_self');
+                    window.close();
+                },
+                edit() {
+                    window.location.href = `edit.html?id=${this.trunkId}`;
                 },
             },
         });
