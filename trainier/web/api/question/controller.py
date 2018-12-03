@@ -7,11 +7,11 @@ from typing import List, Dict
 from playhouse.shortcuts import model_to_dict
 from tornado.concurrent import run_on_executor
 
-from dao.model import Trunk, Option
+from trainier.dao.model import Trunk, Option
 from trainier.util.logger import Log
 from trainier.util.value import process_page_parameters, jsonify
-from web.api import ErrorInQueryError, CannotFindError, trunk_to_dict, dict_to_trunk
-from web.api.question.service import QuestionService
+from trainier.web.api import ErrorInQueryError, CannotFindError, trunk_to_dict, dict_to_trunk
+from trainier.web.api.question.service import QuestionService
 
 
 class QuestionController:

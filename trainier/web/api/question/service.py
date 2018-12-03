@@ -11,7 +11,7 @@ from trainier.dao.orm import db
 from trainier.util import const
 from trainier.util.logger import Log
 from trainier.util.value import b32_obj_id, html_strip
-from web.api import CannotFindError, ErrorInQueryError
+from trainier.web.api import CannotFindError, ErrorInQueryError
 
 const.ROOT_NODE = 'root'
 

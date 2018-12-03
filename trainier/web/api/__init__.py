@@ -5,7 +5,7 @@ from typing import List, Dict, Set
 
 from playhouse.shortcuts import model_to_dict, dict_to_model
 
-from dao.model import Trunk, Option
+from trainier.dao.model import Trunk, Option
 
 
 class CannotFindError(LookupError):

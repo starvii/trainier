@@ -34,3 +34,7 @@ class BaseHandler(RequestHandler):
         self.set_status(404, 'Not Found')
         self.write('<html><title>404: Not Found</title><body>404: Not Found</body></html>')
         self.finish()
+
+
+class AuthHandler(BaseHandler):
+    pass

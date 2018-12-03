@@ -10,6 +10,7 @@ from trainier.util.base32 import encode_for_id
 from trainier.util.logger import Log
 from trainier.util.object_id import ObjectId
 
+
 const.PAGE_NUMBER_DEFAULT: int = 1
 const.PAGE_SIZES: Tuple = (10, 15, 30, 50, 100)
 const.PAGE_SIZE_DEFAULT: int = const.PAGE_SIZES[0]

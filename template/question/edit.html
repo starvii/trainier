@@ -176,14 +176,16 @@
                     }
                     axios({
                         url: `/api/question/${this.trunkId}`,
-                        method: 'PUT',
+                        method: 'POST',
+                        headers: {
+                            'X-HTTP-Method-Override': 'PUT'
+                        },
                         data: {
                             trunk: trunk,
                         },
                     }).then(function (response) {
                         if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                             alert('保存成功');
-                            //window.location.href = './';
                             window.opener=null;window.open('','_self');window.close();
                         } else {
                             alert('保存失败，请检查日志');
