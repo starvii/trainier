@@ -56,18 +56,21 @@ class QuestionController:
 
     @run_on_executor
     def query_question(self, entity_id: str, referer: str) -> str:
-        def view_len(trunk: Trunk, trunk_dict: Dict) -> None:
-            trunk_dict['en_trunk_len'] = len(trunk.en_trunk_text)
-            trunk_dict['cn_trunk_len'] = len(trunk.cn_trunk_text)
+        def view_len(_trunk: Trunk, trunk_dict: Dict) -> None:
+            _en: str = _trunk.en_trunk_text
+            trunk_dict['en_trunk_len'] = len(_en)
+            _cn: str = _trunk.cn_trunk_text
+            trunk_dict['cn_trunk_len'] = len(_cn)
 
         try:
             trunk: Trunk = QuestionService.select_trunk_by_id(entity_id)
+            result: Dict = dict(result=1)
             if 'view.html' in referer:
                 trunk_dict: Dict = self._trunk_to_dict(trunk, [view_len])
-                trunk_dict['prev'], trunk_dict['next'] = QuestionService.select_prev_next_by_id(entity_id)
+                result['prev'], result['next'] = QuestionService.select_prev_next_by_id(entity_id)
             else:
                 trunk_dict: Dict = self._trunk_to_dict(trunk)
-            result: Dict = dict(result=1, trunk=trunk_dict)
+            result['trunk'] = trunk_dict
         except CannotFindError as e:
             Log.trainier.error(e)
             result: Dict = dict(
@@ -110,9 +113,9 @@ class QuestionController:
             if 'trunk' not in request_dict:
                 raise ValueError(f'there is no trunk in http body {http_body}')
             trunk_dict: Dict = request_dict['trunk']
-            if trunk_dict.get('entity_id') != entity_id:
-                raise ValueError(f'entity_id from url {entity_id} is not equal to json {trunk_dict.get("entity_id")}')
             trunk: Trunk = dict_to_trunk(trunk_dict)
+            if trunk.entity_id != entity_id:
+                raise ValueError(f'entity_id from url {entity_id} is not equal to json {trunk.entity_id}')
             Log.trainier.debug(trunk)
             QuestionService.save(trunk)
             return jsonify(dict(result=1))

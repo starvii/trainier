@@ -250,11 +250,3 @@ class QuestionService:
         delete_db_ids: Set[str] = exist_db_ids - write_db_ids
         if len(delete_db_ids) > 0:
             Option.delete().where(Option.entity_id.in_(delete_db_ids)).execute()
-
-
-def test():
-    print(QuestionService)
-
-
-if __name__ == '__main__':
-    test()

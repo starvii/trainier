@@ -161,8 +161,8 @@
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                                 this.trunk = response.data.trunk;
-                                this.nextId = this.trunk['next'];
-                                this.prevId = this.trunk['prev'];
+                                this.nextId = response.data['next'];
+                                this.prevId = response.data['prev'];
                                 if (typeof this.trunk.trunks === 'undefined') {
                                     this.hasTrunkChild = false;
                                     mergeOptions(this.trunk.options);
