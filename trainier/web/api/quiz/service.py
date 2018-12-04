@@ -42,7 +42,7 @@ class QuizService:
                         random_trunk = quiz.random_trunk,
                         random_choice = quiz.random_choice,
                         comment = quiz.comment
-                    ).execute()
+                    ).where(Quiz.entity_id == quiz.entity_id).execute()
                 tx.commit()
             except Exception as e:
                 tx.rollback()

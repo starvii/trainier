@@ -7,7 +7,7 @@
                 <thead>
                 <tr>
                     <td colspan="5">
-                        <page-component :conf.sync="pageConf"></page-component>
+                        <page-component ref="pageComponent" :conf.sync="pageConf" @onchange="list"></page-component>
                     </td>
                 </tr>
                 <tr>
@@ -37,7 +37,7 @@
                 <tfoot>
                 <tr>
                     <td colspan="5">
-                        <page-component :conf.sync="pageConf"></page-component>
+                        <page-component :conf.sync="pageConf" @onchange="list"></page-component>
                     </td>
                 </tr>
                 </tfoot>
@@ -82,15 +82,13 @@
                 data: [],
                 pageConf: {
                     currentPage: 1,
-                    totalItems: 1000,
+                    totalItems: 0,
                     itemsPerPage: 10,
                     pagesLength: 9,
                     perPageOptions: [10, 15, 30, 50, 100],
-                    onChange: 'list',
                 },
                 keyword: '',
                 kwBind: '',
-                timestamp: 0,
             },
             created() {
                 let page = getUrlParam('p');
@@ -108,14 +106,10 @@
                 }
             },
             methods: {
-                list() {
-                    // 防止发送多次请求
-                    let now = new Date().getTime();
-                    if (now - this.timestamp <= 500)
-                    {
+                list(uid) {
+                    if (uid !== this.$refs.pageComponent._uid) {
                         return;
                     }
-                    this.timestamp = now;
                     // 查询
                     let data = {
                         page: this.pageConf.currentPage,

@@ -122,11 +122,11 @@ const PageComponent = Vue
                 pageList: [],
             };
         },
-        computed: {
-            totalItems() {
-                return `/共${this.conf.totalItems}条`;
-            }
-        },
+        // computed: {
+        //     totalItems() {
+        //         return `/共${this.conf.totalItems}条`;
+        //     }
+        // },
         mounted() {
             this.conf.pagesLength = parseInt(this.conf.pagesLength) ? parseInt(this.conf.pagesLength)
                 : 9;
@@ -246,30 +246,13 @@ const PageComponent = Vue
                     }
                 }
 
-                // 防止初始化两次请求问题
-                let functionOnChange;
-                if (this.conf.onChange) {
-                    if (this.$parent.$options.methods[this.conf.onChange]) {
-                        functionOnChange = this.$parent.$options.methods[this.conf.onChange];
-                    }
-                }
-                if (functionOnChange) {
-                    if (!(oldValue !== newValue && oldValue[0] === 0)) {
-                        // 根据时间判断，500ms内不做第二次请求
-                        // if (!this.conf.timestamp) { this.conf.timestamp = 0; }
-                        // let now = new Date().getTime();
-                        // if (now - this.conf.timestamp <= 500)
-                        // {
-                        //     //console.debug('timestamp <= 500');
-                        //     return;
-                        // }
-                        // this.conf.timestamp = now;
+                let ov = typeof oldValue === 'undefined' ? '' : oldValue.join(',');
+                let nv = typeof newValue === 'undefined' ? '' : newValue.join(',');
 
 
-                        // 执行查询
-                        console.debug(`newVal = ${newValue}, oldVal = ${oldValue}`);
-                        console.debug(this.getWatchState());
-                        functionOnChange.apply(this.$parent);
+                if (!(ov !== nv && oldValue[0] === 0)) {
+                    if ((ov.length === 0 && nv.length === 0) ||  ov !== nv) {
+                        this.$emit('onchange', this._uid);
                     }
                 }
             },
@@ -298,7 +281,7 @@ const PageComponent = Vue
                 if (!this.conf.totalItems) {
                     this.conf.totalItems = 0;
                 }
-                return this.conf.totalItems + ' ' + this.conf.currentPage + ' ' + this.conf.itemsPerPage;
+                return [this.conf.totalItems, this.conf.currentPage, this.conf.itemsPerPage];
             },
         },
     });

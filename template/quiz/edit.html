@@ -36,7 +36,7 @@
                 <thead>
                     <tr>
                         <td colspan="5">
-                            <page-component :conf.sync="pageConf"></page-component>
+                            <page-component ref="pageComponent" :conf.sync="pageConf" @onchange="list"></page-component>
                         </td>
                     </tr>
                     <tr>
@@ -73,7 +73,7 @@
                 <tfoot>
                     <tr>
                         <td colspan="5">
-                            <page-component :conf.sync="pageConf"></page-component>
+                            <page-component :conf.sync="pageConf" @onchange="list"></page-component>
                         </td>
                     </tr>
                 </tfoot>
@@ -122,7 +122,6 @@
                     itemsPerPage: 10,
                     pagesLength: 9,
                     perPageOptions: [10, 15, 30, 50, 100],
-                    onChange: this.list,
                 },
                 keyword: '',
                 kwBind: '',
@@ -178,6 +177,7 @@
                             this.selLst.push(s1);
                         }
                     }
+                    this.list();
                 },
                 load() {
                     axios({
@@ -198,7 +198,10 @@
                         }
                     );
                 },
-                list() {
+                list(uid) {
+                    if (typeof uid !== 'undefined' && uid !== this.$refs.pageComponent._uid) {
+                        return;
+                    }
                     let data = {
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
