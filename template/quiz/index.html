@@ -11,14 +11,15 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="4">
-                        <label for="search_text" hidden></label>
-                        <input id="search_text" class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
-                    </td>
-                    <td>
-                        <a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
-                            <i class="fas fa-search"></i>
-                        </a>
+                    <td colspan="5">
+                        <div class="input-group">
+                            <input class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
+                            <div class="input-group-append">
+                                <a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
+                                    <i class="fas fa-search"></i>
+                                </a>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 <tr>

@@ -26,20 +26,18 @@ class QuizController:
         :return:
         """
         try:
-            page, size, keyword = process_page_parameters(arguments, body)
-            quiz, count = QuizService.select_quizzes(page, size, keyword)
-
-
+            page, size, keyword, _ = process_page_parameters(arguments, body)
+            quizzes, count = QuizService.select_quizzes(page, size, keyword)
             quiz_list: List[Dict] = [model_to_dict(t, only={
                 Quiz.entity_id,
                 Quiz.code,
                 Quiz.name,
                 Quiz.comment,
-            }) for t in quiz]
-            for q in quiz_list:
-                questions: str = quiz.questions
-                c: int = len([q.strip() for q in questions.split(',') if len(q.strip()) > 0])
-                q['count'] = c
+            }) for t in quizzes]
+            for q, qd in zip(quizzes, quiz_list):
+                questions: str = q.questions
+                c: int = len([question.strip() for question in questions.split(',') if len(question.strip()) > 0])
+                qd['count'] = c
             result: Dict = dict(
                 result=1,
                 quizzes=quiz_list,

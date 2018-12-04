@@ -1,141 +1,115 @@
-{% extends "base/skeleton.html" %}
+{% extends "base/base.html" %}
 {% whitespace all %}
-{% block container %}
-    <nav class="navbar"></nav>
-    <div id="app">
-        <div class="columns">
-            <div class="column is-4">
-                <div class="field">
-                    <label class="label">测验编码</label>
-                    <p class="control">
-                        <input class="input is-small" placeholder="code" v-model="quiz.code">
-                    </p>
-                </div>
+{% block body %}
+    <div class="container py-4" id="app">
+        <button type="button" class="btn btn-primary btn-sm float-right" @click="save()">保存</button>
+        <form class="form-inline pb-3">
+            <div class="form-group">
+                <label>测验编号</label>
+                <input type="text" class="form-control form-control-sm mx-sm-3" id="quiz_code" placeholder="测验编号" v-model="quiz.code">
             </div>
-            <div class="column is-4">
-                <div class="field">
-                    <label class="label">测验名称</label>
-                    <p class="control">
-                        <input class="input is-small" placeholder="name" v-model="quiz.name">
-                    </p>
-                </div>
+            <div class="form-group">
+                <label>测验名称</label>
+                <input type="text" class="form-control form-control-sm mx-sm-3" id="quiz_level" placeholder="测验名称" v-model="quiz.name">
             </div>
-            <div class="column is-2">
-                <div class="field">
-                    <label class="label">&nbsp;</label>
-                    <p class="control">
-                        <label class="checkbox">
-                            <input type="checkbox" v-model="quiz.random_trunk">
-                            <strong>随机题目顺序</strong>
-                        </label>
-                    </p>
-                </div>
+            <div class="form-check px-sm-2">
+                <input class="form-check-input" type="checkbox" id="random_trunk" title="题目前后有关联的情况下不建议开启" v-model="quiz.random_trunk">
+                <label class="form-check-label" for="random_trunk" title="题目前后有关联的情况下不建议开启">
+                    随机题目顺序
+                </label>
             </div>
-            <div class="column is-2">
-                <div class="field">
-                    <label class="label">&nbsp;</label>
-                    <p class="control">
-                        <label class="checkbox">
-                            <input type="checkbox" v-model="quiz.random_choice">
-                            <strong>随机选项顺序</strong>
-                        </label>
-                    </p>
-                </div>
+            <div class="form-check px-sm-2">
+                <input class="form-check-input" type="checkbox" id="random_choice" title="选项前后有有序的情况下不建议开启" v-model="quiz.random_choice">
+                <label class="form-check-label" for="random_choice" title="选项前后有有序的情况下不建议开启">
+                    随机选项顺序
+                </label>
             </div>
-        </div>
-        <div class="columns">
-            <div class="column">
-                <div class="field">
-                    <label class="label">备注</label>
-                    <p class="control">
-                        <textarea rows="5" class="textarea is-small" placeholder="Explanation"
-                                  v-model="quiz.comment"></textarea>
-                    </p>
-                </div>
+        </form>
+        <form>
+            <div class="form-group">
+                <label for="comment">备注</label>
+                <textarea id="comment" class="form-control form-control-sm" rows="3" v-model="quiz.comment"></textarea>
             </div>
-        </div>
-        <div class="columns">
-            <div class="column">
-                <table class="table is-striped is-narrow is-fullwidth is-hoverable">
-                    <thead>
+        </form>
+        <div class="row">
+            <table class="table table-striped table-bordered table-sm">
+                <thead>
                     <tr>
                         <td colspan="5">
                             <page-component :conf.sync="pageConf"></page-component>
                         </td>
                     </tr>
-
                     <tr>
                         <td>
-                            <label class="checkbox">
-                                <input type="checkbox" v-model="onlyShowSelected">
-                                <strong>仅已选</strong>
+                            <label class="p-0 m-0" title="仅显示已选">
+                                <input type="checkbox" id="only_selected" v-model="onlyShowSelected">
+                                已选
                             </label>
                         </td>
-                        <td><a class="button is-small" title="查找" @click="search()">
-                            <i class="fas fa-search"></i>
-                        </a></td>
-                        <td colspan="3">
-                            <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
+                        <td colspan="4">
+                            <div class="input-group">
+                                <input class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
+                                <div class="input-group-append">
+                                    <a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
+                                        <i class="fas fa-search"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
                         <th>
-                            <label class="checkbox">
-                                <input type="checkbox" v-model="selectAll">
-                                <strong>全选</strong>
+                            <label class="p-0 m-0">
+                                <input type="checkbox" id="select_all" v-model="selectAll">
+                                全选
                             </label>
                         </th>
+                        <th>序号</th>
                         <th>编号</th>
-                        <th>编码</th>
                         <th>题目（英文）</th>
                         <th>题目（中文）</th>
                     </tr>
-                    </thead>
-                    <tfoot>
+                </thead>
+                <tfoot>
                     <tr>
                         <td colspan="5">
                             <page-component :conf.sync="pageConf"></page-component>
                         </td>
                     </tr>
-                    </tfoot>
-                    <tbody>
-                    <tr v-for="(trunk, idx) in trunks">
+                </tfoot>
+                <tbody>
+                    <tr v-for="(item, idx) in trunks">
                         <td>
-                            <input type="checkbox" :value="trunk.entity_id" v-model="selLst">
-                        </td>
-                        <td>
-                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank"
-                               v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
+                            <label>
+                                <input type="checkbox" :value="item.entity_id" v-model="selLst">
+                            </label>
                         </td>
                         <td>
-                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" v-text="trunk.code"></a>
+                            <a :href="`view.html?id=` + item.entity_id" target="_blank" v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"></a>
                         </td>
-                        <td colspan="2" v-if="trunk.x_trunk.length > 0">
-                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" :title="trunk.x_trunk"
-                               v-text="trunk.x_trunk_digest"></a>
+                        <td>
+                            <a :href="`view.html?id=` + item.entity_id" target="_blank" v-text="item.code"></a>
                         </td>
-                        <td v-if="trunk.x_trunk.length == 0">
-                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" :title="trunk.en_trunk"
-                               v-text="trunk.en_trunk_digest"></a>
+                        <td colspan="2" v-if="item.x_trunk.length > 0">
+                            <a :href="`view.html?id=` + item.entity_id" target="_blank" :title="item.x_trunk" v-text="item.x_trunk_digest"></a>
                         </td>
-                        <td v-if="trunk.x_trunk.length == 0">
-                            <a :href="`/question/view?id=` + trunk.entity_id" target="_blank" :title="trunk.cn_trunk"
-                               v-text="trunk.cn_trunk_digest"></a>
+                        <td v-if="item.x_trunk.length == 0">
+                            <a :href="`view.html?id=` + item.entity_id" target="_blank" :title="item.en_trunk" v-text="item.en_trunk_digest"></a>
+                        </td>
+                        <td v-if="item.x_trunk.length == 0">
+                            <a :href="`view.html?id=` + item.entity_id" target="_blank" :title="item.cn_trunk" v-text="item.cn_trunk_digest"></a>
                         </td>
                     </tr>
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
         </div>
-        <a class="button is-link is-success is-pulled-right" @click="save()">保存</a>
     </div>
-    <footer class="footer has-background-white"></footer>
 {% end %}
 {% block script %}
     <script src="/js/page.js"></script>
     <script src="/js/common.js"></script>
     <script type="text/javascript">
-        const app = new window.Vue({
+        window.app = new window.Vue({
             el: '#app',
             data: {
                 quiz: {},
@@ -144,18 +118,18 @@
                 selLst: [],
                 pageConf: {
                     currentPage: 1,
-                    totalItems: 1000,
+                    totalItems: 0,
                     itemsPerPage: 10,
                     pagesLength: 9,
                     perPageOptions: [10, 15, 30, 50, 100],
-                    onChange: 'list',
+                    onChange: this.list,
                 },
                 keyword: '',
-                kw: '',
+                kwBind: '',
             },
             computed: {
                 selectAll: {
-                    get: function () {
+                    get() {
                         let allIn = true;
                         let selSet = new Set(this.selLst);
                         for (let t of this.trunks) {
@@ -166,7 +140,7 @@
                         }
                         return allIn;
                     },
-                    set: function (val) {
+                    set(val) {
                         let selSet = new Set(this.selLst);
                         if (val) {
                             for (let t of this.trunks) {
@@ -182,11 +156,12 @@
                 },
             },
             watch: {
-                onlyShowSelected: function (val, oldVal) {
+                onlyShowSelected(val, oldVal) {
+                    //console.debug(`val = ${val}, oldVal = ${oldVal}`);
                     this.list();
                 },
             },
-            mounted: function () {
+            mounted() {
                 let id = getUrlParam('id');
                 if (id !== null) {
                     this.quiz.entity_id = id;
@@ -196,7 +171,7 @@
                 }
             },
             methods: {
-                initSync: function() {
+                initSync() {
                     this.selLst = [];
                     for (let s0 of this.quiz.questions) {
                         let s1 = s0.trim();
@@ -205,13 +180,13 @@
                         }
                     }
                 },
-                load: function () {
+                load() {
                     axios({
-                        url: '/quiz/api/' + this.quiz.entity_id,
+                        url: `/api/quiz/${this.quiz.entity_id}`,
                         method: 'GET',
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK') {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                                 console.debug(response.data);
                                 this.quiz = response.data;
                                 this.initSync();
@@ -225,7 +200,7 @@
                         }
                     );
                 },
-                list: function () {
+                list() {
                     let data = {
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
@@ -236,57 +211,58 @@
                         this.selLst = Array.from(new Set(this.selLst)).sort(); // 翻页时将其精简一下
                         data.ids = this.selLst;
                     }
+                    console.debug(data);
                     axios({
                         method: 'POST',
-                        url: '/question/api/',
+                        url: '/api/question/',
                         data: data,
                     }).then(
                         function (response) {
-                            if (response.status === 200 && response.statusText === 'OK') {
+                            if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                                 let t = response.data;
                                 // 进行简化处理
-                                let trunks = t.data;
+                                let trunks = t.trunks;
                                 digest(trunks);
-                                // 分页器赋值
-                                this.pageConf.currentPage = t.page;
-                                this.pageConf.totalItems = t.total;
-                                this.pageConf.itemsPerPage = t.size;
-                                this.keyword = t.keyword;
                                 this.trunks = trunks;
+                                // 分页器赋值
+                                this.pageConf.totalItems = t.count;
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }
 
                         }.bind(this)).catch(
-                        function (error) {
+                        (error) => {
                             alert('请求服务失败，请检查日志。' + error);
                         }
                     );
                 },
-                save: function () {
+                save() {
                     // 将 selSet 排序后写入 quiz.questions
                     this.quiz.questions = Array.from(new Set(this.selLst)).sort();
                     console.debug(this.quiz.questions);
                     axios({
-                        url: '/quiz/api/' + this.quiz.entity_id,
-                        method: 'PUT',
+                        url: `/api/quiz/${this.quiz.entity_id}`,
+                        method: 'POST',
+                        headers: {
+                            'X-HTTP-Method-Override': 'PUT'
+                        },
                         data: {
                             quiz: this.quiz,
                         },
                     }).then(function (response) {
-                        if (response.status === 200 && response.statusText === 'OK') {
+                        if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
                             alert('保存成功');
                             window.location.href = './';
                         } else {
                             alert('保存失败，请检查日志');
                         }
                     }.bind(this)).catch(
-                        function (error) {
+                        (error) => {
                             alert('保存失败，请检查日志。' + error);
                         }
                     );
                 },
-                search: function () {
+                search() {
                     if (this.keyword !== this.kw.trim()) {
                         this.keyword = this.kw.trim();
                         this.list();

@@ -26,9 +26,11 @@ class QuestionController:
         :return:
         """
         try:
-            page, size, keyword = process_page_parameters(arguments, body)
-            trunks, count = QuestionService.select_trunks(page, size, keyword, None)
-
+            page, size, keyword, body_json = process_page_parameters(arguments, body)
+            ids = None
+            if body_json and 'ids' in body_json:
+                ids = body_json['ids']
+            trunks, count = QuestionService.select_trunks(page, size, keyword, ids)
             trunks_list: List[Dict] = [model_to_dict(t, only={
                 Trunk.entity_id,
                 Trunk.code,

@@ -116,18 +116,18 @@ const PageComponent = Vue
                 require: true,
             },
         },
-        data: function () {
+        data() {
             return {
                 jumpPageNum: '',
                 pageList: [],
             };
         },
         computed: {
-            totalItems: function () {
+            totalItems() {
                 return '/共' + this.conf.totalItems + '条';
             }
         },
-        mounted: function () {
+        mounted() {
             this.conf.pagesLength = parseInt(this.conf.pagesLength) ? parseInt(this.conf.pagesLength)
                 : 9;
             if (this.conf.pagesLength % 2 === 0) {
@@ -144,7 +144,7 @@ const PageComponent = Vue
             this.getPagination();
         },
         methods: {
-            changeCurrentPage: function (item) {
+            changeCurrentPage(item) {
                 if (item === '...') {
                     // return;
                 } else {
@@ -153,7 +153,7 @@ const PageComponent = Vue
             },
 
             // pageList数组
-            getPagination: function (newValue, oldValue) {
+            getPagination(newValue, oldValue) {
 
                 // conf.currentPage
                 this.conf.currentPage = parseInt(this.conf.currentPage) ? parseInt(this.conf.currentPage)
@@ -221,8 +221,7 @@ const PageComponent = Vue
                         }
                         this.pageList.push('...');
                         this.pageList.push(this.conf.numberOfPages);
-                    } else if (this.conf.currentPage > this.conf.numberOfPages
-                        - offset) {
+                    } else if (this.conf.currentPage > this.conf.numberOfPages - offset) {
                         this.pageList.push(1);
                         this.pageList.push('...');
                         for (i = offset + 1; i >= 1; i--) {
@@ -256,24 +255,34 @@ const PageComponent = Vue
                 }
                 if (functionOnChange) {
                     if (!(oldValue !== newValue && oldValue[0] === 0)) {
+                        // 根据时间判断，500ms内不做第二次请求
+                        if (!this.conf.timestamp) { this.conf.timestamp = 0; }
+                        let now = new Date().getTime();
+                        if (now - this.conf.timestamp <= 500)
+                        {
+                            //console.debug('timestamp <= 500');
+                            return;
+                        }
+                        this.conf.timestamp = now;
+                        // 执行查询
                         functionOnChange.apply(this.$parent);
                     }
                 }
             },
 
-            prevPage: function () {
+            prevPage() {
                 if (this.conf.currentPage > 1) {
                     this.conf.currentPage -= 1;
                 }
             },
 
-            nextPage: function () {
+            nextPage() {
                 if (this.conf.currentPage < this.conf.numberOfPages) {
                     this.conf.currentPage += 1;
                 }
             },
 
-            jumpToPage: function () {
+            jumpToPage() {
                 let pn = this.jumpPageNum.toString().replace(/[^0-9]/g, '');
                 if (pn !== '') {
                     this.jumpPageNum = parseInt(pn);
@@ -281,7 +290,7 @@ const PageComponent = Vue
                 }
             },
 
-            getWatchState: function () {
+            getWatchState() {
                 if (!this.conf.totalItems) {
                     this.conf.totalItems = 0;
                 }

@@ -89,7 +89,8 @@ class QuestionService:
                                 queue.append(trunk)
             for trunk in trunks:
                 if trunk.parent_id != const.ROOT_NODE:
-                    options: List[Option] = QuestionService.select_options_by_trunk_id(trunk.entity_id)
+                    _id: str = trunk.entity_id
+                    options: List[Option] = QuestionService.select_options_by_trunk_id(_id)
                     trunk.__setattr__('options', options)
             return trunks[0]
         except Exception as e:
@@ -170,8 +171,10 @@ class QuestionService:
                 while len(queue) > 0:
                     trunk_cur: Trunk = queue.pop(0)
                     trunk_children: List[Trunk] = trunk_cur.__dict__.get('trunks')
-                    trunk_cur.en_trunk_text = html_strip(trunk_cur.en_trunk)
-                    trunk_cur.cn_trunk_text = html_strip(trunk_cur.cn_trunk)
+                    en_trunk: str = trunk_cur.en_trunk
+                    trunk_cur.en_trunk_text = html_strip(en_trunk)
+                    cn_trunk: str = trunk_cur.cn_trunk
+                    trunk_cur.cn_trunk_text = html_strip(cn_trunk)
                     trunk_cur.order_num = 0
                     trunk_cur.parent_id = ''
                     if trunk_children is not None:

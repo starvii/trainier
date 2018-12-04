@@ -30,7 +30,7 @@ def _parameter_from_request(parameter: str, arguments: Dict, body: bytes, body_j
     return None, None
 
 
-def process_page_parameters(arguments: Dict, body: bytes) -> (int, int, str):
+def process_page_parameters(arguments: Dict, body: bytes) -> (int, int, str, Dict):
     body_json: Dict = None
 
     page, body_json = _parameter_from_request('page', arguments, body, body_json)
@@ -57,7 +57,7 @@ def process_page_parameters(arguments: Dict, body: bytes) -> (int, int, str):
         keyword = ''
 
     Log.trainier.debug('get: page = %s, size = %s, keyword = %s', page, size, keyword)
-    return page, size, keyword
+    return page, size, keyword, body_json
 
 
 def jsonify(val: object) -> str:

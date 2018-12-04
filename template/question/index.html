@@ -11,17 +11,21 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4">
-                            <label for="search_text" hidden></label>
-                            <input id="search_text" class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
+                        <td colspan="5">
+                            <div class="input-group">
+                                <label for="search_text" hidden></label>
+                                <input id="search_text" class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
+                                <div class="input-group-append">
+                                    <a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
+                                        <i class="fas fa-search"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </td>
-                        <td><a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
-                            <i class="fas fa-search"></i>
-                        </a></td>
                     </tr>
                     <tr>
                         <th>序号</th>
-                        <th>编码</th>
+                        <th>编号</th>
                         <th>题目（英文）</th>
                         <th>题目（中文）</th>
                         <th>
@@ -85,10 +89,10 @@
                     pagesLength: 9,
                     perPageOptions: [10, 15, 30, 50, 100],
                     onChange: 'list',
+                    timestamp: 0,
                 },
                 keyword: '',
                 kwBind: '',
-                timestamp: 0,
             },
             created() {
                 let page = getUrlParam('p');
@@ -108,12 +112,12 @@
             methods: {
                 list() {
                     // 防止发送多次请求
-                    let now = new Date().getTime();
-                    if (now - this.timestamp <= 500)
-                    {
-                        return;
-                    }
-                    this.timestamp = now;
+                    //let now = new Date().getTime();
+                    //if (now - this.pageConf.timestamp <= 500)
+                    //{
+                    //    return;
+                    //}
+                    //this.pageConf.timestamp = now;
                     // 查询
                     let data = {
                         page: this.pageConf.currentPage,
