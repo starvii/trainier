@@ -193,7 +193,7 @@
                             }
                         }.bind(this)
                     ).catch(
-                        function (error) {
+                        (error) => {
                             alert('请求失败，请检查日志。' + error);
                         }
                     );
@@ -263,8 +263,8 @@
                     );
                 },
                 search() {
-                    if (this.keyword !== this.kw.trim()) {
-                        this.keyword = this.kw.trim();
+                    if (this.keyword !== this.kwBind.trim()) {
+                        this.keyword = this.kwBind.trim();
                         this.list();
                     }
                 },

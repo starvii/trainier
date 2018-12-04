@@ -71,6 +71,8 @@ class QuizController:
         )
         return jsonify(result)
 
+    def _make_questions(self, questions: List) -> str:
+        return ','.join(questions)
 
     @run_on_executor
     def create_quiz(self, http_body: bytes) -> str:
@@ -80,8 +82,7 @@ class QuizController:
                 raise ValueError(f'there is no quiz in http body {http_body}')
             quiz_dict: Dict = request_dict['quiz']
             quiz: Quiz = dict_to_model(Quiz, quiz_dict, True)
-            questions: str = ','.join(quiz_dict['questions'])
-            quiz.questions = questions
+            quiz.questions = ','.join(quiz_dict['questions'])
             QuizService.save(quiz)
             return jsonify(dict(result=1))
         except Exception as e:
@@ -98,6 +99,7 @@ class QuizController:
             quiz: Quiz = dict_to_model(Quiz, quiz_dict, True)
             if quiz.entity_id != entity_id:
                 raise ValueError(f'entity_id from url {entity_id} is not equal to json {quiz.entity_id}')
+            quiz.questions = ','.join(quiz_dict['questions'])
             QuizService.save(quiz)
             return jsonify(dict(result=1))
         except Exception as e:

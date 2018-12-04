@@ -252,6 +252,7 @@ const PageComponent = Vue
 
                 if (!(ov !== nv && oldValue[0] === 0)) {
                     if ((ov.length === 0 && nv.length === 0) ||  ov !== nv) {
+                        // TODO: total 变化时，仅触发组件更新，而不重新请求
                         this.$emit('onchange', this._uid);
                     }
                 }
