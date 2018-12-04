@@ -80,6 +80,8 @@ class QuizController:
                 raise ValueError(f'there is no quiz in http body {http_body}')
             quiz_dict: Dict = request_dict['quiz']
             quiz: Quiz = dict_to_model(Quiz, quiz_dict, True)
+            questions: str = ','.join(quiz_dict['questions'])
+            quiz.questions = questions
             QuizService.save(quiz)
             return jsonify(dict(result=1))
         except Exception as e:

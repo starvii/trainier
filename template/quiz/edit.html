@@ -157,7 +157,6 @@
             },
             watch: {
                 onlyShowSelected(val, oldVal) {
-                    //console.debug(`val = ${val}, oldVal = ${oldVal}`);
                     this.list();
                 },
             },
@@ -187,8 +186,7 @@
                     }).then(
                         function (response) {
                             if (response.status === 200 && response.statusText === 'OK' && response.data.result) {
-                                console.debug(response.data);
-                                this.quiz = response.data;
+                                this.quiz = response.data.quiz;
                                 this.initSync();
                             } else {
                                 alert('请求失败，请检查日志');
@@ -211,7 +209,6 @@
                         this.selLst = Array.from(new Set(this.selLst)).sort(); // 翻页时将其精简一下
                         data.ids = this.selLst;
                     }
-                    console.debug(data);
                     axios({
                         method: 'POST',
                         url: '/api/question/',

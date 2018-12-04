@@ -7,7 +7,7 @@
                 <thead>
                     <tr>
                         <td colspan="5">
-                            <page-component :conf.sync="pageConf"></page-component>
+                            <page-component :conf.sync="pageConf" v-on:onchange="list()"></page-component>
                         </td>
                     </tr>
                     <tr>
@@ -38,7 +38,7 @@
                 <tfoot>
                     <tr>
                         <td colspan="5">
-                            <page-component :conf.sync="pageConf"></page-component>
+                            <page-component :conf.sync="pageConf" v-on:onchange="list()"></page-component>
                         </td>
                     </tr>
                 </tfoot>
@@ -111,14 +111,6 @@
             },
             methods: {
                 list() {
-                    // 防止发送多次请求
-                    //let now = new Date().getTime();
-                    //if (now - this.pageConf.timestamp <= 500)
-                    //{
-                    //    return;
-                    //}
-                    //this.pageConf.timestamp = now;
-                    // 查询
                     let data = {
                         page: this.pageConf.currentPage,
                         size: this.pageConf.itemsPerPage,
@@ -139,11 +131,11 @@
                                 this.pageConf.totalItems = t.count;
                                 this.data = trunks;
                                 // 修改url
-                                 if (history && history.pushState) {
-                                     let href = `${window.location.pathname}?p=${this.pageConf.currentPage}&s=${this.pageConf.itemsPerPage}&k=${this.keyword}`;
-                                     //console.debug(location.pathname);
-                                     window.history.pushState(null, document.title, href);
-                                 }
+                                if (history && history.pushState) {
+                                    let href = `${window.location.pathname}?p=${this.pageConf.currentPage}&s=${this.pageConf.itemsPerPage}&k=${this.keyword}`;
+                                    //console.debug(location.pathname);
+                                    window.history.pushState(null, document.title, href);
+                                }
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }

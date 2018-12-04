@@ -124,7 +124,7 @@ const PageComponent = Vue
         },
         computed: {
             totalItems() {
-                return '/共' + this.conf.totalItems + '条';
+                return `/共${this.conf.totalItems}条`;
             }
         },
         mounted() {
@@ -256,15 +256,19 @@ const PageComponent = Vue
                 if (functionOnChange) {
                     if (!(oldValue !== newValue && oldValue[0] === 0)) {
                         // 根据时间判断，500ms内不做第二次请求
-                        if (!this.conf.timestamp) { this.conf.timestamp = 0; }
-                        let now = new Date().getTime();
-                        if (now - this.conf.timestamp <= 500)
-                        {
-                            //console.debug('timestamp <= 500');
-                            return;
-                        }
-                        this.conf.timestamp = now;
+                        // if (!this.conf.timestamp) { this.conf.timestamp = 0; }
+                        // let now = new Date().getTime();
+                        // if (now - this.conf.timestamp <= 500)
+                        // {
+                        //     //console.debug('timestamp <= 500');
+                        //     return;
+                        // }
+                        // this.conf.timestamp = now;
+
+
                         // 执行查询
+                        console.debug(`newVal = ${newValue}, oldVal = ${oldValue}`);
+                        console.debug(this.getWatchState());
                         functionOnChange.apply(this.$parent);
                     }
                 }

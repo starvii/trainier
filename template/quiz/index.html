@@ -136,6 +136,12 @@
                                 let t = response.data;
                                 this.pageConf.totalItems = t.count;
                                 this.data = t.quizzes;
+                                // 修改url
+                                if (history && history.pushState) {
+                                    let href = `${window.location.pathname}?p=${this.pageConf.currentPage}&s=${this.pageConf.itemsPerPage}&k=${this.keyword}`;
+                                    //console.debug(location.pathname);
+                                    window.history.pushState(null, document.title, href);
+                                }
                             } else {
                                 alert('请求服务失败，请检查日志');
                             }
