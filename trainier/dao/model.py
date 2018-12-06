@@ -63,6 +63,7 @@ class Result(BaseModel):
     user_id: Field = CharField(max_length=20, index=True, default='')
     trunk_id: Field = CharField(max_length=20, index=True, default='')
     answer: Field = TextField(default='')
+    is_true: Field = BooleanField(default=True)
 
     class Meta:
         table_name = 'result'
