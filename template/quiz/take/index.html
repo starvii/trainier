@@ -2,208 +2,220 @@
 {% whitespace all %}
 {% block body %}
     <div class="container-fluid py-4" id="app">
-
-
-
-
-
-
-        <div id="take_quiz" v-if="isTaking()">
-            <nav class="navbar">
-                <div class="navbar-menu">
-                    <div class="navbar-item is-expanded">
-                        <progress class="progress is-small" :value="15" max="100" v-text="">15%</progress>
-                    </div>
-                    <div class="navbar-end">
-                        <div class="navbar-item">
-                            <div class="buttons">
-                                <a class="button" @click="submit()">交卷</a>
-                                <a class="button" @click="exit()">退出</a>
-                            </div>
-                        </div>
+        <div class="row">
+            <nav class="col-sm-2 navbar">
+                <div class="col-sm-12 d-flex flex-wrap" style="height: 800px; overflow-y: auto">
+                    <div class="m-sm-1 d-flex align-items-center justify-content-center trunk-index" v-for="item in n">
+                        <a v-text="item"></a>
                     </div>
                 </div>
             </nav>
-
-            <div class="columns"><!-- 题目索引 -->
-                <div class="column is-12">
-                    <div class="buttons">
-                        <a class="button"
-                           v-for="(q, idx) in questions"
-                           v-text="rjust(idx+1)"
-                           @click="switch_to(idx+1)"
-                           :class="classOfQuestion(idx, q)"
-                        ></a>
-                    </div>
-                </div>
-            </div><!-- 题目索引 -->
-
-            <div class="columns">
-                <div class="column is-1">
-                    <label class="label">编号</label>
-                </div>
-                <div class="column is-3">
-                    <pre v-text="trunk.code"></pre>
-                </div>
-                <div class="column is-1">
-                    <label class="label">等级</label>
-                </div>
-                <div class="column is-2">
-                    <pre v-text="trunk.level"></pre>
-                </div>
-                <div class="column is-1">
-                    <label class="label">来源</label>
-                </div>
-                <div class="column is-3">
-                    <pre v-text="trunk.source"></pre>
-                </div>
-                <div class="column is-1">
-                    <label class="label">标记
-                        <input type="checkbox" v-model="questions[currentIndex-1].m">
-                    </label>
-                </div>
-            </div>
-
-            <div class="columns">
-                <div class="column">
-                    <div class="field" v-if="trunk.en_trunk_len>0">
-                        <label class="label">英文题目</label>
-                        <div class="control">
-                            <ckeditor type="classic" v-model="trunk.en_trunk" :config="config"
-                                      :readonly="config.readonly"></ckeditor>
-                        </div>
-                    </div>
-                    <div class="field" v-if="trunk.cn_trunk_len>0">
-                        <label class="label">中文题目</label>
-                        <div class="control">
-                            <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"
-                                      :readonly="config.readonly"></ckeditor>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <quiz-options-component v-if="!hasTrunkChild" :prefix="``" :options="trunk.options"
-                                    :question.sync="questions[currentIndex-1]">
-            </quiz-options-component>
-
-            <div class="container" v-if="hasTrunkChild" v-for="(trunkChild, index) in trunk.trunks">
-                <hr/>
-                <div class="level">
-                    <div class="level-left">
-                        <div class="level-item">
-                            <div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="field" v-if="trunkChild.en_trunk_len>0">
-                    <label class="label">英文题目</label>
-                    <div class="control">
-                        <ckeditor type="classic" v-model="trunkChild.en_trunk" :config="config"
-                                  :readonly="config.readonly"></ckeditor>
-                    </div>
-                </div>
-                <div class="field" v-if="trunkChild.cn_trunk_len>0">
-                    <label class="label">中文题目</label>
-                    <div class="control">
-                        <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config"
-                                  :readonly="config.readonly"></ckeditor>
-                    </div>
-                </div>
-                <quiz-options-component :prefix="(index + 1) + `-`" :options="trunkChild.options"
-                                        :question.sync="questions[currentIndex-1]" :index="index">
-                </quiz-options-component>
-            </div>
-
-            <div class="columns">
-                <div class="column is-12">
-                    <div class="level">
-                        <div class="level-left">
-                            <div class="level-item">
-                                <a class="button" v-bind="{'disabled':currentIndex<=1}"
-                                   @click="switch_to(currentIndex-1)">上一题</a>
-                            </div>
-                        </div>
-                        <div class="level-right">
-                            <div class="level-item">
-                                <a class="button" v-bind="{'disabled':currentIndex>=questions.length}"
-                                   @click="switch_to(currentIndex+1)">下一题</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="container">
+                aaa
             </div>
         </div>
-
-        <div id="select_quiz" v-else>
-            <nav class="navbar"></nav>
-            <div class="columns">
-                <div class="column is-12">
-                    <table class="table is-striped is-narrow is-fullwidth is-hoverable">
-                        <thead>
-                        <tr>
-                            <td colspan="5">
-                                <page-component :conf.sync="pageConf"></page-component>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="4">
-                                <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">
-                            </td>
-                            <td><a class="button is-small" title="查找" @click="search()">
-                                <i class="fas fa-search"></i>
-                            </a></td>
-                        </tr>
-                        <tr>
-                            <th>序号</th>
-                            <th>编码</th>
-                            <th>名称</th>
-                            <th>数量</th>
-                            <th>开始</th>
-                        </tr>
-                        </thead>
-                        <tfoot>
-                        <tr>
-                            <td colspan="5">
-                                <page-component :conf.sync="pageConf"></page-component>
-                            </td>
-                        </tr>
-                        </tfoot>
-                        <tbody>
-                        <tr v-for="(item, idx) in data">
-                            <td>
-                                <a :href="`/quiz/view?id=` + item.entity_id"
-                                   target="_blank"
-                                   v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"
-                                   :title="item.comment"></a>
-                            </td>
-                            <td>
-                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.code"
-                                   :title="item.comment"></a>
-                            </td>
-                            <td>
-                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.name"
-                                   :title="item.comment"></a>
-                            </td>
-                            <td>
-                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.count"
-                                   :title="item.comment"></a>
-                            </td>
-                            <td>
-                                <div class="buttons has-addons">
-                                    <a class="button is-small" title="开始测验" @click="start(item.entity_id)">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <footer class="footer has-background-white"></footer>
     </div>
+
+
+
+
+
+{#        <div id="take_quiz" v-if="isTaking()">#}
+{#            <nav class="navbar">#}
+{#                <div class="navbar-menu">#}
+{#                    <div class="navbar-item is-expanded">#}
+{#                        <progress class="progress is-small" :value="15" max="100" v-text="">15%</progress>#}
+{#                    </div>#}
+{#                    <div class="navbar-end">#}
+{#                        <div class="navbar-item">#}
+{#                            <div class="buttons">#}
+{#                                <a class="button" @click="submit()">交卷</a>#}
+{#                                <a class="button" @click="exit()">退出</a>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </nav>#}
+{##}
+{#            <div class="columns"><!-- 题目索引 -->#}
+{#                <div class="column is-12">#}
+{#                    <div class="buttons">#}
+{#                        <a class="button"#}
+{#                           v-for="(q, idx) in questions"#}
+{#                           v-text="rjust(idx+1)"#}
+{#                           @click="switch_to(idx+1)"#}
+{#                           :class="classOfQuestion(idx, q)"#}
+{#                        ></a>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div><!-- 题目索引 -->#}
+{##}
+{#            <div class="columns">#}
+{#                <div class="column is-1">#}
+{#                    <label class="label">编号</label>#}
+{#                </div>#}
+{#                <div class="column is-3">#}
+{#                    <pre v-text="trunk.code"></pre>#}
+{#                </div>#}
+{#                <div class="column is-1">#}
+{#                    <label class="label">等级</label>#}
+{#                </div>#}
+{#                <div class="column is-2">#}
+{#                    <pre v-text="trunk.level"></pre>#}
+{#                </div>#}
+{#                <div class="column is-1">#}
+{#                    <label class="label">来源</label>#}
+{#                </div>#}
+{#                <div class="column is-3">#}
+{#                    <pre v-text="trunk.source"></pre>#}
+{#                </div>#}
+{#                <div class="column is-1">#}
+{#                    <label class="label">标记#}
+{#                        <input type="checkbox" v-model="questions[currentIndex-1].m">#}
+{#                    </label>#}
+{#                </div>#}
+{#            </div>#}
+{##}
+{#            <div class="columns">#}
+{#                <div class="column">#}
+{#                    <div class="field" v-if="trunk.en_trunk_len>0">#}
+{#                        <label class="label">英文题目</label>#}
+{#                        <div class="control">#}
+{#                            <ckeditor type="classic" v-model="trunk.en_trunk" :config="config"#}
+{#                                      :readonly="config.readonly"></ckeditor>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="field" v-if="trunk.cn_trunk_len>0">#}
+{#                        <label class="label">中文题目</label>#}
+{#                        <div class="control">#}
+{#                            <ckeditor type="classic" v-model="trunk.cn_trunk" :config="config"#}
+{#                                      :readonly="config.readonly"></ckeditor>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{##}
+{#            <quiz-options-component v-if="!hasTrunkChild" :prefix="``" :options="trunk.options"#}
+{#                                    :question.sync="questions[currentIndex-1]">#}
+{#            </quiz-options-component>#}
+{##}
+{#            <div class="container" v-if="hasTrunkChild" v-for="(trunkChild, index) in trunk.trunks">#}
+{#                <hr/>#}
+{#                <div class="level">#}
+{#                    <div class="level-left">#}
+{#                        <div class="level-item">#}
+{#                            <div class="subtitle" v-text="`第` + (index + 1) + `题`"></div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <div class="field" v-if="trunkChild.en_trunk_len>0">#}
+{#                    <label class="label">英文题目</label>#}
+{#                    <div class="control">#}
+{#                        <ckeditor type="classic" v-model="trunkChild.en_trunk" :config="config"#}
+{#                                  :readonly="config.readonly"></ckeditor>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <div class="field" v-if="trunkChild.cn_trunk_len>0">#}
+{#                    <label class="label">中文题目</label>#}
+{#                    <div class="control">#}
+{#                        <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config"#}
+{#                                  :readonly="config.readonly"></ckeditor>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <quiz-options-component :prefix="(index + 1) + `-`" :options="trunkChild.options"#}
+{#                                        :question.sync="questions[currentIndex-1]" :index="index">#}
+{#                </quiz-options-component>#}
+{#            </div>#}
+{##}
+{#            <div class="columns">#}
+{#                <div class="column is-12">#}
+{#                    <div class="level">#}
+{#                        <div class="level-left">#}
+{#                            <div class="level-item">#}
+{#                                <a class="button" v-bind="{'disabled':currentIndex<=1}"#}
+{#                                   @click="switch_to(currentIndex-1)">上一题</a>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="level-right">#}
+{#                            <div class="level-item">#}
+{#                                <a class="button" v-bind="{'disabled':currentIndex>=questions.length}"#}
+{#                                   @click="switch_to(currentIndex+1)">下一题</a>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <div id="select_quiz" v-else>#}
+{#            <nav class="navbar"></nav>#}
+{#            <div class="columns">#}
+{#                <div class="column is-12">#}
+{#                    <table class="table is-striped is-narrow is-fullwidth is-hoverable">#}
+{#                        <thead>#}
+{#                        <tr>#}
+{#                            <td colspan="5">#}
+{#                                <page-component :conf.sync="pageConf"></page-component>#}
+{#                            </td>#}
+{#                        </tr>#}
+{#                        <tr>#}
+{#                            <td colspan="4">#}
+{#                                <input class="input is-small" type="text" v-model="kw" @keyup.enter="search()">#}
+{#                            </td>#}
+{#                            <td><a class="button is-small" title="查找" @click="search()">#}
+{#                                <i class="fas fa-search"></i>#}
+{#                            </a></td>#}
+{#                        </tr>#}
+{#                        <tr>#}
+{#                            <th>序号</th>#}
+{#                            <th>编码</th>#}
+{#                            <th>名称</th>#}
+{#                            <th>数量</th>#}
+{#                            <th>开始</th>#}
+{#                        </tr>#}
+{#                        </thead>#}
+{#                        <tfoot>#}
+{#                        <tr>#}
+{#                            <td colspan="5">#}
+{#                                <page-component :conf.sync="pageConf"></page-component>#}
+{#                            </td>#}
+{#                        </tr>#}
+{#                        </tfoot>#}
+{#                        <tbody>#}
+{#                        <tr v-for="(item, idx) in data">#}
+{#                            <td>#}
+{#                                <a :href="`/quiz/view?id=` + item.entity_id"#}
+{#                                   target="_blank"#}
+{#                                   v-text="(pageConf.currentPage - 1) * pageConf.itemsPerPage + idx + 1"#}
+{#                                   :title="item.comment"></a>#}
+{#                            </td>#}
+{#                            <td>#}
+{#                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.code"#}
+{#                                   :title="item.comment"></a>#}
+{#                            </td>#}
+{#                            <td>#}
+{#                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.name"#}
+{#                                   :title="item.comment"></a>#}
+{#                            </td>#}
+{#                            <td>#}
+{#                                <a :href="`/quiz/view?id=` + item.entity_id" target="_blank" v-text="item.count"#}
+{#                                   :title="item.comment"></a>#}
+{#                            </td>#}
+{#                            <td>#}
+{#                                <div class="buttons has-addons">#}
+{#                                    <a class="button is-small" title="开始测验" @click="start(item.entity_id)">#}
+{#                                        <i class="fas fa-edit"></i>#}
+{#                                    </a>#}
+{#                                </div>#}
+{#                            </td>#}
+{#                        </tr>#}
+{#                        </tbody>#}
+{#                    </table>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#        <footer class="footer has-background-white"></footer>#}
+{#    </div>#}
 {% end %}
 {% block script %}
     <script type="text/javascript" src="/js/common.js"></script>
@@ -219,17 +231,16 @@
             },
             name: 'ckeditor'
         });
-        const app = new window.Vue({
+        window.app = new window.Vue({
             el: '#app',
             data: {
                 data: [],
                 pageConf: {
                     currentPage: 1,
-                    totalItems: 1000,
+                    totalItems: 0,
                     itemsPerPage: 10,
                     pagesLength: 9,
                     perPageOptions: [10, 15, 30, 50, 100],
-                    onChange: 'listQuiz',
                 },
                 keyword: '',
                 kw: '',

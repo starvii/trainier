@@ -5,13 +5,14 @@ import string
 from typing import List, Set, Dict
 
 from peewee import Query
+from playhouse.shortcuts import model_to_dict, dict_to_model
 
 from trainier.dao.model import Trunk, Option
 from trainier.dao.orm import db
 from trainier.util import const
 from trainier.util.logger import Log
 from trainier.util.value import b32_obj_id, html_strip
-from trainier.web.api import CannotFindError, ErrorInQueryError
+from trainier.web.api import CannotFindError, ErrorInQueryError, TrunkIntegrityError
 
 const.ROOT_NODE = 'root'
 
@@ -68,53 +69,55 @@ class QuestionService:
 
     @staticmethod
     def select_trunk_by_id(entity_id: str) -> Trunk:
-        try:
-            trunk: Trunk = Trunk.get(Trunk.entity_id == entity_id)
-            if trunk is None:
-                raise CannotFindError(None, f'cannot find {entity_id}')
-            trunks: List[Trunk] = [trunk]
-            if trunk.parent_id == const.ROOT_NODE:
-                queue: List[Trunk] = [trunk]
-                while len(queue) > 0:
-                    trunk_parent: Trunk = queue.pop(0)
-                    query: Query = Trunk.select().where(
-                        Trunk.parent_id == trunk_parent.entity_id
-                    ).order_by(Trunk.order_num.asc())
-                    trunk_children: List[Trunk] = [t for t in query]
-                    if len(trunk_children) > 0:
-                        trunks.extend(trunk_children)
-                        trunk_parent.__setattr__('trunks', trunk_children)
-                        for trunk in trunk_children:
-                            if trunk.parent_id == const.ROOT_NODE:
-                                queue.append(trunk)
-            for trunk in trunks:
-                if trunk.parent_id != const.ROOT_NODE:
-                    _id: str = trunk.entity_id
-                    options: List[Option] = QuestionService.select_options_by_trunk_id(_id)
-                    trunk.__setattr__('options', options)
-            return trunks[0]
-        except Exception as e:
-            Log.trainier.error(e)
-            raise ErrorInQueryError(e, f'some exception in query id={entity_id}. {e}')
+        with db.connection_context():
+            try:
+                trunk: Trunk = Trunk.get(Trunk.entity_id == entity_id)
+                if trunk is None:
+                    raise CannotFindError(None, f'cannot find {entity_id}')
+                trunks: List[Trunk] = [trunk]
+                if trunk.parent_id == const.ROOT_NODE:
+                    queue: List[Trunk] = [trunk]
+                    while len(queue) > 0:
+                        trunk_parent: Trunk = queue.pop(0)
+                        query: Query = Trunk.select().where(
+                            Trunk.parent_id == trunk_parent.entity_id
+                        ).order_by(Trunk.order_num.asc())
+                        trunk_children: List[Trunk] = [t for t in query]
+                        if len(trunk_children) > 0:
+                            trunks.extend(trunk_children)
+                            trunk_parent.__setattr__('trunks', trunk_children)
+                            for trunk in trunk_children:
+                                if trunk.parent_id == const.ROOT_NODE:
+                                    queue.append(trunk)
+                for trunk in trunks:
+                    if trunk.parent_id != const.ROOT_NODE:
+                        _id: str = trunk.entity_id
+                        options: List[Option] = QuestionService.select_options_by_trunk_id(_id)
+                        trunk.__setattr__('options', options)
+                return trunks[0]
+            except Exception as e:
+                Log.trainier.error(e)
+                raise ErrorInQueryError(e, f'some exception in query id={entity_id}. {e}')
 
     @staticmethod
     def select_prev_next_by_id(entity_id: str) -> (str, str):
-        try:
-            trunk: Trunk = Trunk.get(Trunk.entity_id == entity_id)
-            if trunk is None:
+        with db.connection_context():
+            try:
+                trunk: Trunk = Trunk.get(Trunk.entity_id == entity_id)
+                if trunk is None:
+                    return '', ''
+                order_num: int = trunk.order_num
+                query = Trunk.select(Trunk.entity_id).where((
+                    (Trunk.parent_id.is_null()) | (Trunk.parent_id == '') | (Trunk.parent_id == const.ROOT_NODE)
+                ))
+                next_trunk: Trunk = query.where(Trunk.order_num > order_num).order_by(Trunk.order_num.asc()).first()
+                prev_trunk: Trunk = query.where(Trunk.order_num < order_num).order_by(Trunk.order_num.desc()).first()
+                next_id: str = next_trunk.entity_id if next_trunk is not None else ''
+                prev_id: str = prev_trunk.entity_id if prev_trunk is not None else ''
+                return prev_id, next_id
+            except Exception as e:
+                Log.trainier.error(e)
                 return '', ''
-            order_num: int = trunk.order_num
-            query = Trunk.select(Trunk.entity_id).where((
-                (Trunk.parent_id.is_null()) | (Trunk.parent_id == '') | (Trunk.parent_id == const.ROOT_NODE)
-            ))
-            next_trunk: Trunk = query.where(Trunk.order_num > order_num).order_by(Trunk.order_num.asc()).first()
-            prev_trunk: Trunk = query.where(Trunk.order_num < order_num).order_by(Trunk.order_num.desc()).first()
-            next_id: str = next_trunk.entity_id if next_trunk is not None else ''
-            prev_id: str = prev_trunk.entity_id if prev_trunk is not None else ''
-            return prev_id, next_id
-        except Exception as e:
-            Log.trainier.error(e)
-            return '', ''
 
     @staticmethod
     def select_options_by_trunk_id(trunk_id: str) -> List[Option] or None:
@@ -123,90 +126,92 @@ class QuestionService:
         :param trunk_id:
         :return:
         """
-        try:
-            options: List[Option] = Option.select().where(Option.trunk_id == trunk_id).order_by(Option.order_num.asc())
-            return options
-        except Exception as e:
-            Log.trainier.error(e)
-            return None
+        with db.connection_context():
+            try:
+                options: List[Option] = Option.select().where(Option.trunk_id == trunk_id).order_by(Option.order_num.asc())
+                return options
+            except Exception as e:
+                Log.trainier.error(e)
+                return None
 
     @staticmethod
     def select_trunks(page: int, size: int, keyword: str, ids: List[str] = None) -> (List[Trunk], int):
-        try:
-            query = Trunk.select().where(
-                (Trunk.parent_id.is_null()) | (Trunk.parent_id == '') | (Trunk.parent_id == const.ROOT_NODE)
-            )
-            if keyword is not None and len(keyword) > 0:
-                k: str = '%' + keyword + '%'
-                query = query.where(
-                    (Trunk.code ** k) |
-                    (Trunk.en_trunk_text ** k) |
-                    (Trunk.cn_trunk_text ** k) |
-                    (Trunk.explanation ** k) |
-                    (Trunk.source ** k) |
-                    (Trunk.comment ** k)
+        with db.connection_context():
+            try:
+                query = Trunk.select().where(
+                    (Trunk.parent_id.is_null()) | (Trunk.parent_id == '') | (Trunk.parent_id == const.ROOT_NODE)
                 )
-            if ids is not None:
-                query = query.where(Trunk.entity_id.in_(ids))
-            c: int = query.count()
-            query = query.order_by(Trunk.order_num.asc()).paginate(page, size)
-            Log.trainier.debug(query.sql())
-            l: List[Trunk] = [t for t in query]
-            # 由于增添了新字段，在此处查询时，覆盖原有字段
-            for e in l:
-                e.en_trunk = e.en_trunk_text
-                e.cn_trunk = e.cn_trunk_text
-            return l, c
-        except Exception as e:
-            Log.trainier.error(e)
-            raise ErrorInQueryError(e, f'some exception in query page={page}, size={size}, keyword={keyword}, ids={ids}. {e}')
+                if keyword is not None and len(keyword) > 0:
+                    k: str = '%' + keyword + '%'
+                    query = query.where(
+                        (Trunk.code ** k) |
+                        (Trunk.en_trunk_text ** k) |
+                        (Trunk.cn_trunk_text ** k) |
+                        (Trunk.explanation ** k) |
+                        (Trunk.source ** k) |
+                        (Trunk.comment ** k)
+                    )
+                if ids is not None:
+                    query = query.where(Trunk.entity_id.in_(ids))
+                c: int = query.count()
+                query = query.order_by(Trunk.order_num.asc()).paginate(page, size)
+                Log.trainier.debug(query.sql())
+                l: List[Trunk] = [t for t in query]
+                # 由于增添了新字段，在此处查询时，覆盖原有字段
+                for e in l:
+                    e.en_trunk = e.en_trunk_text
+                    e.cn_trunk = e.cn_trunk_text
+                return l, c
+            except Exception as e:
+                Log.trainier.error(e)
+                raise ErrorInQueryError(e, f'some exception in query page={page}, size={size}, keyword={keyword}, ids={ids}. {e}')
 
     @staticmethod
-    @db.atomic()
     def save(trunk: Trunk) -> None:
         queue: List[Trunk] = [trunk]
         relation: Dict[Trunk, str] = dict()
-        with db.transaction() as tx:
-            try:
-                while len(queue) > 0:
-                    trunk_cur: Trunk = queue.pop(0)
-                    trunk_children: List[Trunk] = trunk_cur.__dict__.get('trunks')
-                    en_trunk: str = trunk_cur.en_trunk
-                    trunk_cur.en_trunk_text = html_strip(en_trunk)
-                    cn_trunk: str = trunk_cur.cn_trunk
-                    trunk_cur.cn_trunk_text = html_strip(cn_trunk)
-                    trunk_cur.order_num = 0
-                    trunk_cur.parent_id = ''
-                    if trunk_children is not None:
-                        trunk_cur.parent_id = const.ROOT_NODE
-                        trunk_cur.analysis = ''
-                    if trunk_cur in relation:
-                        trunk_cur.parent_id = relation[trunk_cur]  # 保存主题干的ID
-                    trunk_cur.order_num, trunk_cur.code = QuestionService._split_code(trunk_cur.code)  # 计算 order_num
-                    QuestionService._save_trunk(trunk_cur)  # 保存后可获取 trunk_id
-                    if trunk_children is not None:
-                        for idx, trunk_child in enumerate(trunk_children):
-                            relation[trunk_child] = trunk_cur.entity_id
-                            trunk_child.code = f'{trunk_cur.code}({idx + 1})'
-                            trunk_child.order_num = idx
-                            trunk_child.source = ''
-                            trunk_child.level = trunk_cur.level
-                            queue.append(trunk_child)
-                    else:  # leaf node
-                        options: List[Option] = trunk_cur.__dict__.get('options')
-                        if options is None:
-                            raise ValueError('this is no options of trunk.')
-                        for idx, option in enumerate(options):
-                            option.code = f'{trunk_cur.code}-{string.ascii_uppercase[idx]}'
-                            option.trunk_id = trunk_cur.entity_id
-                            option.order_num = idx
-                            option.comment = ''
-                        QuestionService._save_options(options, trunk_cur)
-                tx.commit()
-            except Exception as e:
-                tx.rollback()
-                Log.trainier.error(e)
-                raise e
+        with db.connection_context():
+            with db.transaction() as tx:
+                try:
+                    while len(queue) > 0:
+                        trunk_cur: Trunk = queue.pop(0)
+                        trunk_children: List[Trunk] = trunk_cur.__dict__.get('trunks')
+                        en_trunk: str = trunk_cur.en_trunk
+                        trunk_cur.en_trunk_text = html_strip(en_trunk)
+                        cn_trunk: str = trunk_cur.cn_trunk
+                        trunk_cur.cn_trunk_text = html_strip(cn_trunk)
+                        trunk_cur.order_num = 0
+                        trunk_cur.parent_id = ''
+                        if trunk_children is not None:
+                            trunk_cur.parent_id = const.ROOT_NODE
+                            trunk_cur.analysis = ''
+                        if trunk_cur in relation:
+                            trunk_cur.parent_id = relation[trunk_cur]  # 保存主题干的ID
+                        trunk_cur.order_num, trunk_cur.code = QuestionService._split_code(trunk_cur.code)  # 计算 order_num
+                        QuestionService._save_trunk(trunk_cur)  # 保存后可获取 trunk_id
+                        if trunk_children is not None:
+                            for idx, trunk_child in enumerate(trunk_children):
+                                relation[trunk_child] = trunk_cur.entity_id
+                                trunk_child.code = f'{trunk_cur.code}({idx + 1})'
+                                trunk_child.order_num = idx
+                                trunk_child.source = ''
+                                trunk_child.level = trunk_cur.level
+                                queue.append(trunk_child)
+                        else:  # leaf node
+                            options: List[Option] = trunk_cur.__dict__.get('options')
+                            if options is None:
+                                raise ValueError('this is no options of trunk.')
+                            for idx, option in enumerate(options):
+                                option.code = f'{trunk_cur.code}-{string.ascii_uppercase[idx]}'
+                                option.trunk_id = trunk_cur.entity_id
+                                option.order_num = idx
+                                option.comment = ''
+                            QuestionService._save_options(options, trunk_cur)
+                    tx.commit()
+                except Exception as e:
+                    tx.rollback()
+                    Log.trainier.error(e)
+                    raise e
 
     @staticmethod
     def _save_trunk(trunk: Trunk) -> None:
@@ -253,3 +258,74 @@ class QuestionService:
         delete_db_ids: Set[str] = exist_db_ids - write_db_ids
         if len(delete_db_ids) > 0:
             Option.delete().where(Option.entity_id.in_(delete_db_ids)).execute()
+
+    @staticmethod
+    def t2d(trunk: Trunk, functions: List = None) -> Dict:
+        trunk_exclude = {
+            Trunk.db_id,
+            Trunk.order_num,
+            Trunk.parent_id,
+            Trunk.en_trunk_text,
+            Trunk.cn_trunk_text,
+        }
+        option_exclude = {
+            Option.db_id,
+            Option.trunk_id,
+            Option.code,
+            Option.order_num,
+        }
+        return QuestionService.trunk_to_dict(trunk, trunk_exclude, option_exclude, functions)
+
+    @staticmethod
+    def trunk_to_dict(trunk: Trunk, trunk_exclude: Set = None, option_exclude: Set = None, functions: List = None) -> Dict:
+        trunk_dict: Dict = model_to_dict(trunk, exclude=trunk_exclude)
+        if functions is not None and len(functions) > 0:
+            for func in functions:
+                func(trunk, trunk_dict)
+        if len(trunk.__dict__.get('trunks', [])) > 0:
+            trunks: List[Trunk] = trunk.__dict__['trunks']
+            trunk_list: List[Dict] = list()
+            for trunk_child in trunks:
+                trunk_child_dict: Dict = QuestionService.trunk_to_dict(trunk_child, trunk_exclude, option_exclude, functions)
+                trunk_list.append(trunk_child_dict)
+            trunk_dict['trunks'] = trunk_list
+        elif len(trunk.__dict__.get('options', [])) > 0:
+            options: List[Option] = trunk.__dict__['options']
+            options_list: List[Dict] = [model_to_dict(o, exclude=option_exclude) for o in options]
+            trunk_dict['options'] = options_list
+        else:
+            raise TrunkIntegrityError(None, f'Trunk: {trunk} have something wrong of integrity')
+        return trunk_dict
+
+    @staticmethod
+    def dict_to_trunk(trunk_dict: Dict) -> Trunk:
+        """
+        TODO: 此处有个漏洞，如果dict中被恶意写入存在但是不应更新的字段，还是会被更新到数据库中。需要修复
+        :param trunk_dict:
+        :return:
+        """
+        if 'options' in trunk_dict and 'trunks' in trunk_dict:
+            raise TrunkIntegrityError(None, f'options and trunks all in trunk dict {trunk_dict}')
+        if 'options' not in trunk_dict and 'trunks' not in trunk_dict:
+            raise TrunkIntegrityError(None, f'options or trunks not in trunk dict {trunk_dict}')
+        trunk: Trunk = dict_to_model(Trunk, trunk_dict, True)
+        if 'trunks' in trunk_dict:
+            if isinstance(trunk_dict['trunks'], List) and len(trunk_dict['trunks']) > 0:
+                trunks: List[Dict] = trunk_dict['trunks']
+                trunk.__dict__['trunks'] = [QuestionService.dict_to_trunk(t) for t in trunks]
+            else:
+                raise TrunkIntegrityError(None, f'trunks not correct in trunk dict {trunk_dict}')
+        else:
+            if isinstance(trunk_dict.get('options'), list) and len(trunk_dict.get('options')) > 0:
+                options: List[Dict] = trunk_dict['options']
+                trunk.__dict__['options'] = [dict_to_model(Option, o, True) for o in options]
+            else:
+                raise TrunkIntegrityError(None, f'options not correct in trunk dict {trunk_dict}')
+        return trunk
+
+    @staticmethod
+    def view_trunk_length(src: Trunk, dst: Dict) -> None:
+        t: str = src.en_trunk_text
+        dst['en_trunk_len'] = len(t)
+        t: str = src.cn_trunk_text
+        dst['cn_trunk_len'] = len(t)

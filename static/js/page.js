@@ -246,14 +246,26 @@ const PageComponent = Vue
                     }
                 }
 
-                let ov = typeof oldValue === 'undefined' ? '' : oldValue.join(',');
-                let nv = typeof newValue === 'undefined' ? '' : newValue.join(',');
+                let ov = '', ov2 = '', nv = '', nv2 = '';
+                if (typeof oldValue !== 'undefined' && oldValue.length === 3) {
+                    ov = oldValue.join(',');
+                    ov2 = `${oldValue[1]},${oldValue[2]}`;
+                }
+                if (typeof newValue !== 'undefined' && newValue.length === 3) {
+                    nv = newValue.join(',');
+                    nv2 = `${newValue[1]},${newValue[2]}`;
+                }
 
-
+                console.debug(`${this._uid}-1 | nv = ${nv}, nv2 = ${nv2}, ov = ${ov}, ov2 = ${ov2}`);
                 if (!(ov !== nv && oldValue[0] === 0)) {
+                    console.debug(`${this._uid}-2 | nv = ${nv}, nv2 = ${nv2}, ov = ${ov}, ov2 = ${ov2}`);
                     if ((ov.length === 0 && nv.length === 0) ||  ov !== nv) {
-                        // TODO: total 变化时，仅触发组件更新，而不重新请求
-                        this.$emit('onchange', this._uid);
+                        console.debug(`${this._uid}-3 | nv = ${nv}, nv2 = ${nv2}, ov = ${ov}, ov2 = ${ov2}`);
+                        // total 变化时，仅触发组件更新，而不重新请求
+                        if (nv2.length === 0 || nv2 !== ov2) {
+                            console.debug(`${this._uid}-4 | nv = ${nv}, nv2 = ${nv2}, ov = ${ov}, ov2 = ${ov2}`);
+                            this.$emit('onchange', this._uid);
+                        }
                     }
                 }
             },

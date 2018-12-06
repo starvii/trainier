@@ -11,6 +11,7 @@ class AppConfig:
     DATABASE: Path = BASE / Path('database')
     DB_FILE: Path = DATABASE / Path('db.sqlite')
     LOG: Path = BASE / Path('log')
+    SECRET: bytes = b'HelloW0r1d!'
 
     @staticmethod
     def init_path() -> None:

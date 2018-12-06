@@ -10,7 +10,7 @@ from tornado.concurrent import run_on_executor
 from trainier.dao.model import Trunk, Option
 from trainier.util.logger import Log
 from trainier.util.value import process_page_parameters, jsonify
-from trainier.web.api import ErrorInQueryError, CannotFindError, trunk_to_dict, dict_to_trunk
+from trainier.web.api import ErrorInQueryError, CannotFindError
 from trainier.web.api.question.service import QuestionService
 
 
@@ -58,20 +58,14 @@ class QuestionController:
 
     @run_on_executor
     def query_question(self, entity_id: str, referer: str) -> str:
-        def view_len(_trunk: Trunk, trunk_dict: Dict) -> None:
-            _en: str = _trunk.en_trunk_text
-            trunk_dict['en_trunk_len'] = len(_en)
-            _cn: str = _trunk.cn_trunk_text
-            trunk_dict['cn_trunk_len'] = len(_cn)
-
         try:
             trunk: Trunk = QuestionService.select_trunk_by_id(entity_id)
             result: Dict = dict(result=1)
             if 'view.html' in referer:
-                trunk_dict: Dict = self._trunk_to_dict(trunk, [view_len])
+                trunk_dict: Dict = QuestionService.t2d(trunk, [QuestionService.view_trunk_length])
                 result['prev'], result['next'] = QuestionService.select_prev_next_by_id(entity_id)
             else:
-                trunk_dict: Dict = self._trunk_to_dict(trunk)
+                trunk_dict: Dict = QuestionService.t2d(trunk)
             result['trunk'] = trunk_dict
         except CannotFindError as e:
             Log.trainier.error(e)
@@ -100,7 +94,7 @@ class QuestionController:
             if 'trunk' not in request_dict:
                 raise ValueError(f'there is no trunk in http body {http_body}')
             trunk_dict: Dict = request_dict['trunk']
-            trunk: Trunk = dict_to_trunk(trunk_dict)
+            trunk: Trunk = QuestionService.dict_to_trunk(trunk_dict)
             Log.trainier.debug(trunk)
             QuestionService.save(trunk)
             return jsonify(dict(result=1))
@@ -115,7 +109,7 @@ class QuestionController:
             if 'trunk' not in request_dict:
                 raise ValueError(f'there is no trunk in http body {http_body}')
             trunk_dict: Dict = request_dict['trunk']
-            trunk: Trunk = dict_to_trunk(trunk_dict)
+            trunk: Trunk = QuestionService.dict_to_trunk(trunk_dict)
             if trunk.entity_id != entity_id:
                 raise ValueError(f'entity_id from url {entity_id} is not equal to json {trunk.entity_id}')
             Log.trainier.debug(trunk)
@@ -133,19 +127,4 @@ class QuestionController:
             error='NotImplementedError',
         ))
 
-    @staticmethod
-    def _trunk_to_dict(trunk: Trunk, functions: List = None) -> Dict:
-        trunk_exclude = {
-            Trunk.db_id,
-            Trunk.order_num,
-            Trunk.parent_id,
-            Trunk.en_trunk_text,
-            Trunk.cn_trunk_text,
-        }
-        option_exclude = {
-                Option.db_id,
-                Option.trunk_id,
-                Option.code,
-                Option.order_num,
-        }
-        return trunk_to_dict(trunk, trunk_exclude, option_exclude, functions)
+
