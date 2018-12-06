@@ -6,6 +6,9 @@ from typing import List, Dict, Deque, Set
 from collections import deque
 from trainier.dao.model import Trunk, Option, Result, Quiz
 from trainier.dao.orm import db
+from trainier.util.logger import Log
+from trainier.util.value import b32_obj_id
+from trainier.web.api import ErrorInQueryError
 from trainier.web.api.question.service import QuestionService
 
 
@@ -137,4 +140,12 @@ class TakeService:
     def save(results: List[Result]):
         with db.connection_context():
             with db.transaction() as tx:
-                pass
+                try:
+                    for result in results:
+                        result.entity_id = b32_obj_id()
+                        result.save()
+                    tx.commit()
+                except Exception as e:
+                    tx.rollback()
+                    Log.trainier.error(e)
+                    raise e
