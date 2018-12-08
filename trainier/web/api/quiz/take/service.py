@@ -16,11 +16,14 @@ class TrunkIndex:
     def __init__(self) -> None:
         self.trunk_id = ''
         self.marked = 0
-        self.answer = {self.trunk_id: []}
+        self.answer = []
         self.option_seed = -1
 
-    def get_current(self) -> Dict:
-        return dict(marked=self.marked, answer=self.answer)
+    def get_current(self, index: int = -1) -> Dict:
+        r: Dict = dict(marked=self.marked, answer=self.answer)
+        if index >= 0:
+            r['index'] = index
+        return r
 
     def set_current(self, current: Dict) -> None:
         marked = current.get('marked')
@@ -121,7 +124,10 @@ class QuizInstance:
             random.shuffle(model.trunks)
 
     def get_index_status(self) -> List[Dict]:
-        return [dict(a=1 if t.answer is not None and len(t.answer)>0 else 0, m=t.marked) for t in self.trunks]
+        return [dict(
+            a=1 if t.answer is not None and len(t.answer)>0 else 0,
+            m=1 if t.marked else 0,
+        ) for t in self.trunks]
 
 
 class TakeService:

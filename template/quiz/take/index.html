@@ -47,7 +47,7 @@
                     </div>
 
                     <div v-if="!hasTrunkChild">
-                        <quiz-options-component :trunk="trunk" :answer="current.answer[trunk.entity_id]" @change="change"></quiz-options-component>
+                        <quiz-options-component :trunk="trunk" :answer_wrapper.sync="current"></quiz-options-component>
                     </div>
 
                     <div v-if="hasTrunkChild">
@@ -64,7 +64,7 @@
                                 <label>中文题目</label>
                                 <ckeditor type="classic" v-model="trunkChild.cn_trunk" :config="config" :readonly="config.readonly"></ckeditor>
                             </div>
-                            <quiz-options-component :trunk="trunkChild" :answer="current.answer[trunkChild.entity_id]" @change="change"></quiz-options-component>
+                            <quiz-options-component :trunk="trunkChild" :answer_wrapper.sync="current"></quiz-options-component>
                         </div>
                     </div>
                 </form>
@@ -123,6 +123,8 @@
             },
             methods: {
                 switchTo(idx, current=null) {
+                    this.current.answer = Object.assign({}, this.current.answer); // 有时候变量结构有些问题，导致后台取不到数据。深度复制创建一个新对象，后台就能取到
+
                     let data = {
                         action: 'switch',
                         switch: idx,
@@ -259,6 +261,7 @@
                 change(arg) {
                     console.debug(arg);
                     this.current.answer[arg.trunk] = arg.answer;
+                    console.debug(this.current.answer);
                 },
             },
         });

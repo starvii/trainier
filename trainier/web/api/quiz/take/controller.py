@@ -41,8 +41,7 @@ class QuizActionController:
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
         cookie: str = self.codec.enc_obj(inst)
-        current: Dict = inst.trunks[0].get_current()
-        current['index'] = 0
+        current: Dict = inst.trunks[0].get_current(index=0)
         result = dict(result=1, index=index, trunk=trunk_view, current=current)
         return jsonify(result), cookie
 
@@ -53,8 +52,7 @@ class QuizActionController:
             raise ValueError('quiz_id not equal')
         self._merge_submit(inst, current)
         trunk_index: TrunkIndex = inst.trunks[switch]
-        new_current: Dict = trunk_index.get_current()
-        new_current['index'] = switch
+        new_current: Dict = trunk_index.get_current(index=switch)
         trunk: Trunk = trunk_index.get_trunk()
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()

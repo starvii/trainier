@@ -35,11 +35,11 @@ const QuizOptionsComponent = Vue.extend({
         '\t\t<div class="col">\n' +
         '\t\t\t<input type="checkbox"\n' +
         '\t\t\t\t:name="trunk.entity_id" :value="option.entity_id"\n' +
-        '\t\t\t\tv-model="protectedAnswer"\n' +
+        '\t\t\t\tv-model="answer_wrapper.answer[trunk.entity_id]"\n' +
         '\t\t\t\tv-if="trunk.multi_choice">\n' +
         '\t\t\t<input type="radio"\n' +
         '\t\t\t\t:name="trunk.entity_id" :value="option.entity_id"\n' +
-        '\t\t\t\tv-model="protectedAnswer"\n' +
+        '\t\t\t\tv-model="answer_wrapper.answer[trunk.entity_id]"\n' +
         '\t\t\t\tv-else>\n' +
         '\t\t\t<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>\n' +
         '\t\t</div>\n' +
@@ -55,42 +55,39 @@ const QuizOptionsComponent = Vue.extend({
         '\t</label>\n' +
         '</div>',
     replace: true,
-    data() {
-        return {
-            privateAnswer: [],
-        };
-    },
-    computed: {
-        protectedAnswer: {
-            get() {
-                return this.privateAnswer;
-            },
-            set(val) {
-                this.privateAnswer = val;
-                this.$emit('change', {
-                    trunk: this.trunk.entity_id,
-                    answer: val,
-                });
-            },
-        }
-    },
-    watch: {
-        answer(newVal, oldVal) {
-            // console.debug(`old = ${oldVal}, new = ${newVal}`);
-            this.privateAnswer = newVal;
-        },
-    },
+    // data() {
+    //     return {
+    //         privateAnswer: [],
+    //     };
+    // },
+    // computed: {
+    //     protectedAnswer: {
+    //         get() {
+    //             return this.privateAnswer;
+    //         },
+    //         set(val) {
+    //             this.privateAnswer = val;
+    //             this.$emit('change', {
+    //                 trunk: this.trunk.entity_id,
+    //                 answer: val,
+    //             });
+    //         },
+    //     }
+    // },
+    // watch: {
+    //     answer(newVal, oldVal) {
+    //         console.debug(`old = ${oldVal}, new = ${newVal}`);
+    //         this.protectedAnswer = newVal;
+    //     },
+    // },
     props: {
         trunk: {
             type: Object,
             require: true,
         },
-        answer: {
-            // type: Array,
+        answer_wrapper: { // 为了解决修改是告警问题
+            type: Object,
             require: true,
-            default() {
-                return [];
-            }
         },
     },
 });
