@@ -1,14 +1,14 @@
 /*
 
 <div>
-	<div class="form-row" v-for="(option, index) in options" :for="prefix + `ABCDEFGHIJKL`[index]">
+	<label class="form-row" v-for="(option, index) in trunk.options">
 		<div class="col">
-			<input :id="prefix + `ABCDEFGHIJKL`[index]" type="checkbox"
-				:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"
+			<input type="checkbox"
+				:name="trunk.entity_id" :value="option.entity_id"
 				v-model="answer"
-				v-if="option.multi_choice">
-			<input :id="prefix + `ABCDEFGHIJKL`[index]" type="radio"
-				:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"
+				v-if="trunk.multi_choice">
+			<input type="radio"
+				:name="trunk.entity_id" :value="option.entity_id"
 				v-model="answer"
 				v-else>
 			<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
@@ -22,7 +22,7 @@
 		<div class="col-11" v-else>
 			<pre v-text="option.x_option"></pre>
 		</div>
-	</div>
+	</label>
 </div>
 
 */
@@ -31,15 +31,15 @@
 const QuizOptionsComponent = Vue.extend({
     template: '' +
         '<div>\n' +
-        '\t<div class="form-row" v-for="(option, index) in options" :for="prefix + `ABCDEFGHIJKL`[index]">\n' +
+        '\t<label class="form-row" v-for="(option, index) in trunk.options">\n' +
         '\t\t<div class="col">\n' +
-        '\t\t\t<input :id="prefix + `ABCDEFGHIJKL`[index]" type="checkbox"\n' +
-        '\t\t\t\t:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"\n' +
-        '\t\t\t\tv-model="answer"\n' +
-        '\t\t\t\tv-if="option.multi_choice">\n' +
-        '\t\t\t<input :id="prefix + `ABCDEFGHIJKL`[index]" type="radio"\n' +
-        '\t\t\t\t:name="prefix + `answer`" :value="`ABCDEFGHIJKL`[index]"\n' +
-        '\t\t\t\tv-model="answer"\n' +
+        '\t\t\t<input type="checkbox"\n' +
+        '\t\t\t\t:name="trunk.entity_id" :value="option.entity_id"\n' +
+        '\t\t\t\tv-model="protectedAnswer"\n' +
+        '\t\t\t\tv-if="trunk.multi_choice">\n' +
+        '\t\t\t<input type="radio"\n' +
+        '\t\t\t\t:name="trunk.entity_id" :value="option.entity_id"\n' +
+        '\t\t\t\tv-model="protectedAnswer"\n' +
         '\t\t\t\tv-else>\n' +
         '\t\t\t<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>\n' +
         '\t\t</div>\n' +
@@ -52,45 +52,45 @@ const QuizOptionsComponent = Vue.extend({
         '\t\t<div class="col-11" v-else>\n' +
         '\t\t\t<pre v-text="option.x_option"></pre>\n' +
         '\t\t</div>\n' +
-        '\t</div>\n' +
+        '\t</label>\n' +
         '</div>',
     replace: true,
-    props: {
-        prefix: {
-            type: String,
-            require: true,
-        },
-        options: {
-            type: Array,
-            require: true,
-        },
-        question: {
-            type: Object,
-            require: true,
-            default: '',
-        },
-        index: {
-            type: Number,
-            require: false,
-            default: -1,
-        },
+    data() {
+        return {
+            privateAnswer: [],
+        };
     },
     computed: {
-        answer: {
+        protectedAnswer: {
             get() {
-                if (this.index >= 0) {
-                    return this.question.a[this.index];
-                } else {
-                    return this.question.a;
-                }
+                return this.privateAnswer;
             },
             set(val) {
-                if (this.index >= 0) {
-                    this.question.a[this.index] = val;
-                } else {
-                    this.question.a = val;
-                }
+                this.privateAnswer = val;
+                this.$emit('change', {
+                    trunk: this.trunk.entity_id,
+                    answer: val,
+                });
             },
+        }
+    },
+    watch: {
+        answer(newVal, oldVal) {
+            // console.debug(`old = ${oldVal}, new = ${newVal}`);
+            this.privateAnswer = newVal;
+        },
+    },
+    props: {
+        trunk: {
+            type: Object,
+            require: true,
+        },
+        answer: {
+            // type: Array,
+            require: true,
+            default() {
+                return [];
+            }
         },
     },
 });

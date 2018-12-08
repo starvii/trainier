@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import random
 import time
 from concurrent.futures import Executor
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -42,22 +41,25 @@ class QuizActionController:
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
         cookie: str = self.codec.enc_obj(inst)
-        result = dict(result=1, index=index, trunk=trunk_view, answer='', current=0)
+        current: Dict = inst.trunks[0].get_current()
+        current['index'] = 0
+        result = dict(result=1, index=index, trunk=trunk_view, current=current)
         return jsonify(result), cookie
 
     @run_on_executor
-    def quiz_switch(self, quiz_id: str, cookie: str, switch: int, submit: Dict) -> (str, str):
+    def quiz_switch(self, quiz_id: str, cookie: str, switch: int, current: Dict) -> (str, str):
         inst: QuizInstance = self.codec.dec_obj(cookie)
         if inst.quiz_id != quiz_id:
             raise ValueError('quiz_id not equal')
-        self._merge_submit(inst, submit)
+        self._merge_submit(inst, current)
         trunk_index: TrunkIndex = inst.trunks[switch]
-        answer: str = trunk_index.answer
+        new_current: Dict = trunk_index.get_current()
+        new_current['index'] = switch
         trunk: Trunk = trunk_index.get_trunk()
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
         c: str = self.codec.enc_obj(inst)
-        result = dict(result=1, index=index, trunk=trunk_view, answer=answer, current=switch)
+        result = dict(result=1, index=index, trunk=trunk_view, current=new_current)
         return jsonify(result), c
 
     @run_on_executor
@@ -75,10 +77,7 @@ class QuizActionController:
         return jsonify(dict(result=1))
 
     @staticmethod
-    def _merge_submit(inst: QuizInstance, submit: Dict):
-        idx: int = submit.get('current')
-        marked: int = submit.get('marked')
-        answer: str = submit.get('answer')
-        current: TrunkIndex = inst.trunks[idx]
-        current.marked = marked
-        current.answer = answer
+    def _merge_submit(inst: QuizInstance, current: Dict):
+        idx: int = current.get('index')
+        trunk_index: TrunkIndex = inst.trunks[idx]
+        trunk_index.set_current(current)

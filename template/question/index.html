@@ -7,7 +7,7 @@
                 <thead>
                     <tr>
                         <td colspan="5">
-                            <page-component ref="pageComponent" :conf.sync="pageConf" @onchange="list"></page-component>
+                            <page-component ref="pageComponent" :conf.sync="pageConf" @change="list"></page-component>
                         </td>
                     </tr>
                     <tr>
@@ -38,7 +38,7 @@
                 <tfoot>
                     <tr>
                         <td colspan="5">
-                            <page-component :conf.sync="pageConf" @onchange="list"></page-component>
+                            <page-component :conf.sync="pageConf" @change="list"></page-component>
                         </td>
                     </tr>
                 </tfoot>
@@ -88,7 +88,6 @@
                     itemsPerPage: 10,
                     pagesLength: 9,
                     perPageOptions: [10, 15, 30, 50, 100],
-                    //onChange: 'list',
                 },
                 keyword: '',
                 kwBind: '',

@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 import json
 import random
-from typing import List, Dict, Deque, Set
 from collections import deque
+from typing import List, Dict, Deque, Set
+
 from trainier.dao.model import Trunk, Option, Result, Quiz
 from trainier.dao.orm import db
 from trainier.util.logger import Log
 from trainier.util.value import b32_obj_id
-from trainier.web.api import ErrorInQueryError
 from trainier.web.api.question.service import QuestionService
 
 
@@ -16,19 +16,31 @@ class TrunkIndex:
     def __init__(self) -> None:
         self.trunk_id = ''
         self.marked = 0
-        self.answer = ''
+        self.answer = {self.trunk_id: []}
         self.option_seed = -1
+
+    def get_current(self) -> Dict:
+        return dict(marked=self.marked, answer=self.answer)
+
+    def set_current(self, current: Dict) -> None:
+        marked = current.get('marked')
+        if marked is not None:
+            self.marked = marked
+        answer = current.get('answer')
+        if answer is not None:
+            self.answer = answer
 
     def get_trunk(self) -> Trunk:
         trunk: Trunk = QuestionService.select_trunk_by_id(self.trunk_id)
         if self.option_seed >= 0:
             random.seed(self.option_seed)
-            queue: Deque[Trunk] = deque([trunk])
-            while len(queue) > 0:
-                trunk_cur: Trunk = queue.popleft()
-                if hasattr(trunk_cur, 'trunks'):
-                    queue.extend(trunk_cur.trunks)
-                else:
+        queue: Deque[Trunk] = deque([trunk])
+        while len(queue) > 0:
+            trunk_cur: Trunk = queue.popleft()
+            if hasattr(trunk_cur, 'trunks'):
+                queue.extend(trunk_cur.trunks)
+            else:
+                if self.option_seed >= 0:
                     random.shuffle(trunk_cur.options)
         return trunk
 
@@ -109,10 +121,24 @@ class QuizInstance:
             random.shuffle(model.trunks)
 
     def get_index_status(self) -> List[Dict]:
-        return [dict(a=t.answer is not None and len(t.answer)>0, m=t.marked) for t in self.trunks]
+        return [dict(a=1 if t.answer is not None and len(t.answer)>0 else 0, m=t.marked) for t in self.trunks]
 
 
 class TakeService:
+
+    @staticmethod
+    def multi_choice(src: Trunk, dst: Dict):
+        if hasattr(src, 'options'):
+            l: List[Option] = [o for o in src.options if o.is_true]
+            n: int = len(l)
+            if n < 1:
+                raise ValueError(f'no correct option of trunk({src.entity_id})')
+            elif n == 1:
+                dst['multi_choice'] = 0
+            elif n < len(src.options):
+                dst['multi_choice'] = 1
+            else:
+                raise ValueError(f'too many correct option of trunk({src.entity_id})')
 
     @staticmethod
     def trunk_to_dict(trunk: Trunk):
@@ -122,7 +148,6 @@ class TakeService:
             Trunk.cn_trunk_text,
             Trunk.explanation,
             Trunk.source,
-            Trunk.level,
             Trunk.comment,
             Trunk.order_num,
             Trunk.parent_id,
@@ -133,8 +158,10 @@ class TakeService:
             Option.trunk_id,
             Option.code,
             Option.order_num,
+            Option.is_true,
+            Option.comment,
         }
-        return QuestionService.trunk_to_dict(trunk, trunk_exclude, option_exclude, [QuestionService.view_trunk_length])
+        return QuestionService.trunk_to_dict(trunk, trunk_exclude, option_exclude, [QuestionService.view_trunk_length, TakeService.multi_choice])
 
     @staticmethod
     def save(results: List[Result]):

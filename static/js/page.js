@@ -264,7 +264,7 @@ const PageComponent = Vue
                         // total 变化时，仅触发组件更新，而不重新请求
                         if (nv2.length === 0 || nv2 !== ov2) {
                             console.debug(`${this._uid}-4 | nv = ${nv}, nv2 = ${nv2}, ov = ${ov}, ov2 = ${ov2}`);
-                            this.$emit('onchange', this._uid);
+                            this.$emit('change', this._uid);
                         }
                     }
                 }

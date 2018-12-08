@@ -11,6 +11,7 @@ import hmac
 import json
 import pickle
 import secrets
+import urllib.parse
 import zlib
 from typing import Dict
 
@@ -59,10 +60,11 @@ class Codec:
         z: bytes = zlib.compress(p, zlib.Z_BEST_COMPRESSION)
         c: bytes = _enc(self.secret_key, z)
         b: bytes = base64.urlsafe_b64encode(c)
-        return b.decode()
+        return urllib.parse.quote(b)
 
     def dec_obj(self, cookie: str) -> object:
-        c: bytes = base64.urlsafe_b64decode(cookie.encode())
+        u: str = urllib.parse.unquote(cookie)
+        c: bytes = base64.urlsafe_b64decode(u.encode())
         z: bytes = _dec(self.secret_key, c)
         p: bytes = zlib.decompress(z)
         d: Dict = pickle.loads(p)
