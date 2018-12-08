@@ -123,7 +123,7 @@
             },
             methods: {
                 switchTo(idx, current=null) {
-                    this.current.answer = Object.assign({}, this.current.answer); // 有时候变量结构有些问题，导致后台取不到数据。深度复制创建一个新对象，后台就能取到
+                    this.current.answer = Object.assign({}, this.current.answer); // 有时候变量结构有些问题，导致后台取不到数据。如果深度复制创建一个新对象，后台就能取到
 
                     let data = {
                         action: 'switch',
@@ -147,22 +147,39 @@
                                 }
                                 if (typeof this.trunk.trunks === 'undefined') {
                                     this.hasTrunkChild = false;
-                                    if (typeof this.current.answer[this.trunk.entity_id] !== 'object') {
+                                    let t = typeof this.current.answer[this.trunk.entity_id];
+                                    if (this.trunk.multi_choice && t !== 'object') {
                                         this.current.answer[this.trunk.entity_id] = [];
                                     }
+                                    if (!this.trunk.multi_choice && t !== 'string') {
+                                        this.current.answer[this.trunk.entity_id] = '';
+                                    }
+                                    //if ((t !== 'string' && t !== 'object') ||
+                                    //    (t === 'string' && this.current.answer[this.trunk.entity_id].length === 0)) {
+                                    //    this.current.answer[this.trunk.entity_id] = [];
+                                    //}
+                                    //console.debug(this.current.answer[this.trunk.entity_id]);
                                     mergeOptions(this.trunk.options);
                                 } else {
+                                    //console.debug(this.current.answer);
                                     this.hasTrunkChild = true;
                                     this.trunkChildren = this.trunk.trunks;
-                                    //console.debug(this.current.answer);
-                                    //if (typeof this.current.answer[this.trunk.entity_id] !== 'object') {
-                                    //    this.current.answer[this.trunk.entity_id] = {};
-                                    //}
-                                    for (let t of this.trunkChildren) {
-                                        if (typeof this.current.answer[t.entity_id] !== 'object') {
-                                            this.current.answer[t.entity_id] = [];
+                                    for (let tc of this.trunkChildren) {
+                                        //console.debug(typeof this.current.answer[tc.entity_id]);
+                                        let t = typeof this.current.answer[tc.entity_id];
+                                        //console.debug(`${tc.mul}`);
+                                        if (tc.multi_choice && t !== 'object') {
+                                            this.current.answer[tc.entity_id] = [];
                                         }
-                                        mergeOptions(t.options)
+                                        if (!tc.multi_choice && t !== 'string') {
+                                            this.current.answer[tc.entity_id] = '';
+                                        }
+                                        //if ((t !== 'object' && t !== 'string') ||
+                                        //    (t === 'string' && this.current.answer[tc.entity_id].length === 0)) {
+                                        //    this.current.answer[tc.entity_id] = [];
+                                        //}
+                                        //console.debug(this.current.answer[tc.entity_id]);
+                                        mergeOptions(tc.options)
                                     }
                                 }
                             } else {

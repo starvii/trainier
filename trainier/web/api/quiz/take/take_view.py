@@ -52,10 +52,10 @@ class QuizTakeHandler(AuthHandler):
                 self.clear_cookie('quiz')
                 jsn = jsonify(dict(result=1))
             else:
-                jsn = dict(result=0, error=dict(message='not allowed action'))
+                jsn = jsonify(dict(result=0, error=dict(message='not allowed action')))
         except Exception as e:
             Log.trainier.error(e)
-            jsn: str = dict(result=0, error=dict(message=str(e)))
+            jsn: str = jsonify(dict(result=0, error=dict(message=str(e))))
         self.finish(jsn)
 
 

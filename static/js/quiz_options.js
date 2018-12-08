@@ -5,11 +5,11 @@
 		<div class="col">
 			<input type="checkbox"
 				:name="trunk.entity_id" :value="option.entity_id"
-				v-model="answer"
+				v-model="answer_wrapper.answer[trunk.entity_id]"
 				v-if="trunk.multi_choice">
 			<input type="radio"
 				:name="trunk.entity_id" :value="option.entity_id"
-				v-model="answer"
+				v-model="answer_wrapper.answer[trunk.entity_id]"
 				v-else>
 			<span v-text="`ABCDEFGHIJKL`[index] + `.`"></span>
 		</div>
@@ -55,31 +55,6 @@ const QuizOptionsComponent = Vue.extend({
         '\t</label>\n' +
         '</div>',
     replace: true,
-    // data() {
-    //     return {
-    //         privateAnswer: [],
-    //     };
-    // },
-    // computed: {
-    //     protectedAnswer: {
-    //         get() {
-    //             return this.privateAnswer;
-    //         },
-    //         set(val) {
-    //             this.privateAnswer = val;
-    //             this.$emit('change', {
-    //                 trunk: this.trunk.entity_id,
-    //                 answer: val,
-    //             });
-    //         },
-    //     }
-    // },
-    // watch: {
-    //     answer(newVal, oldVal) {
-    //         console.debug(`old = ${oldVal}, new = ${newVal}`);
-    //         this.protectedAnswer = newVal;
-    //     },
-    // },
     props: {
         trunk: {
             type: Object,

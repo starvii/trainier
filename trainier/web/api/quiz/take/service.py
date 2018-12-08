@@ -16,11 +16,14 @@ class TrunkIndex:
     def __init__(self) -> None:
         self.trunk_id = ''
         self.marked = 0
-        self.answer = []
+        self.answer = dict()
         self.option_seed = -1
 
     def get_current(self, index: int = -1) -> Dict:
-        r: Dict = dict(marked=self.marked, answer=self.answer)
+        r: Dict = dict(
+            marked=1 if self.marked else 0,
+            answer=self.answer,
+        )
         if index >= 0:
             r['index'] = index
         return r
