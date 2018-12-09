@@ -28,19 +28,24 @@ def encode_for_id(in_bytes, with_padding=False):
     in_bit_len = in_bytes_len * 8
     if in_bit_len % 5 == 0:
         to_encode_bit_len = in_bit_len
+        to_encode_byte_len = in_bit_len // 5
         _in_bytes = bytearray(in_bytes)
         padding = b''
     else:
-        to_encode_bit_len = (in_bit_len // 5 + 1) * 5
+        to_encode_byte_len = in_bit_len // 5 + 1
+        _to_encode_bit_len = to_encode_byte_len * 5
+        to_encode_bit_len = in_bit_len + 8
+
         _in_bytes = bytearray(b'\x00' + in_bytes)
-        padding = PADDING[to_encode_bit_len - in_bit_len - 1]
+        padding = PADDING[_to_encode_bit_len - in_bit_len - 1]
     out_bytes = deque()
-    for i in range(to_encode_bit_len - 1, -1, -5):
-        j = i - 4
+    for i in range(to_encode_byte_len):
+        k = to_encode_bit_len - 1 - i * 5
+        j = k - 4
         idx0 = j // 8
-        idx1 = i // 8
+        idx1 = k // 8
         bit0 = j % 8
-        bit1 = j % 8
+        bit1 = k % 8
         if idx0 == idx1:
             idx = (_in_bytes[idx0] >> (7 - bit1)) & 0x1f
         else:
@@ -113,13 +118,10 @@ def decode(in_bytes):
 
 
 def test():
-    import sys
-    sys.path.append('./')
-    import object_id
-    for _ in range(20):
-        x = object_id.ObjectId.gen_id()
-        print(repr(encode_for_id(x)))
-        print(repr(encode(x, False)))
+    import binascii
+    print(encode_for_id(binascii.unhexlify('5bbab4cf01d18529383f71b1')))
+    print(encode_for_id(binascii.unhexlify('5bbab4cf01d18529383f71b2')))
+    print(encode_for_id(binascii.unhexlify('5bbab4cf01d18529383f71c1')))
 
 
 if __name__ == '__main__':

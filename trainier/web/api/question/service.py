@@ -14,7 +14,7 @@ from trainier.util.logger import Log
 from trainier.util.value import b32_obj_id, html_strip
 from trainier.web.api import CannotFindError, ErrorInQueryError, TrunkIntegrityError
 
-const.ROOT_NODE = 'root'
+const.ROOT_NODE = 'ROOT'
 
 
 class QuestionService:
