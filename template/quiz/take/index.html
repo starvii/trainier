@@ -5,22 +5,27 @@
         <div class="row">
             <nav class="col-sm-2 navbar d-flex align-content-start">
                 <div class="col-sm-12 d-flex flex-wrap">
-                    <div class="m-sm-1 d-flex align-items-center justify-content-center trunk-index" v-for="(item, idx) in index" @click="switchTo(idx)">
-                        <a v-text="idx+1" href="javascript:void(0);"></a>
+                    <div class="m-sm-1 d-flex align-items-center justify-content-center trunk-index"
+                         :class="indexClass(idx)"
+                         v-for="(item, idx) in index" @click="switchTo(idx)">
+                        <span v-text="idx+1"></span>
                     </div>
                 </div>
             </nav>
             <div class="container py-4">
                 <div class="float-right">
                     <div class="btn-group">
-                        <a class="btn btn-sm btn-info" href="javascript:void(0);" @click="submit()">提交</a>
-                        <a class="btn btn-sm btn-info" href="javascript:void(0);" @click="quit()">退出</a>
-                        <a class="btn btn-sm btn-info"><i class="fas fa-angle-left"></i></a>
-                        <a class="btn btn-sm btn-info"><i class="fas fa-angle-right"></i></a>
+                        <a class="btn btn-sm btn-info" href="javascript:void(0);" @click="submit">提交</a>
+                        <a class="btn btn-sm btn-info" href="javascript:void(0);" @click="quit">退出</a>
+                        <a class="btn btn-sm btn-info" :class="{disabled:current.index<=0}" @click="prev"><i class="fas fa-angle-left"></i></a>
+                        <a class="btn btn-sm btn-info" :class="{disabled:current.index>=index.length-1}" @click="next"><i class="fas fa-angle-right"></i></a>
                     </div>
                 </div>
 
                 <form class="form-inline pb-3">
+                    <div class="form-group mr-3">
+                        <strong><label v-text="`第`+(current.index+1)+`题`"></label></strong>
+                    </div>
                     <div class="form-group">
                         <label>题目编号</label>
                         <pre class="mx-sm-3" v-text="trunk.code"></pre>
@@ -122,7 +127,47 @@
                 }
             },
             methods: {
+                indexClass(idx) {
+                    if (idx === this.current.index) {
+                        return 'bg-primary text-white cursor-not-allowed';
+                    }
+                    if (this.index[idx]['m'] && this.index[idx]['a']) {
+                        return 'bg-warning text-white';
+                    }
+                    if (this.index[idx]['m'] && !this.index[idx]['a']) {
+                        return 'bg-danger text-white';
+                    }
+                    if (!this.index[idx]['m'] && this.index[idx]['a']) {
+                        return 'bg-success text-white';
+                    }
+                },
+                checkStatus() {
+                    for (let k in this.current.answer) {
+                        let v = this.current.answer[k];
+                        if (typeof v === 'string') {
+                            if (v.length === 0) {
+                                return false;
+                            }
+                        } else if (typeof v === 'object') {
+                            if (v.length === 0) {
+                                return false;
+                            }
+                            for (let e in v) {
+                                if (e.length === 0) {
+                                    return false;
+                                }
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
                 switchTo(idx, current=null) {
+                    if (idx === this.current.index && current === null) {
+                        return;
+                    }
+
                     this.current.answer = Object.assign({}, this.current.answer); // 有时候变量结构有些问题，导致后台取不到数据。如果深度复制创建一个新对象，后台就能取到
 
                     let data = {
@@ -154,31 +199,18 @@
                                     if (!this.trunk.multi_choice && t !== 'string') {
                                         this.current.answer[this.trunk.entity_id] = '';
                                     }
-                                    //if ((t !== 'string' && t !== 'object') ||
-                                    //    (t === 'string' && this.current.answer[this.trunk.entity_id].length === 0)) {
-                                    //    this.current.answer[this.trunk.entity_id] = [];
-                                    //}
-                                    //console.debug(this.current.answer[this.trunk.entity_id]);
                                     mergeOptions(this.trunk.options);
                                 } else {
-                                    //console.debug(this.current.answer);
                                     this.hasTrunkChild = true;
                                     this.trunkChildren = this.trunk.trunks;
                                     for (let tc of this.trunkChildren) {
-                                        //console.debug(typeof this.current.answer[tc.entity_id]);
                                         let t = typeof this.current.answer[tc.entity_id];
-                                        //console.debug(`${tc.mul}`);
                                         if (tc.multi_choice && t !== 'object') {
                                             this.current.answer[tc.entity_id] = [];
                                         }
                                         if (!tc.multi_choice && t !== 'string') {
                                             this.current.answer[tc.entity_id] = '';
                                         }
-                                        //if ((t !== 'object' && t !== 'string') ||
-                                        //    (t === 'string' && this.current.answer[tc.entity_id].length === 0)) {
-                                        //    this.current.answer[tc.entity_id] = [];
-                                        //}
-                                        //console.debug(this.current.answer[tc.entity_id]);
                                         mergeOptions(tc.options)
                                     }
                                 }
@@ -227,17 +259,25 @@
                 submit() {
                     // 检查未完成题目、检查被标记题目
                     let prefix = '';
-                    for (let q of this.index) {
-                        if (!q.a) {
-                            prefix = '还有题目未完成。';
-                            break;
+                    if (!this.checkStatus()) {
+                        prefix = '还有题目未完成。';
+                    } else {
+                        for (let q of this.index) {
+                            if (!q.a) {
+                                prefix = '还有题目未完成。';
+                                break;
+                            }
                         }
                     }
-                    if (prefix.length === 0) {
-                        for (let q of this.index) {
-                            if (q.m) {
-                                prefix = '还有题目被标记。';
-                                break;
+                    if (this.current.marked) {
+                        prefix = '还有题目被标记。';
+                    } else {
+                        if (prefix.length === 0) {
+                            for (let q of this.index) {
+                                if (q.m) {
+                                    prefix = '还有题目被标记。';
+                                    break;
+                                }
                             }
                         }
                     }
@@ -262,7 +302,7 @@
                             if (response.status === 200 &&
                                 response.statusText === 'OK' &&
                                 response.data.result) {
-                                alert('成功退出。');
+                                alert('提交成功。');
                                 window.opener=null;
                                 window.open('','_self');
                                 window.close();
@@ -275,10 +315,15 @@
                         }
                     );
                 },
-                change(arg) {
-                    console.debug(arg);
-                    this.current.answer[arg.trunk] = arg.answer;
-                    console.debug(this.current.answer);
+                prev() {
+                    if (this.current.index > 0) {
+                        this.switchTo(this.current.index - 1);
+                    }
+                },
+                next() {
+                    if (this.current.index < this.index.length - 1) {
+                        this.switchTo(this.current.index + 1)
+                    }
                 },
             },
         });

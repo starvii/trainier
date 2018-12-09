@@ -8,24 +8,39 @@ from typing import List, Dict, Deque, Set
 from trainier.dao.model import Trunk, Option, Result, Quiz
 from trainier.dao.orm import db
 from trainier.util.logger import Log
-from trainier.util.value import b32_obj_id
+from trainier.util.value import b32_obj_id, jsonify
 from trainier.web.api.question.service import QuestionService
 
 
 class TrunkIndex:
-    def __init__(self) -> None:
-        self.trunk_id = ''
-        self.marked = 0
-        self.answer = dict()
-        self.option_seed = -1
+    def __init__(self, index: int) -> None:
+        self.index: int = index
+        self.trunk_id: str = ''
+        self.marked: int or bool = 0
+        self.answer: Dict = dict()
+        self.option_seed: int = -1
 
-    def get_current(self, index: int = -1) -> Dict:
+    def get_current(self) -> Dict:
         r: Dict = dict(
+            index=self.index,
             marked=1 if self.marked else 0,
             answer=self.answer,
         )
-        if index >= 0:
-            r['index'] = index
+        return r
+
+    def get_status(self) -> Dict:
+        answer: int = 1
+        if self.answer is None or len(self.answer) == 0:
+            answer = 0
+        else:
+            for _, v in self.answer.items():
+                if len(v) == 0:
+                    answer = 0
+                    break
+        r: Dict = dict(
+            m=1 if self.marked else 0,
+            a=answer,
+        )
         return r
 
     def set_current(self, current: Dict) -> None:
@@ -53,7 +68,7 @@ class TrunkIndex:
     def get_result(self) -> Result:
         result: Result = Result()
         result.trunk_id = self.trunk_id
-        result.answer = self.answer
+        result.answer = jsonify(self.answer)
         result.is_true = True
 
         trunk: Trunk = QuestionService.select_trunk_by_id(self.trunk_id)
@@ -74,34 +89,57 @@ class TrunkIndex:
                     correct_dict[trunk_cur.entity_id] = correct_options
                 else:
                     raise ValueError(f'too many correct option of trunk({trunk_cur.entity_id})')
-        answer_dict: Dict = json.loads(self.answer)
-        queue: Deque[Dict] = deque([answer_dict])
-        while len(queue) > 0:
-            dct: Dict = queue.popleft()
-            for k, v in dct.items():
-                if isinstance(v, Dict):
-                    queue.append(v)
-                elif isinstance(v, List):
-                    if k not in correct_dict:
-                        result.is_true = False
-                        return result
-                    s: Set[str] = correct_dict[k]
-                    if not isinstance(s, Set):
-                        result.is_true = False
-                        return result
-                    if set(v) != s:
-                        result.is_true = False
-                        return result
-                elif isinstance(v, str):
-                    if k not in correct_dict:
-                        result.is_true = False
-                        return result
-                    if v != correct_dict[k]:
-                        result.is_true = False
-                        return result
-                else:
+        if len(correct_dict) != len(self.answer):
+            result.is_true = False
+            return result
+        for k, v in self.answer.items():
+            if k not in correct_dict:
+                result.is_true = False
+                return result
+            a: str or Set = correct_dict[k]
+            if isinstance(v, str):
+                if v != a:
                     result.is_true = False
                     return result
+            elif isinstance(v, List):
+                if len(v) != len(a):
+                    result.is_true = False
+                    return result
+                for e in v:
+                    if e not in a:
+                        result.is_true = False
+                        return result
+            else:
+                result.is_true = False
+                return result
+        # answer_dict: Dict = json.loads(self.answer)
+        # queue: Deque[Dict] = deque([answer_dict])
+        # while len(queue) > 0:
+        #     dct: Dict = queue.popleft()
+        #     for k, v in dct.items():
+        #         if isinstance(v, Dict):
+        #             queue.append(v)
+        #         elif isinstance(v, List):
+        #             if k not in correct_dict:
+        #                 result.is_true = False
+        #                 return result
+        #             s: Set[str] = correct_dict[k]
+        #             if not isinstance(s, Set):
+        #                 result.is_true = False
+        #                 return result
+        #             if set(v) != s:
+        #                 result.is_true = False
+        #                 return result
+        #         elif isinstance(v, str):
+        #             if k not in correct_dict:
+        #                 result.is_true = False
+        #                 return result
+        #             if v != correct_dict[k]:
+        #                 result.is_true = False
+        #                 return result
+        #         else:
+        #             result.is_true = False
+        #             return result
         return result
 
 
@@ -117,8 +155,8 @@ class QuizInstance:
         ql: List = [_q.strip() for _q in questions.split(',') if len(_q.strip()) > 0]
         if len(ql) == 0:
             raise ValueError('no question in the quiz')
-        for qid in ql:
-            q: TrunkIndex = TrunkIndex()
+        for idx, qid in enumerate(ql):
+            q: TrunkIndex = TrunkIndex(idx)
             q.trunk_id = qid
             if model.random_choice:
                 q.option_seed = random.randint(0, 65535)
@@ -127,10 +165,7 @@ class QuizInstance:
             random.shuffle(model.trunks)
 
     def get_index_status(self) -> List[Dict]:
-        return [dict(
-            a=1 if t.answer is not None and len(t.answer)>0 else 0,
-            m=1 if t.marked else 0,
-        ) for t in self.trunks]
+        return [t.get_status() for t in self.trunks]
 
 
 class TakeService:

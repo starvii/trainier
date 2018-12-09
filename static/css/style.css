@@ -28,3 +28,7 @@ pre {
     border: black solid 1px;
     cursor: pointer;
 }
+
+.cursor-not-allowed {
+    cursor: not-allowed;
+}

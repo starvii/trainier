@@ -41,7 +41,7 @@ class QuizActionController:
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
         cookie: str = self.codec.enc_obj(inst)
-        current: Dict = inst.trunks[0].get_current(index=0)
+        current: Dict = inst.trunks[0].get_current()
         result = dict(result=1, index=index, trunk=trunk_view, current=current)
         return jsonify(result), cookie
 
@@ -49,10 +49,10 @@ class QuizActionController:
     def quiz_switch(self, quiz_id: str, cookie: str, switch: int, current: Dict) -> (str, str):
         inst: QuizInstance = self.codec.dec_obj(cookie)
         if inst.quiz_id != quiz_id:
-            raise ValueError('quiz_id not equal')
+            raise ValueError('quiz_id not equal. maybe some quiz is being taken.')
         self._merge_submit(inst, current)
         trunk_index: TrunkIndex = inst.trunks[switch]
-        new_current: Dict = trunk_index.get_current(index=switch)
+        new_current: Dict = trunk_index.get_current()
         trunk: Trunk = trunk_index.get_trunk()
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
@@ -64,7 +64,7 @@ class QuizActionController:
     def quiz_submit(self, quiz_id: str, cookie: str, submit: Dict) -> str:
         inst: QuizInstance = self.codec.dec_obj(cookie)
         if inst.quiz_id != quiz_id:
-            raise ValueError('quiz_id not equal')
+            raise ValueError('quiz_id not equal. maybe some quiz is being taken.')
         self._merge_submit(inst, submit)
         results: List[Result] = [t.get_result() for t in inst.trunks]
         for r in results:

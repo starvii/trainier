@@ -48,6 +48,7 @@ class QuizTakeHandler(AuthHandler):
             # quiz_id + cookie => submit
             elif action == 'submit':
                 jsn = yield self.controller.quiz_submit(quiz_id, quiz, current)
+                self.clear_cookie('quiz')
             elif action == 'quit':
                 self.clear_cookie('quiz')
                 jsn = jsonify(dict(result=1))
