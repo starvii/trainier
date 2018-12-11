@@ -26,7 +26,7 @@
 				</a>
 			</li>
 		</ul>
-		<form name=pate-total class="form-inline m-0">
+		<div name=pate-total class="form-inline m-0">
 			<div class="form-group px-sm-3">
 				<label>第</label>
 				<input class="form-control form-control-sm mx-sm-2"
@@ -45,7 +45,7 @@
 				</select>
 				<label>/共<strong v-text="conf.totalItems"></strong>条</label>
 			</div>
-		</form>
+		</div>
 	</div>
 	<div name="no-items" v-else>
 		<strong>无数据</strong>
@@ -84,7 +84,7 @@ const PageComponent = Vue
             '\t\t\t\t</a>\n' +
             '\t\t\t</li>\n' +
             '\t\t</ul>\n' +
-            '\t\t<form name=pate-total class="form-inline m-0">\n' +
+            '\t\t<div name=pate-total class="form-inline m-0">\n' +
             '\t\t\t<div class="form-group px-sm-3">\n' +
             '\t\t\t\t<label>第</label>\n' +
             '\t\t\t\t<input class="form-control form-control-sm mx-sm-2"\n' +
@@ -103,7 +103,7 @@ const PageComponent = Vue
             '\t\t\t\t</select>\n' +
             '\t\t\t\t<label>/共<strong v-text="conf.totalItems"></strong>条</label>\n' +
             '\t\t\t</div>\n' +
-            '\t\t</form>\n' +
+            '\t\t</div>\n' +
             '\t</div>\n' +
             '\t<div name="no-items" v-else>\n' +
             '\t\t<strong>无数据</strong>\n' +
@@ -136,8 +136,8 @@ const PageComponent = Vue
             }
 
             // conf.perPageOptions
-            if (this.conf.perPageOptions) {
-                this.conf.perPageOptions = [10, 15, 30, 50, 100];
+            if (!this.conf.perPageOptions) {
+                this.conf.perPageOptions = [10, 15, 30, 50, 100, 250];
             }
 
             this.$watch(this.getWatchState, this.getPagination);
@@ -269,7 +269,6 @@ const PageComponent = Vue
                     }
                 }
             },
-
             prevPage() {
                 if (this.conf.currentPage > 1) {
                     this.conf.currentPage -= 1;
@@ -281,7 +280,6 @@ const PageComponent = Vue
                     this.conf.currentPage += 1;
                 }
             },
-
             jumpToPage() {
                 let pn = this.jumpPageNum.toString().replace(/[^0-9]/g, '');
                 if (pn !== '') {

@@ -15,14 +15,19 @@
             <div class="container py-4">
                 <div class="float-right">
                     <div class="btn-group">
-                        <a class="btn btn-sm btn-info" href="javascript:void(0);" @click="submit">提交</a>
-                        <a class="btn btn-sm btn-info" href="javascript:void(0);" @click="quit">退出</a>
                         <a class="btn btn-sm btn-info" :class="{disabled:current.index<=0}" @click="prev"><i class="fas fa-angle-left"></i></a>
                         <a class="btn btn-sm btn-info" :class="{disabled:current.index>=index.length-1}" @click="next"><i class="fas fa-angle-right"></i></a>
                     </div>
                 </div>
 
                 <form class="form-inline pb-3">
+                    <div class="form-group mr-3">
+                        <div class="btn-group">
+                            <a class="btn btn-sm btn-primary text-white" @click="submit">提交</a>
+                            <a class="btn btn-sm btn-light" @click="quit">退出</a>
+                        </div>
+                    </div>
+
                     <div class="form-group mr-3">
                         <strong><label v-text="`第`+(current.index+1)+`题`"></label></strong>
                     </div>
@@ -132,7 +137,7 @@
                         return 'bg-primary text-white cursor-not-allowed';
                     }
                     if (this.index[idx]['m'] && this.index[idx]['a']) {
-                        return 'bg-warning text-white';
+                        return 'bg-warning text-black-50';
                     }
                     if (this.index[idx]['m'] && !this.index[idx]['a']) {
                         return 'bg-danger text-white';

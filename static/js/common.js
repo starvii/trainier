@@ -132,8 +132,7 @@ const newTrunk = () => {
         source: '',
         level: 0,
         comment: '',
-        order_num: 0,
-        parent: '',
+        parent_id: '',
         options: [
             newOption(),
             newOption(),
@@ -146,12 +145,11 @@ const newTrunk = () => {
 const newOption = () => {
     return {
         entity_id: '',
-        trunk_id: '',
-        code: '',
+        // trunk_id: '',
+        // code: '',
         en_option: '',
         cn_option: '',
         is_true: false,
-        order_num: 0,
         comment: '',
     };
 };

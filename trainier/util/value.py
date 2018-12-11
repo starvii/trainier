@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
-from typing import Dict, Tuple, Any
+from typing import Dict, Any, Set
 
 from bs4 import BeautifulSoup
 
@@ -10,10 +10,9 @@ from trainier.util.base32 import encode_for_id
 from trainier.util.logger import Log
 from trainier.util.object_id import ObjectId
 
-
 const.PAGE_NUMBER_DEFAULT: int = 1
-const.PAGE_SIZES: Tuple = (10, 15, 30, 50, 100)
-const.PAGE_SIZE_DEFAULT: int = const.PAGE_SIZES[0]
+const.PAGE_SIZES: Set = {10, 15, 30, 50, 100, 250}
+const.PAGE_SIZE_DEFAULT: int = 10
 
 
 def _parameter_from_request(parameter: str, arguments: Dict, body: bytes, body_json: Dict) -> (Any, Dict):
