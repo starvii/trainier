@@ -26,7 +26,7 @@ class QuizActionController:
     codec: Codec = Codec(AppConfig.SECRET)
 
     @run_on_executor
-    def quiz_start(self, quiz_id: str) -> (str, str):
+    def quiz_start(self, quiz_id: str) -> str:
         """
         开始测验
         :param quiz_id:
@@ -40,13 +40,13 @@ class QuizActionController:
         trunk: Trunk = inst.trunks[0].get_trunk()
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
-        cookie: str = self.codec.enc_obj(inst)
+        quiz: str = self.codec.enc_obj(inst)
         current: Dict = inst.trunks[0].get_current()
-        result = dict(result=1, index=index, trunk=trunk_view, current=current)
-        return jsonify(result), cookie
+        result = dict(result=1, index=index, trunk=trunk_view, current=current, quiz=quiz)
+        return jsonify(result)
 
     @run_on_executor
-    def quiz_switch(self, quiz_id: str, cookie: str, switch: int, current: Dict) -> (str, str):
+    def quiz_switch(self, quiz_id: str, cookie: str, switch: int, current: Dict) -> str:
         inst: QuizInstance = self.codec.dec_obj(cookie)
         if inst.quiz_id != quiz_id:
             raise ValueError('quiz_id not equal. maybe some quiz is being taken.')
@@ -56,9 +56,9 @@ class QuizActionController:
         trunk: Trunk = trunk_index.get_trunk()
         trunk_view: Dict = TakeService.trunk_to_dict(trunk)
         index: List[Dict] = inst.get_index_status()
-        c: str = self.codec.enc_obj(inst)
-        result = dict(result=1, index=index, trunk=trunk_view, current=new_current)
-        return jsonify(result), c
+        quiz: str = self.codec.enc_obj(inst)
+        result = dict(result=1, index=index, trunk=trunk_view, current=new_current, quiz=quiz)
+        return jsonify(result)
 
     @run_on_executor
     def quiz_submit(self, quiz_id: str, cookie: str, submit: Dict) -> str:

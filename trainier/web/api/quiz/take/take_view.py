@@ -26,31 +26,33 @@ class QuizTakeHandler(AuthHandler):
     def post(self, *args, **kwargs):
         request: HTTPServerRequest = self.request
         try:
-            quiz_id: str = self.get_argument('id')
-            if quiz_id is None or len(quiz_id.strip()) == 0:
-                raise ValueError('quiz_id is empty')
+            # quiz_id: str = self.get_argument('id')
+            # if quiz_id is None or len(quiz_id.strip()) == 0:
+            #     raise ValueError('quiz_id is empty')
             body: bytes = request.body
             param: Dict = json.loads(body)
-            quiz: str = self.get_cookie('quiz')
+            # quiz: str = self.get_cookie('quiz')
+            quiz_id: str = param.get('quiz_id')
+            quiz: str = param.get('quiz')
             action: str = param.get('action')
             switch: int or None = param.get('switch')
             current: Dict or None = param.get('current')
             if quiz is None or len(quiz.strip()) == 0:
                 # 只有quiz_id，没有cookie => start
-                t = yield self.controller.quiz_start(quiz_id)
-                jsn, cookie = t
-                self.set_cookie('quiz', cookie)
+                jsn = yield self.controller.quiz_start(quiz_id)
+                # jsn, cookie = t
+                # self.set_cookie('quiz', cookie)
             # quiz_id + question_num + cookie => switch
             elif action == 'switch':
-                t = yield self.controller.quiz_switch(quiz_id, quiz, switch, current)
-                jsn, cookie = t
-                self.set_cookie('quiz', cookie)
+                jsn = yield self.controller.quiz_switch(quiz_id, quiz, switch, current)
+                # jsn, cookie = t
+                # self.set_cookie('quiz', cookie)
             # quiz_id + cookie => submit
             elif action == 'submit':
                 jsn = yield self.controller.quiz_submit(quiz_id, quiz, current)
-                self.clear_cookie('quiz')
+                # self.clear_cookie('quiz')
             elif action == 'quit':
-                self.clear_cookie('quiz')
+                # self.clear_cookie('quiz')
                 jsn = jsonify(dict(result=1))
             else:
                 jsn = jsonify(dict(result=0, error=dict(message='not allowed action')))
