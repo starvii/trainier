@@ -14,9 +14,9 @@
                         <td colspan="5">
                             <div class="input-group">
                                 <label for="search_text" hidden></label>
-                                <input id="search_text" class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search()">
+                                <input id="search_text" class="form-control form-control-sm" type="text" v-model="kwBind" @keyup.enter="search">
                                 <div class="input-group-append">
-                                    <a class="btn btn-sm btn-outline-secondary" title="查找" @click="search()">
+                                    <a class="btn btn-sm btn-outline-secondary" title="查找" @click="search">
                                         <i class="fas fa-search"></i>
                                     </a>
                                 </div>
@@ -154,7 +154,7 @@
                 search() {
                     if (this.keyword !== this.kwBind.trim()) {
                         this.keyword = this.kwBind.trim();
-                        this.list();
+                        this.list(this.$refs.pageComponent._uid);
                     }
                 },
             },
